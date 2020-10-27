@@ -457,4 +457,5 @@ void ObjLoader::Draw(Camera camera, glm::mat4 transform, glm::mat3 rotation, glm
 		m_models[m_index].vao[i]->Bind();
 		glDrawArrays(GL_TRIANGLES, 0, m_models[m_index].verts[i]);
 	}
+	VertexArrayObject::UnBind();
 }

@@ -17,9 +17,14 @@ int main() {
 	unsigned cameraEnt = ECS::CreateEntity();
 	ECS::AttachComponent<Camera>(cameraEnt);
 
+	unsigned Dio = ECS::CreateEntity();
+	ECS::AttachComponent<ObjLoader>(Dio, ObjLoader("Char.obj", true));
+	ECS::GetComponent<Transform>(Dio).SetPosition(glm::vec3(0, 30, 0));
+
+
 	std::vector<unsigned> someObjs = {};
 
-	unsigned amt = 1000;
+	unsigned amt = 100;
 
 	for (int count(0); count < amt; ++count) {
 		someObjs.push_back(ECS::CreateEntity());
@@ -37,6 +42,8 @@ int main() {
 
 	float lastClock = glfwGetTime();
 
+	const float pi = glm::half_pi<float>() - 0.01f;
+	bool change = true;
 	glm::vec2 rot = glm::vec2(0.f);
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -44,31 +51,55 @@ int main() {
 		float deltaTime = glfwGetTime() - lastClock;
 		lastClock = glfwGetTime();
 
+		printf("\r%f", 1.f / deltaTime);
+
 		if (glfwGetKey(window, GLFW_KEY_UP)) {
 			rot.x += 2.f * deltaTime;
+			change = true;
 		}
 		if (glfwGetKey(window, GLFW_KEY_DOWN)) {
 			rot.x -= 2.f * deltaTime;
+			change = true;
 		}
 		if (glfwGetKey(window, GLFW_KEY_LEFT)) {
 			rot.y -= 2.f * deltaTime;
+			change = true;
 		}
 		if (glfwGetKey(window, GLFW_KEY_RIGHT)) {
 			rot.y += 2.f * deltaTime;
+			change = true;
 		}
-		float pi = glm::half_pi<float>() - 0.01f;
 		if (rot.x > pi) {
 			rot.x = pi;
 		}
 		else if (rot.x < -pi) {
 			rot.x = -pi;
 		}
-		glm::quat rotf = glm::rotate(glm::quat(1.f, 0.f, 0.f, 0.f), rot.x, glm::vec3(1, 0, 0));
-		rotf = glm::rotate(rotf, rot.y, glm::vec3(0, 1, 0));
-		camTrans.SetRotation(rotf);
+		if (change) {
+			glm::quat rotf = glm::rotate(glm::quat(1.f, 0.f, 0.f, 0.f), rot.x, glm::vec3(1, 0, 0));
+			rotf = glm::rotate(rotf, rot.y, glm::vec3(0, 1, 0));
+			camTrans.SetRotation(rotf);
+			change = false;
+		}
 		/*glm::mat4 rotf = glm::rotate(glm::mat4(1.f), rot.x, glm::vec3(1, 0, 0));
 		rotf = glm::rotate(rotf, rot.y, glm::vec3(0, 1, 0));
 		camTrans.SetRotation(glm::mat3(rotf));*/
+
+		glm::vec3 pos2 = glm::vec3(0.f);
+		if (glfwGetKey(window, GLFW_KEY_I)) {
+			pos2.z += 5 * deltaTime;
+		}
+		if (glfwGetKey(window, GLFW_KEY_K)) {
+			pos2.z -= 5 * deltaTime;
+		}
+		if (glfwGetKey(window, GLFW_KEY_J)) {
+			pos2.x -= 5 * deltaTime;
+		}
+		if (glfwGetKey(window, GLFW_KEY_L)) {
+			pos2.x += 5 * deltaTime;
+		}
+		ECS::GetComponent<Transform>(Dio).SetPosition(
+			ECS::GetComponent<Transform>(Dio).GetPosition() + pos2);
 
 		glm::vec3 pos = glm::vec3(0.f);
 		if (glfwGetKey(window, GLFW_KEY_W)) {
@@ -78,10 +109,10 @@ int main() {
 			pos.z -= 5 * deltaTime;
 		}
 		if (glfwGetKey(window, GLFW_KEY_A)) {
-			pos.x += 5 * deltaTime;
+			pos.x -= 5 * deltaTime;
 		}
 		if (glfwGetKey(window, GLFW_KEY_D)) {
-			pos.x -= 5 * deltaTime;
+			pos.x += 5 * deltaTime;
 		}
 		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
 			pos.y -= 5 * deltaTime;
@@ -89,8 +120,10 @@ int main() {
 		if (glfwGetKey(window, GLFW_KEY_SPACE)) {
 			pos.y += 5 * deltaTime;
 		}
-		pos = glm::vec4(pos, 1) * glm::rotate(glm::mat4(1.f), rot.y, glm::vec3(0, 1, 0));
-		camTrans.SetPosition(camTrans.GetPosition() + pos);
+		if (pos.x != 0 || pos.y != 0 || pos.z != 0) {
+			pos = glm::vec4(pos, 1) * glm::rotate(glm::mat4(1.f), rot.y, glm::vec3(0, 1, 0));
+			camTrans.SetPosition(camTrans.GetPosition() + pos);
+		}
 
 
 		if (glfwGetKey(window, GLFW_KEY_P)) {

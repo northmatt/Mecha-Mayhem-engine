@@ -20,7 +20,7 @@ void Rendering::Update(entt::registry* reg)
 
             objView.get<ObjLoader>(entity).Draw(
                 cameraView.get<Camera>(cam), trans.GetModel(), trans.GetRotationM3(),
-                glm::vec3(1.f), cameraView.get<Transform>(cam).GetPosition());
+                glm::vec3(1.f), cameraView.get<Transform>(cam).GetPosition(), glm::vec3(3.f));
         }
     }
 }

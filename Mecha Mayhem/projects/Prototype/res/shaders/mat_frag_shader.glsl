@@ -34,9 +34,12 @@ void main() {
 	diffuse = diffuse / dist; // (dist*dist)
 
 	// Specular
+	//vec3 camDir = normalize(camPos - inPos);
+	//vec3 reflectDir = reflect(-lightDir, N);
+	//float spec = pow(max(dot(camDir, reflectDir), 0.0), inSpecStrength.y); // Shininess coefficient (can be a uniform)
 	vec3 camDir = normalize(camPos - inPos);
-	vec3 reflectDir = reflect(-lightDir, N);
-	float spec = pow(max(dot(camDir, reflectDir), 0.0), inSpecStrength.y); // Shininess coefficient (can be a uniform)
+	vec3 h = normalize(camDir + lightDir);
+	float spec = pow(max(dot(N, h), 0.0), inSpecStrength.y); // Shininess coefficient (can be a uniform)
 	vec3 specular = inSpecStrength.x * spec * lightColour; // Can also use a specular color
 
 	vec3 result = (ambient + diffuse + specular) * inColour;
