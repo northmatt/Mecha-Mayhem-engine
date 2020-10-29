@@ -31,7 +31,9 @@ static inline void trim(std::string& s) {
 
 Shader::sptr ObjLoader::m_shader = nullptr;
 Shader::sptr ObjLoader::m_matShader = nullptr;
+Shader::sptr ObjLoader::m_texShader = nullptr;
 std::vector<Models> ObjLoader::m_models = {};
+std::vector<Texture2D::sptr> ObjLoader::m_textures = {};
 
 
 struct Materials
@@ -58,6 +60,11 @@ void ObjLoader::Init()
 	m_matShader->LoadShaderPartFromFile("shaders/mat_frag_shader.glsl", GL_FRAGMENT_SHADER);
 	m_matShader->Link();
 
+	m_texShader = Shader::Create();
+	m_texShader->LoadShaderPartFromFile("shaders/tex_vertex_shader.glsl", GL_VERTEX_SHADER);
+	m_texShader->LoadShaderPartFromFile("shaders/tex_frag_shader.glsl", GL_FRAGMENT_SHADER);
+	m_texShader->Link();
+
 	m_shader = Shader::Create();
 	m_shader->LoadShaderPartFromFile("shaders/vertex_shader.glsl", GL_VERTEX_SHADER);
 	m_shader->LoadShaderPartFromFile("shaders/frag_shader.glsl", GL_FRAGMENT_SHADER);
@@ -70,6 +77,9 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 		if (m_models[count].fileName == fileName && m_models[count].mat == usingMaterial) {
 			m_index = count;
 			m_usingMaterial = usingMaterial;
+			if (m_usingTexture = m_models[count].text) {
+				m_texture = m_models[count].texture;
+			}
 			return;
 		}
 	}
@@ -86,6 +96,7 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	}
 
 	std::vector<Materials> materials;
+	bool usingTexture = false;
 
 	if (usingMaterial)
 	{
@@ -107,6 +118,19 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 			{
 				materials.push_back({ matLine.substr(7), glm::vec3(1.f), glm::vec2(1.f) });
 				matIndex = materials.size() - 1;
+			}
+			else if (matLine.substr(0, 6) == "map_Kd" && m_texture == INT_MAX)
+			{
+				Texture2DData::sptr tex = Texture2DData::LoadFromFile(matLine.substr(7));
+				m_texture = m_textures.size();
+				m_textures.push_back(Texture2D::Create());
+				m_textures[m_texture]->LoadData(tex);
+				m_textures[m_texture]->SetMagFilter(MagFilter::Linear);
+				m_textures[m_texture]->SetMinFilter(MinFilter::LinearMipNearest);
+
+				usingTexture = true;
+				m_models[ind].text = true;
+				m_models[ind].texture = m_texture;
 			}
 			else if (matLine.substr(0, 2) == "Ns")
 			{
@@ -184,7 +208,7 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 
 				vertex.push_back(pos);
 			}
-			else if (line[1] == 't')
+			else if (line[1] == 't' && usingTexture)
 			{
 				//UVs, we do care rn			vt xvalue yvalue
 				std::istringstream ss = std::istringstream(line.substr(2));
@@ -227,7 +251,7 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 					if (usingMaterial)
 						bufferColours.push_back(currentColour);
 				}
-				else if (i % 3 == 1)
+				else if (i % 3 == 1 && usingTexture)
 				{
 					//it's the UV index, we do care
 					bufferUV.push_back(index);
@@ -244,8 +268,10 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 
 				bufferVertex.push_back(bufferVertex[bufferVertex.size() - 3]);
 				bufferVertex.push_back(bufferVertex[bufferVertex.size() - 2]);
-				bufferUV.push_back(bufferUV[bufferUV.size() - 3]);
-				bufferUV.push_back(bufferUV[bufferUV.size() - 2]);
+				if (usingTexture) {
+					bufferUV.push_back(bufferUV[bufferUV.size() - 3]);
+					bufferUV.push_back(bufferUV[bufferUV.size() - 2]);
+				}
 				bufferNormals.push_back(bufferNormals[bufferNormals.size() - 3]);
 				bufferNormals.push_back(bufferNormals[bufferNormals.size() - 2]);
 				if (usingMaterial) {
@@ -269,7 +295,7 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 							bufferColours.push_back(currentColour);
 
 					}
-					else if (j == 1)
+					else if (j == 1 && usingTexture)
 					{
 						//it's the UV index, we do care
 						bufferUV.push_back(index);
@@ -301,7 +327,7 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 		{
 			//it's a new object, push_back the vao vector
 			m_models[ind].vao.push_back(VertexArrayObject::Create());
-
+			std::cout << line.substr(1) << '\n';
 			if (vectorIndex > 0)
 			{
 				/*size_t size = bufferVertex.size() * (usingMaterial ? 8 : 3) + bufferUV.size() * 2 + bufferNormals.size() * 3;
@@ -321,8 +347,10 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 						interleaved.push_back(materials[bufferColours[i]].specStrength.x);
 						interleaved.push_back(materials[bufferColours[i]].specStrength.y);
 					}
-					interleaved.push_back(UV[bufferUV[i]].x);
-					interleaved.push_back(UV[bufferUV[i]].y);
+					if (usingTexture) {
+						interleaved.push_back(UV[bufferUV[i]].x);
+						interleaved.push_back(UV[bufferUV[i]].y);
+					}
 					interleaved.push_back(normals[bufferNormals[i]].x);
 					interleaved.push_back(normals[bufferNormals[i]].y);
 					interleaved.push_back(normals[bufferNormals[i]].z);
@@ -332,7 +360,7 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 				interleaved_vbo->LoadData(interleaved.data(), interleaved.size());
 
 				//change this once UVs are added
-				if (usingMaterial) {
+				if (usingTexture) {
 					size_t stride = sizeof(float) * 13;
 					m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
 						BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
@@ -342,12 +370,20 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 						BufferAttribute(3, 3, GL_FLOAT, false, stride, sizeof(float) * 10)
 						});
 				}
-				else {
-					size_t stride = sizeof(float) * 8;
+				else if (usingMaterial) {
+					size_t stride = sizeof(float) * 11;
 					m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
 						BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
-						BufferAttribute(1, 2, GL_FLOAT, false, stride, sizeof(float) * 3),
-						BufferAttribute(2, 3, GL_FLOAT, false, stride, sizeof(float) * 5)
+						BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3),
+						BufferAttribute(3, 2, GL_FLOAT, false, stride, sizeof(float) * 6),
+						BufferAttribute(2, 3, GL_FLOAT, false, stride, sizeof(float) * 8)
+						});
+				}
+				else {
+					size_t stride = sizeof(float) * 6;
+					m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
+						BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
+						BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3)
 						});
 				}
 
@@ -379,8 +415,10 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 			interleaved.push_back(materials[bufferColours[i]].specStrength.x);
 			interleaved.push_back(materials[bufferColours[i]].specStrength.y);
 		}
-		interleaved.push_back(UV[bufferUV[i]].x);
-		interleaved.push_back(UV[bufferUV[i]].y);
+		if (usingTexture) {
+			interleaved.push_back(UV[bufferUV[i]].x);
+			interleaved.push_back(UV[bufferUV[i]].y);
+		}
 		interleaved.push_back(normals[bufferNormals[i]].x);
 		interleaved.push_back(normals[bufferNormals[i]].y);
 		interleaved.push_back(normals[bufferNormals[i]].z);
@@ -390,7 +428,7 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	interleaved_vbo->LoadData(interleaved.data(), interleaved.size());
 
 	//change this once UVs are added
-	if (usingMaterial) {
+	if (usingTexture) {
 		size_t stride = sizeof(float) * 13;
 		m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
 			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
@@ -400,29 +438,56 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 			BufferAttribute(3, 3, GL_FLOAT, false, stride, sizeof(float) * 10)
 			});
 	}
-	else {
-		size_t stride = sizeof(float) * 8;
+	else if (usingMaterial) {
+		size_t stride = sizeof(float) * 11;
 		m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
 			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
-			BufferAttribute(1, 2, GL_FLOAT, false, stride, sizeof(float) * 3),
-			BufferAttribute(2, 3, GL_FLOAT, false, stride, sizeof(float) * 5)
+			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3),
+			BufferAttribute(3, 2, GL_FLOAT, false, stride, sizeof(float) * 6),
+			BufferAttribute(2, 3, GL_FLOAT, false, stride, sizeof(float) * 8)
+			});
+	}
+	else {
+		size_t stride = sizeof(float) * 6;
+		m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
+			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
+			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3)
 			});
 	}
 
 	m_models[ind].verts.push_back(interleaved.size());
 
 	m_index = ind;
+	m_usingTexture = usingTexture;
 }
 
-void ObjLoader::Draw(Camera camera, glm::mat4 transform, glm::mat3 rotation, glm::vec3 colour,
+void ObjLoader::Draw(Camera camera, glm::mat4 model, glm::mat3 rotation, glm::vec3 colour,
 	glm::vec3 lightPos, glm::vec3 lightColour, float specularStrength, float shininess,
 	float ambientLightStrength, glm::vec3 ambientColour, float ambientStrength)
 {
 	//Draw
-	if (m_usingMaterial) {
+	if (m_usingTexture) {
+		m_texShader->Bind();
+		m_texShader->SetUniformMatrix("MVP", camera.GetViewProjection() * model);
+		m_texShader->SetUniformMatrix("transform", model);
+		m_texShader->SetUniformMatrix("rotation", rotation);
+		m_texShader->SetUniform("camPos", camera.GetPosition());
+		
+		m_texShader->SetUniform("lightPos", lightPos);
+		m_texShader->SetUniform("lightColour", lightColour);
+		
+		m_texShader->SetUniform("ambientLightStrength", ambientLightStrength);
+		m_texShader->SetUniform("ambientColour", ambientColour);
+		m_texShader->SetUniform("ambientStrength", ambientStrength);
+
+		m_texShader->SetUniform("s_texture", 0);
+
+		m_textures[m_texture]->Bind(0);
+	}
+	else if (m_usingMaterial) {
 		m_matShader->Bind();
-		m_matShader->SetUniformMatrix("MVP", camera.GetViewProjection() * transform);
-		m_matShader->SetUniformMatrix("transform", transform);
+		m_matShader->SetUniformMatrix("MVP", camera.GetViewProjection() * model);
+		m_matShader->SetUniformMatrix("transform", model);
 		m_matShader->SetUniformMatrix("rotation", rotation);
 		m_matShader->SetUniform("camPos", camera.GetPosition());
 
@@ -435,8 +500,8 @@ void ObjLoader::Draw(Camera camera, glm::mat4 transform, glm::mat3 rotation, glm
 	}
 	else {
 		m_shader->Bind();
-		m_shader->SetUniformMatrix("MVP", camera.GetViewProjection() * transform);
-		m_shader->SetUniformMatrix("transform", transform);
+		m_shader->SetUniformMatrix("MVP", camera.GetViewProjection() * model);
+		m_shader->SetUniformMatrix("transform", model);
 		m_shader->SetUniformMatrix("rotation", rotation);
 		m_shader->SetUniform("camPos", camera.GetPosition());
 

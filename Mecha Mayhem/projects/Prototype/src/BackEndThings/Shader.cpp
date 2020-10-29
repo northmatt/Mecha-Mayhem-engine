@@ -123,53 +123,35 @@ void Shader::UnBind() {
 	glUseProgram(0);
 }
 
-void Shader::SetUniformMatrix(int location, const glm::mat3* value, int count, bool transposed)
-{
+void Shader::SetUniformMatrix(int location, const glm::mat3* value, int count, bool transposed) {
 	glProgramUniformMatrix3fv(_handle, location, count, transposed, glm::value_ptr(*value));
 }
-
-void Shader::SetUniformMatrix(int location, const glm::mat4* value, int count, bool transposed)
-{
+void Shader::SetUniformMatrix(int location, const glm::mat4* value, int count, bool transposed) {
 	glProgramUniformMatrix4fv(_handle, location, count, transposed, glm::value_ptr(*value));
 }
-
-void Shader::SetUniform(int location, const float* value, int count)
-{
+void Shader::SetUniform(int location, const float* value, int count) {
 	glProgramUniform1fv(_handle, location, count, value);
 }
-
-void Shader::SetUniform(int location, const glm::vec2* value, int count)
-{
+void Shader::SetUniform(int location, const glm::vec2* value, int count) {
 	glProgramUniform2fv(_handle, location, count, glm::value_ptr(*value));
 }
-
-void Shader::SetUniform(int location, const glm::vec3* value, int count)
-{
+void Shader::SetUniform(int location, const glm::vec3* value, int count) {
 	glProgramUniform3fv(_handle, location, count, glm::value_ptr(*value));
 }
-
-void Shader::SetUniform(int location, const glm::vec4* value, int count)
-{
+void Shader::SetUniform(int location, const glm::vec4* value, int count) {
 	glProgramUniform4fv(_handle, location, count, glm::value_ptr(*value));
 }
 
-void Shader::SetUniform(int location, const int* value, int count)
-{
+void Shader::SetUniform(int location, const int* value, int count) {
 	glProgramUniform1iv(_handle, location, count, value);
 }
-
-void Shader::SetUniform(int location, const glm::ivec2* value, int count)
-{
+void Shader::SetUniform(int location, const glm::ivec2* value, int count) {
 	glProgramUniform2iv(_handle, location, count, glm::value_ptr(*value));
 }
-
-void Shader::SetUniform(int location, const glm::ivec3* value, int count)
-{
+void Shader::SetUniform(int location, const glm::ivec3* value, int count) {
 	glProgramUniform3iv(_handle, location, count, glm::value_ptr(*value));
 }
-
-void Shader::SetUniform(int location, const glm::ivec4* value, int count)
-{
+void Shader::SetUniform(int location, const glm::ivec4* value, int count) {
 	glProgramUniform4iv(_handle, location, count, glm::value_ptr(*value));
 }
 
@@ -199,6 +181,10 @@ int Shader::__GetUniformLocation(const std::string& name) {
 	if (it == _uniformLocs.end()) {
 		result = glGetUniformLocation(_handle, name.c_str());
 		_uniformLocs[name] = result;
+
+		if (result == -1) {
+			LOG_WARN("Ignoring uniform \"{}\"", name);
+		}
 	}
 	// Otherwise, we had a value in the map, return it
 	else {

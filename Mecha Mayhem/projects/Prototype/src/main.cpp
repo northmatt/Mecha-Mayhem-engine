@@ -16,7 +16,7 @@ int main() {
 	
 	unsigned cameraEnt = ECS::CreateEntity();
 	ECS::AttachComponent<Camera>(cameraEnt);
-
+	
 	unsigned Dio = ECS::CreateEntity();
 	ECS::AttachComponent<ObjLoader>(Dio, ObjLoader("Char.obj", true));
 	ECS::GetComponent<Transform>(Dio).SetPosition(glm::vec3(0, 30, 0));
@@ -42,7 +42,8 @@ int main() {
 
 	float lastClock = glfwGetTime();
 
-	const float pi = glm::half_pi<float>() - 0.01f;
+	constexpr float pi = glm::half_pi<float>() - 0.01f;
+	glm::quat startQuat = glm::rotation(glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
 	bool change = true;
 	glm::vec2 rot = glm::vec2(0.f);
 	while (!glfwWindowShouldClose(window)) {
@@ -50,8 +51,6 @@ int main() {
 
 		float deltaTime = glfwGetTime() - lastClock;
 		lastClock = glfwGetTime();
-
-		printf("\r%f", 1.f / deltaTime);
 
 		if (glfwGetKey(window, GLFW_KEY_UP)) {
 			rot.x += 2.f * deltaTime;
@@ -76,7 +75,7 @@ int main() {
 			rot.x = -pi;
 		}
 		if (change) {
-			glm::quat rotf = glm::rotate(glm::quat(1.f, 0.f, 0.f, 0.f), rot.x, glm::vec3(1, 0, 0));
+			glm::quat rotf = glm::rotate(startQuat, rot.x, glm::vec3(1, 0, 0));
 			rotf = glm::rotate(rotf, rot.y, glm::vec3(0, 1, 0));
 			camTrans.SetRotation(rotf);
 			change = false;
@@ -109,10 +108,10 @@ int main() {
 			pos.z -= 5 * deltaTime;
 		}
 		if (glfwGetKey(window, GLFW_KEY_A)) {
-			pos.x -= 5 * deltaTime;
+			pos.x += 5 * deltaTime;
 		}
 		if (glfwGetKey(window, GLFW_KEY_D)) {
-			pos.x += 5 * deltaTime;
+			pos.x -= 5 * deltaTime;
 		}
 		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
 			pos.y -= 5 * deltaTime;
@@ -123,6 +122,7 @@ int main() {
 		if (pos.x != 0 || pos.y != 0 || pos.z != 0) {
 			pos = glm::vec4(pos, 1) * glm::rotate(glm::mat4(1.f), rot.y, glm::vec3(0, 1, 0));
 			camTrans.SetPosition(camTrans.GetPosition() + pos);
+			std::cout << camTrans.GetPosition().x << ", " << camTrans.GetPosition().y << ", " << camTrans.GetPosition().z << '\r';
 		}
 
 

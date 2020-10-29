@@ -37,7 +37,7 @@ void Camera::LookAt(const glm::vec3& point) {
 
 void Camera::SetRotation(const glm::quat& rotation)
 {
-	_normal = glm::vec3(glm::vec4(0, 0, 1, 1) * rotation);
+	_normal = glm::vec3(glm::vec4(_up, 1) * rotation);
 	__CalculateView();
 }
 

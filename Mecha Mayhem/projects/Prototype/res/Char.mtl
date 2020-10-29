@@ -50,15 +50,15 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 3
-map_Kd Diorama Texture.png
+map_Kd DioramaTexture.png
 
 newmtl Texture_flat
-Ns 87.062108
+Ns 100000000
 Ka 0.283465 0.283465 0.283465
 Kd 0.800000 0.800000 0.800000
-Ks 0.271654 0.271654 0.271654
+Ks 0 0 0
 Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 3
-map_Kd Diorama Texture.png
+map_Kd DioramaTexture.png
