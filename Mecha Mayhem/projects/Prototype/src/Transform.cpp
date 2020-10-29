@@ -7,7 +7,7 @@ Transform::Transform()
 
 glm::mat4 Transform::GetModel()
 {
-	glm::mat4 Model = glm::translate(glm::mat4(1.f), glm::vec3(-m_position.x, m_position.y, m_position.z));
+	glm::mat4 Model = glm::translate(glm::mat4(1.f), m_position);
 	Model *= glm::toMat4(m_rotation);
 	Model = glm::scale(Model, m_scale);
 

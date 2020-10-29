@@ -2,7 +2,7 @@
 
 void Rendering::Update(entt::registry* reg)
 {
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    glClearColor(BackColour.x, BackColour.y, BackColour.z, BackColour.w);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     auto objView = reg->view<ObjLoader, Transform>();

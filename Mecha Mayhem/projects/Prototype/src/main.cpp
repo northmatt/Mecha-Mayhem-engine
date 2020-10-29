@@ -92,10 +92,10 @@ int main() {
 			pos2.z -= 5 * deltaTime;
 		}
 		if (glfwGetKey(window, GLFW_KEY_J)) {
-			pos2.x -= 5 * deltaTime;
+			pos2.x += 5 * deltaTime;
 		}
 		if (glfwGetKey(window, GLFW_KEY_L)) {
-			pos2.x += 5 * deltaTime;
+			pos2.x -= 5 * deltaTime;
 		}
 		ECS::GetComponent<Transform>(Dio).SetPosition(
 			ECS::GetComponent<Transform>(Dio).GetPosition() + pos2);
