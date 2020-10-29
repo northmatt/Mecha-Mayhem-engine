@@ -32,10 +32,10 @@ int main() {
 
 		auto& trans = ECS::GetComponent<Transform>(someObjs[count]);
 
-		trans.SetPosition(glm::vec3(rand() % 20 - 10, rand() % 20 - 10, rand() % 20 - 10));
+		trans.SetPosition(glm::vec3(rand() % 21 - 10, rand() % 21 - 10, rand() % 21 - 10));
 		trans.SetScale(glm::vec3((rand() % 8 + 3) / 10.f));
 		glm::vec3 axis = glm::vec3(rand() % 2, rand() % 2, rand() % 2 + 1);
-		trans.SetRotation(glm::rotate(glm::quat(1.f, 0, 0, 0), float(rand() % 7 - 3), axis));
+		trans.SetRotation(glm::rotate(glm::quat(1.f, 0, 0, 0), float(rand() % 8 - 3), axis));
 	}
 
 	auto& camTrans = ECS::GetComponent<Transform>(cameraEnt);
@@ -51,6 +51,8 @@ int main() {
 
 		float deltaTime = glfwGetTime() - lastClock;
 		lastClock = glfwGetTime();
+
+		/// Start of loop
 
 		if (glfwGetKey(window, GLFW_KEY_UP)) {
 			rot.x += 2.f * deltaTime;
@@ -122,18 +124,19 @@ int main() {
 		if (pos.x != 0 || pos.y != 0 || pos.z != 0) {
 			pos = glm::vec4(pos, 1) * glm::rotate(glm::mat4(1.f), rot.y, glm::vec3(0, 1, 0));
 			camTrans.SetPosition(camTrans.GetPosition() + pos);
-			std::cout << camTrans.GetPosition().x << ", " << camTrans.GetPosition().y << ", " << camTrans.GetPosition().z << '\r';
 		}
 
 
 		if (glfwGetKey(window, GLFW_KEY_P)) {
 			for (int count(0); count < amt; ++count) {
 				ECS::GetComponent<Transform>(someObjs[count]).SetPosition(
-					glm::vec3(rand() % 20 - 10, rand() % 20 - 10, rand() % 20 - 10));
+					glm::vec3(rand() % 21 - 10, rand() % 21 - 10, rand() % 21 - 10));
 				ECS::GetComponent<Transform>(someObjs[count]).SetScale(
 					glm::vec3((rand() % 8 + 3) / 10.f));
 			}
 		}
+
+		/// End of loop
 
 		Rendering::Update(&reg);
 
