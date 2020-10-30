@@ -121,7 +121,7 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 			}
 			else if (matLine.substr(0, 6) == "map_Kd" && m_texture == INT_MAX)
 			{
-				Texture2DData::sptr tex = Texture2DData::LoadFromFile(matLine.substr(7));
+				Texture2DData::sptr tex = Texture2DData::LoadFromFile("textures/" + matLine.substr(7));
 				m_texture = m_textures.size();
 				m_textures.push_back(Texture2D::Create());
 				m_textures[m_texture]->LoadData(tex);
