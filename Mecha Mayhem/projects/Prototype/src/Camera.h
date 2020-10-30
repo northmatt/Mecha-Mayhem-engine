@@ -62,10 +62,10 @@ public:
 	Camera* SetFovDegrees(float value);
 
 	///set the ortho height
-	Camera* SetOrtho(float size) { _halfHeight = size / 2.f; __CalculateProjection(); }
+	Camera* SetOrtho(float size) { _halfHeight = size / 2.f; __CalculateProjection(); return this; }
 
 	///set the AspectRatio
-	Camera* SetAspect(float value) { _aspectRatio = value; __CalculateProjection(); }
+	Camera* SetAspect(float value) { _aspectRatio = value; __CalculateProjection(); return this; }
 
 	///switches the camera between Orthographic and perspective
 	///use CAMERA_ORTHO (0) and CAMERA_PERSPECTIVE (1)
