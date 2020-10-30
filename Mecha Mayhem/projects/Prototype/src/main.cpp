@@ -25,6 +25,7 @@ int main() {
 	unsigned cameraEnt = ECS::CreateEntity();
 	auto& camCam = ECS::AttachComponent<Camera>(cameraEnt);
 	camCam.SetFovDegrees(60.f);
+	camCam.ChangePerspective(CAMERA_ORTHO);
 	
 	unsigned Dio = ECS::CreateEntity();
 	ECS::AttachComponent<ObjLoader>(Dio, ObjLoader("Char.obj", true));
