@@ -26,9 +26,10 @@ int main() {
 	auto& camCam = ECS::AttachComponent<Camera>(cameraEnt);
 	camCam.SetFovDegrees(60.f);
 	camCam.ChangePerspective(CAMERA_ORTHO);
+	camCam.SetOrtho(20);
 	
 	unsigned Dio = ECS::CreateEntity();
-	ECS::AttachComponent<ObjLoader>(Dio, ObjLoader("Char.obj", true));
+	ECS::AttachComponent<ObjLoader>(Dio).LoadMesh("models/Char.obj", true);
 	ECS::GetComponent<Transform>(Dio).SetPosition(glm::vec3(0, 30, 0));
 
 
@@ -38,7 +39,7 @@ int main() {
 
 	for (int count(0); count < amt; ++count) {
 		someObjs.push_back(ECS::CreateEntity());
-		ECS::AttachComponent<ObjLoader>(someObjs[count], ObjLoader("blade.obj", count % 2));
+		ECS::AttachComponent<ObjLoader>(someObjs[count]).LoadMesh("models/blade.obj", count % 2);
 
 		auto& trans = ECS::GetComponent<Transform>(someObjs[count]);
 
