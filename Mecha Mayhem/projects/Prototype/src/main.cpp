@@ -20,6 +20,8 @@ int main() {
 
 	ECS::AttachRegistry(&reg);
 	
+	/// Creating Entities
+
 	unsigned cameraEnt = ECS::CreateEntity();
 	auto& camCam = ECS::AttachComponent<Camera>(cameraEnt);
 	camCam.SetFovDegrees(60.f);
@@ -39,13 +41,15 @@ int main() {
 
 		auto& trans = ECS::GetComponent<Transform>(someObjs[count]);
 
-		trans.SetPosition(glm::vec3(rand() % 21 - 10, rand() % 21 - 10, rand() % 21 - 10));
-		trans.SetScale(glm::vec3((rand() % 8 + 3) / 10.f));
 		glm::vec3 axis = glm::vec3(rand() % 2, rand() % 2, rand() % 2 + 1);
-		trans.SetRotation(glm::rotate(glm::quat(1.f, 0, 0, 0), float(rand() % 8 - 3), axis));
+		trans.SetPosition(glm::vec3(rand() % 21 - 10, rand() % 21 - 10, rand() % 21 - 10))
+			->SetScale(glm::vec3((rand() % 8 + 3) / 10.f))
+			->SetRotation(glm::rotate(glm::quat(1.f, 0, 0, 0), float(rand() % 8 - 3), axis));
 	}
 
 	auto& camTrans = ECS::GetComponent<Transform>(cameraEnt);
+
+	/// End of creating entities
 
 	float lastClock = glfwGetTime();
 
@@ -140,9 +144,8 @@ int main() {
 		if (glfwGetKey(window, GLFW_KEY_P)) {
 			for (int count(0); count < amt; ++count) {
 				ECS::GetComponent<Transform>(someObjs[count]).SetPosition(
-					glm::vec3(rand() % 21 - 10, rand() % 21 - 10, rand() % 21 - 10));
-				ECS::GetComponent<Transform>(someObjs[count]).SetScale(
-					glm::vec3((rand() % 8 + 3) / 10.f));
+					glm::vec3(rand() % 21 - 10, rand() % 21 - 10, rand() % 21 - 10))
+					->SetScale(glm::vec3((rand() % 8 + 3) / 10.f));
 			}
 		}
 
