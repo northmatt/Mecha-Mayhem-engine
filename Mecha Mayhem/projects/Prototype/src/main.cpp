@@ -148,6 +148,8 @@ int main() {
 					glm::vec3(rand() % 21 - 10, rand() % 21 - 10, rand() % 21 - 10))
 					->SetScale(glm::vec3((rand() % 8 + 3) / 10.f));
 			}
+			Rendering::DefaultColour = glm::vec3((rand() % 10) / 10.f, (rand() % 10) / 10.f, (rand() % 10) / 10.f);
+			Rendering::LightColour = glm::vec3((rand() % 30) / 10.f, (rand() % 30) / 10.f, (rand() % 30) / 10.f);
 		}
 
 		/// End of loop
