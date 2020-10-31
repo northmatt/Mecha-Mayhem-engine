@@ -25,8 +25,6 @@ int main() {
 	unsigned cameraEnt = ECS::CreateEntity();
 	auto& camCam = ECS::AttachComponent<Camera>(cameraEnt);
 	camCam.SetFovDegrees(60.f);
-	camCam.ChangePerspective(CAMERA_ORTHO);
-	camCam.SetOrtho(20);
 	
 	unsigned Dio = ECS::CreateEntity();
 	ECS::AttachComponent<ObjLoader>(Dio).LoadMesh("models/Char.obj", true);
@@ -59,6 +57,7 @@ int main() {
 	glm::quat startQuat = glm::rotation(glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
 	bool change = true;
 	glm::vec2 rot = glm::vec2(0.f);
+
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
@@ -144,7 +143,7 @@ int main() {
 
 
 		if (glfwGetKey(window, GLFW_KEY_P)) {
-			for (int count(0); count < amt; ++count) {
+			for (int count(0); count < someObjs.size(); ++count) {
 				ECS::GetComponent<Transform>(someObjs[count]).SetPosition(
 					glm::vec3(rand() % 21 - 10, rand() % 21 - 10, rand() % 21 - 10))
 					->SetScale(glm::vec3((rand() % 8 + 3) / 10.f));
