@@ -43,7 +43,7 @@ public:
 
 	static void Init();
 
-	void LoadMesh(const std::string& fileName, bool usingMaterial = false);
+	ObjLoader& LoadMesh(const std::string& fileName, bool usingMaterial = false);
 
 	void Draw(Camera camera, glm::mat4 model, glm::mat3 rotation, glm::vec3 colour,
 		glm::vec3 lightPos, glm::vec3 lightColour = glm::vec3(1.f), float specularStrength = 1.f, float shininess = 4,

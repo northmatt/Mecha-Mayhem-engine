@@ -71,7 +71,7 @@ void ObjLoader::Init()
 	m_shader->Link();
 }
 
-void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
+ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 {
 	for (int count(0); count < m_models.size(); ++count) {
 		if (m_models[count].fileName == fileName && m_models[count].mat == usingMaterial) {
@@ -80,7 +80,7 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 			if (m_usingTexture = m_models[count].text) {
 				m_texture = m_models[count].texture;
 			}
-			return;
+			return *this;
 		}
 	}
 
@@ -469,6 +469,8 @@ void ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 
 	m_index = ind;
 	m_usingTexture = usingTexture;
+
+	return *this;
 }
 
 void ObjLoader::Draw(Camera camera, glm::mat4 model, glm::mat3 rotation, glm::vec3 colour,

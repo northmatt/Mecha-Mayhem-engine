@@ -14,10 +14,10 @@ glm::mat4 Transform::GetModel()
 	return Model;
 }
 
-Transform* Transform::SetPosition(const glm::vec3& pos)
+Transform& Transform::SetPosition(const glm::vec3& pos)
 {
 	m_position = pos;
-	return this;
+	return *this;
 }
 
 glm::vec3 Transform::GetPosition()
@@ -25,10 +25,10 @@ glm::vec3 Transform::GetPosition()
 	return m_position;
 }
 
-Transform* Transform::SetScale(const glm::vec3& scale)
+Transform& Transform::SetScale(const glm::vec3& scale)
 {
 	m_scale = scale;
-	return this;
+	return *this;
 }
 
 glm::vec3 Transform::GetScale()
@@ -36,16 +36,16 @@ glm::vec3 Transform::GetScale()
 	return m_scale;
 }
 
-Transform* Transform::SetRotation(const glm::mat3& rot)
+Transform& Transform::SetRotation(const glm::mat3& rot)
 {
 	m_rotation = rot;
-	return this;
+	return *this;
 }
 
-Transform* Transform::SetRotation(const glm::quat& rot)
+Transform& Transform::SetRotation(const glm::quat& rot)
 {
 	m_rotation = rot;
-	return this;
+	return *this;
 }
 
 glm::quat Transform::GetRotation()

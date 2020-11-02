@@ -42,9 +42,9 @@ int main() {
 		auto& trans = ECS::GetComponent<Transform>(someObjs[count]);
 
 		glm::vec3 axis = glm::vec3(rand() % 2, rand() % 2, rand() % 2 + 1);
-		trans.SetPosition(glm::vec3(rand() % 21 - 10, rand() % 21 - 10, rand() % 21 - 10))
-			->SetScale(glm::vec3((rand() % 8 + 3) / 10.f))
-			->SetRotation(glm::rotate(glm::quat(1.f, 0, 0, 0), float(rand() % 8 - 3), axis));
+		trans.SetPosition(glm::vec3(rand() % 21 - 10, rand() % 21 - 10, rand() % 21 - 10)).
+			SetScale(glm::vec3((rand() % 8 + 3) / 10.f)).
+			SetRotation(glm::rotate(glm::quat(1.f, 0, 0, 0), float(rand() % 8 - 3), axis));
 	}
 
 	auto& camTrans = ECS::GetComponent<Transform>(cameraEnt);
@@ -145,8 +145,8 @@ int main() {
 		if (glfwGetKey(window, GLFW_KEY_P)) {
 			for (int count(0); count < someObjs.size(); ++count) {
 				ECS::GetComponent<Transform>(someObjs[count]).SetPosition(
-					glm::vec3(rand() % 21 - 10, rand() % 21 - 10, rand() % 21 - 10))
-					->SetScale(glm::vec3((rand() % 8 + 3) / 10.f));
+					glm::vec3(rand() % 21 - 10, rand() % 21 - 10, rand() % 21 - 10)).
+					SetScale(glm::vec3((rand() % 8 + 3) / 10.f));
 			}
 			Rendering::DefaultColour = glm::vec3((rand() % 10) / 10.f, (rand() % 10) / 10.f, (rand() % 10) / 10.f);
 			Rendering::LightColour = glm::vec3((rand() % 30) / 10.f, (rand() % 30) / 10.f, (rand() % 30) / 10.f);
