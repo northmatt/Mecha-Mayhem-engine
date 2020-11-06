@@ -1,4 +1,4 @@
-#include "BackEndThings/Rendering.h"
+#include "Engine/Rendering.h"
 
 GLFWwindow* window;
 
@@ -6,13 +6,9 @@ int main() {
 	srand(time(0));
 	Logger::Init(); // We'll borrow the logger from the toolkit, but we need to initialize it
 
-	if (!(window = BackEnd::Init("Mecha Mayhem")))	return 1;
+	int width = 1280, height = 720;
 
-	int width = 720, height = 480;
-
-	glfwSetWindowSize(window, width, height);
-	//glfwGetWindowSize(window, &width, &height);
-	//if (height + width == 0)	return 1;
+	if (!(window = BackEnd::Init("Mecha Mayhem", width, height)))	return 1;
 
 	ObjLoader::Init();
 
@@ -24,12 +20,24 @@ int main() {
 
 	unsigned cameraEnt = ECS::CreateEntity();
 	auto& camCam = ECS::AttachComponent<Camera>(cameraEnt);
-	camCam.SetFovDegrees(60.f);
+	camCam.SetFovDegrees(60.f).SetAspect(float(width) / height);
 	
 	unsigned Dio = ECS::CreateEntity();
 	ECS::AttachComponent<ObjLoader>(Dio).LoadMesh("models/Char.obj", true);
 	ECS::GetComponent<Transform>(Dio).SetPosition(glm::vec3(0, 30, 0));
 
+	unsigned Dio2 = ECS::CreateEntity();
+	ECS::AttachComponent<ObjLoader>(Dio2).LoadMesh("models/Char.obj", true);
+	ECS::GetComponent<Transform>(Dio2).SetPosition(glm::vec3(0, 10, 0)).ChildTo(Dio);
+
+	unsigned Dio3 = ECS::CreateEntity();
+	ECS::AttachComponent<ObjLoader>(Dio3).LoadMesh("models/Pistol.obj", true);
+	ECS::GetComponent<Transform>(Dio3).SetPosition(glm::vec3(0, -20, 0)).ChildTo(Dio2);
+	{
+		unsigned entity = ECS::CreateEntity();
+		auto& temp = ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/cringe.obj", true);
+		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, -20, 0));
+	}
 
 	std::vector<unsigned> someObjs = {};
 
@@ -58,16 +66,25 @@ int main() {
 	bool change = true;
 	glm::vec2 rot = glm::vec2(0.f);
 
+	bool buttonPressed = false;
+	bool screen = true;
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
 		float deltaTime = glfwGetTime() - lastClock;
 		lastClock = glfwGetTime();
+		std::cout << 1.f / deltaTime << '\r';
 
-		/// Start of loop
-		glfwGetWindowSize(window, &width, &height);
-		camCam.SetAspect(float(width) / height);
-
+		if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
+			if (!buttonPressed) {
+				buttonPressed = true;
+				if (screen = !screen)
+					BackEnd::SetTabbed(width, height);
+				else
+					BackEnd::SetFullscreen();
+			}
+		}
+		else buttonPressed = false;
 
 		if (glfwGetKey(window, GLFW_KEY_UP)) {
 			rot.x += 2.f * deltaTime;
@@ -116,6 +133,10 @@ int main() {
 		}
 		ECS::GetComponent<Transform>(Dio).SetPosition(
 			ECS::GetComponent<Transform>(Dio).GetPosition() + pos2);
+		ECS::GetComponent<Transform>(Dio2).SetPosition(
+			ECS::GetComponent<Transform>(Dio2).GetPosition() + pos2);
+		ECS::GetComponent<Transform>(Dio3).SetPosition(
+			ECS::GetComponent<Transform>(Dio3).GetPosition() + pos2);
 
 		glm::vec3 pos = glm::vec3(0.f);
 		if (glfwGetKey(window, GLFW_KEY_W)) {

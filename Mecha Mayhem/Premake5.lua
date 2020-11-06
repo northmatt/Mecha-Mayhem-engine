@@ -91,6 +91,7 @@ ProjIncludes = {
 	"dependencies/gzip",
 	"dependencies/tinyGLTF",
 	"dependencies/json",
+	"dependencies/bullet3",
 }
 
 -- These are all the default dependencies that require linking
