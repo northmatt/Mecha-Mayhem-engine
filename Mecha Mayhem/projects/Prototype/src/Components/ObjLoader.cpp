@@ -29,6 +29,9 @@ static inline void trim(std::string& s) {
 
 #pragma endregion 
 
+std::vector<DrawData> ObjLoader::m_matQueue = {};
+std::vector<DrawData> ObjLoader::m_texQueue = {};
+std::vector<DrawData> ObjLoader::m_defaultQueue = {};
 Shader::sptr ObjLoader::m_shader = nullptr;
 Shader::sptr ObjLoader::m_matShader = nullptr;
 Shader::sptr ObjLoader::m_texShader = nullptr;
@@ -50,25 +53,6 @@ ObjLoader::ObjLoader(const std::string& fileName, bool usingMaterial)
 
 ObjLoader::~ObjLoader()
 {
-
-}
-
-void ObjLoader::Init()
-{
-	m_matShader = Shader::Create();
-	m_matShader->LoadShaderPartFromFile("shaders/mat_vertex_shader.glsl", GL_VERTEX_SHADER);
-	m_matShader->LoadShaderPartFromFile("shaders/mat_frag_shader.glsl", GL_FRAGMENT_SHADER);
-	m_matShader->Link();
-
-	m_texShader = Shader::Create();
-	m_texShader->LoadShaderPartFromFile("shaders/tex_vertex_shader.glsl", GL_VERTEX_SHADER);
-	m_texShader->LoadShaderPartFromFile("shaders/tex_frag_shader.glsl", GL_FRAGMENT_SHADER);
-	m_texShader->Link();
-
-	m_shader = Shader::Create();
-	m_shader->LoadShaderPartFromFile("shaders/vertex_shader.glsl", GL_VERTEX_SHADER);
-	m_shader->LoadShaderPartFromFile("shaders/frag_shader.glsl", GL_FRAGMENT_SHADER);
-	m_shader->Link();
 }
 
 ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
@@ -215,7 +199,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	// stringStream was learnt throught the NotObjLoader, thank you Shawn once again
 	std::string line;
 	glm::size_t currentColour = 0;
-	size_t vectorIndex = 0;
+	//size_t vectorIndex = 0;
 
 	bool noDraw = false;
 	while (std::getline(file, line))
@@ -351,7 +335,8 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 		}
 		else if (line[0] == 'o')
 		{
-			//it's a new object, push_back the vao vector
+			//it's a new object, push_back the vao vector < dropped
+			/*
 			m_models[ind].vao.push_back(VertexArrayObject::Create());
 			std::cout << line.substr(1) << '\n';
 			if (vectorIndex > 0)
@@ -359,7 +344,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 				/*size_t size = bufferVertex.size() * (usingMaterial ? 8 : 3) + bufferUV.size() * 2 + bufferNormals.size() * 3;
 				float* interleaved = new float[size];
 				size_t currentIndex = 0;*/
-
+			/*
 				std::vector<float> interleaved;
 
 				for (size_t i = 0; i < bufferVertex.size(); ++i) {
@@ -418,7 +403,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 				//delete[] interleaved;
 
 			}
-			++vectorIndex;
+			++vectorIndex;*/
 		}
 		else if (line[0] == '#')
 		{
@@ -456,7 +441,8 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	//change this once UVs are added
 	if (usingTexture) {
 		size_t stride = sizeof(float) * 13;
-		m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
+		//m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
+		m_models[ind].vao->AddVertexBuffer(interleaved_vbo, {
 			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
 			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3),
 			BufferAttribute(4, 2, GL_FLOAT, false, stride, sizeof(float) * 6),
@@ -466,7 +452,8 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	}
 	else if (usingMaterial) {
 		size_t stride = sizeof(float) * 11;
-		m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
+		//m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
+		m_models[ind].vao->AddVertexBuffer(interleaved_vbo, {
 			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
 			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3),
 			BufferAttribute(3, 2, GL_FLOAT, false, stride, sizeof(float) * 6),
@@ -475,13 +462,15 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	}
 	else {
 		size_t stride = sizeof(float) * 6;
-		m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
+		//m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
+		m_models[ind].vao->AddVertexBuffer(interleaved_vbo, {
 			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
 			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3)
 			});
 	}
 
-	m_models[ind].verts.push_back(interleaved.size());
+	//m_models[ind].verts.push_back(interleaved.size());
+	m_models[ind].verts = interleaved.size();
 
 	m_index = ind;
 	m_usingTexture = usingTexture;
@@ -489,48 +478,94 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	return *this;
 }
 
-void ObjLoader::Draw(Camera camera, glm::mat4 model, glm::mat3 rotation, glm::vec3 colour,
-	glm::vec3 lightPos, glm::vec3 lightColour, float specularStrength, float shininess,
-	float ambientLightStrength, glm::vec3 ambientColour, float ambientStrength)
+void ObjLoader::Init()
 {
-	//Draw
+	m_matShader = Shader::Create();
+	m_matShader->LoadShaderPartFromFile("shaders/mat_vertex_shader.glsl", GL_VERTEX_SHADER);
+	m_matShader->LoadShaderPartFromFile("shaders/mat_frag_shader.glsl", GL_FRAGMENT_SHADER);
+	m_matShader->Link();
+
+	m_texShader = Shader::Create();
+	m_texShader->LoadShaderPartFromFile("shaders/tex_vertex_shader.glsl", GL_VERTEX_SHADER);
+	m_texShader->LoadShaderPartFromFile("shaders/tex_frag_shader.glsl", GL_FRAGMENT_SHADER);
+	m_texShader->Link();
+
+	m_shader = Shader::Create();
+	m_shader->LoadShaderPartFromFile("shaders/vertex_shader.glsl", GL_VERTEX_SHADER);
+	m_shader->LoadShaderPartFromFile("shaders/frag_shader.glsl", GL_FRAGMENT_SHADER);
+	m_shader->Link();
+
+	m_matQueue.clear();
+	m_texQueue.clear();
+	m_defaultQueue.clear();
+}
+
+void ObjLoader::Unload()
+{
+	for (int i(0); i < m_textures.size(); ++i) {
+		m_textures[i].texture = nullptr;
+	}
+	for (int i(0); i < m_models.size(); ++i) {
+		m_models[i].vao = nullptr;
+	}
+	m_shader = nullptr;
+	m_matShader = nullptr;
+	m_texShader = nullptr;
+}
+
+void ObjLoader::BeginDraw()
+{
+	m_matQueue.clear();
+	m_texQueue.clear();
+	m_defaultQueue.clear();
+}
+
+void ObjLoader::Draw(unsigned entity, glm::mat4 model, glm::mat3 rotation)
+{
+	//Draw comments are for future improvments
 	if (m_usingTexture) {
-		m_texShader->Bind();
-		m_texShader->SetUniformMatrix("MVP", camera.GetViewProjection() * model);
-		m_texShader->SetUniformMatrix("transform", model);
-		m_texShader->SetUniformMatrix("rotation", rotation);
-		m_texShader->SetUniform("camPos", camera.GetPosition());
-		
-		m_texShader->SetUniform("lightPos", lightPos);
-		m_texShader->SetUniform("lightColour", lightColour);
-		
-		m_texShader->SetUniform("ambientLightStrength", ambientLightStrength);
-		m_texShader->SetUniform("ambientColour", ambientColour);
-		m_texShader->SetUniform("ambientStrength", ambientStrength);
-
-		m_texShader->SetUniform("s_texture", 0);
-
-		m_textures[m_texture].texture->Bind(0);
+		//if (m_addedToDraw) {
+			m_texQueue.push_back({ entity, m_index, model, rotation });
+		/*}
+		else {
+			m_drawID = m_texQueue.size();
+			m_texQueue.push_back({ entity, m_index, model, rotation });
+			m_addedToDraw = true;
+		}*/
 	}
 	else if (m_usingMaterial) {
-		m_matShader->Bind();
-		m_matShader->SetUniformMatrix("MVP", camera.GetViewProjection() * model);
-		m_matShader->SetUniformMatrix("transform", model);
-		m_matShader->SetUniformMatrix("rotation", rotation);
-		m_matShader->SetUniform("camPos", camera.GetPosition());
-
-		m_matShader->SetUniform("lightPos", lightPos);
-		m_matShader->SetUniform("lightColour", lightColour);
-
-		m_matShader->SetUniform("ambientLightStrength", ambientLightStrength);
-		m_matShader->SetUniform("ambientColour", ambientColour);
-		m_matShader->SetUniform("ambientStrength", ambientStrength);
+		//if (m_addedToDraw) {
+			m_matQueue.push_back({ entity, m_index, model, rotation });
+		/*}
+		else {
+			m_drawID = m_matQueue.size();
+			m_matQueue.push_back({ entity, m_index, model, rotation });
+			m_addedToDraw = true;
+		}*/
 	}
 	else {
+		//if (m_addedToDraw) {
+			m_defaultQueue.push_back({ entity, m_index, model, rotation });
+		/*}
+		else {
+			m_drawID = m_defaultQueue.size();
+			m_defaultQueue.push_back({ entity, m_index, model, rotation });
+			m_addedToDraw = true;
+		}*/
+	}
+
+	return;
+}
+
+void ObjLoader::PerformDraw(glm::mat4 view, Camera camera, glm::vec3 colour, glm::vec3 lightPos, glm::vec3 lightColour,
+	float specularStrength, float shininess,
+	float ambientLightStrength, glm::vec3 ambientColour, float ambientStrength)
+{
+	glm::mat4 VP = camera.GetProjection() * view;
+
+	if (m_defaultQueue.size() != 0) {
+		//global stuff
 		m_shader->Bind();
-		m_shader->SetUniformMatrix("MVP", camera.GetViewProjection() * model);
-		m_shader->SetUniformMatrix("transform", model);
-		m_shader->SetUniformMatrix("rotation", rotation);
 		m_shader->SetUniform("camPos", camera.GetPosition());
 
 		m_shader->SetUniform("colour", colour);
@@ -543,12 +578,70 @@ void ObjLoader::Draw(Camera camera, glm::mat4 model, glm::mat3 rotation, glm::ve
 		m_shader->SetUniform("ambientLightStrength", ambientLightStrength);
 		m_shader->SetUniform("ambientColour", ambientColour);
 		m_shader->SetUniform("ambientStrength", ambientStrength);
+
+		for (int i(0); i < m_defaultQueue.size(); ++i) {
+			m_shader->SetUniformMatrix("MVP", VP * m_defaultQueue[i].model);
+			m_shader->SetUniformMatrix("transform", m_defaultQueue[i].model);
+			m_shader->SetUniformMatrix("rotation", m_defaultQueue[i].rotation);
+
+			//for (int j(0); j < m_models[m_defaultQueue[i].modelIndex].vao.size(); ++j) {
+				m_models[m_defaultQueue[i].modelIndex].vao->Bind();
+				glDrawArrays(GL_TRIANGLES, 0, m_models[m_defaultQueue[i].modelIndex].verts);
+			//}
+		}
 	}
 
-	for (int i(0); i < m_models[m_index].vao.size(); ++i)
-	{
-		m_models[m_index].vao[i]->Bind();
-		glDrawArrays(GL_TRIANGLES, 0, m_models[m_index].verts[i]);
+	if (m_matQueue.size() != 0) {
+		//global stuff
+		m_matShader->Bind();
+		m_matShader->SetUniform("camPos", camera.GetPosition());
+
+		m_matShader->SetUniform("lightPos", lightPos);
+		m_matShader->SetUniform("lightColour", lightColour);
+
+		m_matShader->SetUniform("ambientLightStrength", ambientLightStrength);
+		m_matShader->SetUniform("ambientColour", ambientColour);
+		m_matShader->SetUniform("ambientStrength", ambientStrength);
+
+		for (int i(0); i < m_matQueue.size(); ++i) {
+			m_matShader->SetUniformMatrix("MVP", VP * m_matQueue[i].model);
+			m_matShader->SetUniformMatrix("transform", m_matQueue[i].model);
+			m_matShader->SetUniformMatrix("rotation", m_matQueue[i].rotation);
+
+			//for (int j(0); j < m_models[m_matQueue[i].modelIndex].vao.size(); ++j) {
+				m_models[m_matQueue[i].modelIndex].vao->Bind();
+				glDrawArrays(GL_TRIANGLES, 0, m_models[m_matQueue[i].modelIndex].verts);
+			//}
+		}
 	}
+
+	if (m_texQueue.size() != 0) {
+		m_texShader->Bind();
+		m_texShader->SetUniform("camPos", camera.GetPosition());
+
+		m_texShader->SetUniform("lightPos", lightPos);
+		m_texShader->SetUniform("lightColour", lightColour);
+
+		m_texShader->SetUniform("ambientLightStrength", ambientLightStrength);
+		m_texShader->SetUniform("ambientColour", ambientColour);
+		m_texShader->SetUniform("ambientStrength", ambientStrength);
+
+		m_texShader->SetUniform("s_texture", 0);
+
+		for (int i(0); i < m_texQueue.size(); ++i) {
+			m_texShader->SetUniformMatrix("MVP", VP * m_texQueue[i].model);
+			m_texShader->SetUniformMatrix("transform", m_texQueue[i].model);
+			m_texShader->SetUniformMatrix("rotation", m_texQueue[i].rotation);
+
+			m_textures[m_models[m_texQueue[i].modelIndex].texture].texture->Bind(0);
+
+			//for (int j(0); j < m_models[m_texQueue[i].modelIndex].vao.size(); ++j) {
+				m_models[m_texQueue[i].modelIndex].vao->Bind();
+				glDrawArrays(GL_TRIANGLES, 0, m_models[m_texQueue[i].modelIndex].verts);
+			//}
+		}
+	}
+
+	Shader::UnBind();
 	VertexArrayObject::UnBind();
 }

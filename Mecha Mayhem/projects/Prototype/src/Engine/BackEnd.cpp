@@ -54,6 +54,8 @@ GLFWwindow *BackEnd::window = nullptr;
 float BackEnd::_aspect = 1;
 float BackEnd::_aspect2 = 1;
 int BackEnd::_lastHeight = 1;
+GLFWmonitor* BackEnd::monitor = nullptr;
+int BackEnd::monitorVec[4] = { 0 };
 
 GLFWwindow* BackEnd::Init(std::string name, int width, int height)
 {
@@ -66,6 +68,7 @@ GLFWwindow* BackEnd::Init(std::string name, int width, int height)
 	window = glfwCreateWindow(width, height, name.c_str(), nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
+	monitor = glfwGetPrimaryMonitor();
 	_aspect = float(width) / height;
 	_aspect2 = float(height) / width;
 
@@ -94,7 +97,7 @@ GLFWwindow* BackEnd::Init(std::string name, int width, int height)
 void BackEnd::Unload()
 {
 	delete window;
-	window = nullptr;
+	delete monitor;
 }
 
 void BackEnd::SetAspect(int width, int height)
@@ -106,8 +109,6 @@ void BackEnd::SetAspect(int width, int height)
 
 void BackEnd::SetFullscreen()
 {
-	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-	int monitorVec[4]{ 0 };
 
 	glfwGetMonitorWorkarea(monitor, &monitorVec[0], &monitorVec[1], &monitorVec[2], &monitorVec[3]);
 

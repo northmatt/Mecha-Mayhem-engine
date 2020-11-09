@@ -27,13 +27,14 @@ Transform& Transform::UnChild()
 	return *this;
 }
 
-void Transform::ComputeGlobal()
+Transform& Transform::ComputeGlobal()
 {
 	//parent stuff
 	if (m_hasParent) {
 		//check if the parent exists, just in case
 		if (ECS::GetRegistry()->valid(m_parent)) {
 			m_global = ECS::GetComponent<Transform>(m_parent).GetModel();
+			m_global[3][2] = -m_global[3][2];
 		}
 		else	UnChild();
 
@@ -43,6 +44,12 @@ void Transform::ComputeGlobal()
 	m_global = glm::translate(m_global, m_position);
 	m_global *= glm::toMat4(m_rotation);
 	m_global = glm::scale(m_global, m_scale);
+
+	m_global[3][2] = -m_global[3][2];
+
+	m_dirty = false;
+
+	return *this;
 }
 
 glm::mat4 Transform::GetModel()
@@ -50,6 +57,16 @@ glm::mat4 Transform::GetModel()
 	if (m_dirty)	ComputeGlobal();
 
 	return m_global;
+}
+
+Transform& Transform::SetTransform(const btTransform& trans)
+{
+	SetPosition(trans.getOrigin());
+	SetRotation(trans.getRotation());
+
+	m_dirty = true;
+
+	return *this;
 }
 
 Transform& Transform::SetPosition(const glm::vec3& pos)
@@ -60,9 +77,23 @@ Transform& Transform::SetPosition(const glm::vec3& pos)
 	return *this;
 }
 
+Transform& Transform::SetPosition(const btVector3& pos)
+{
+	m_position.x = pos.x();
+	m_position.y = pos.y();
+	m_position.z = pos.z();
+
+	return *this;
+}
+
 glm::vec3 Transform::GetPosition()
 {
 	return m_position;
+}
+
+glm::vec3 Transform::GetGlobalPosition()
+{
+	return glm::vec3(m_global[3]);
 }
 
 Transform& Transform::SetScale(const glm::vec3& scale)
@@ -90,6 +121,16 @@ Transform& Transform::SetRotation(const glm::quat& rot)
 {
 	m_rotation = rot;
 	m_dirty = true;
+
+	return *this;
+}
+
+Transform& Transform::SetRotation(const btQuaternion& rot)
+{
+	m_rotation.x = rot.x();
+	m_rotation.y = rot.y();
+	m_rotation.z = rot.z();
+	m_rotation.w = rot.w();
 
 	return *this;
 }

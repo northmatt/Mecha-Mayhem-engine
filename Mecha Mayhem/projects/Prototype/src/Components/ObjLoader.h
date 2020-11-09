@@ -23,14 +23,24 @@ struct Models
 	bool mat;
 	bool text = false;
 	size_t texture = 0;
-	std::vector<VertexArrayObject::sptr> vao = {};
-	std::vector<size_t> verts = {};
+	//std::vector<VertexArrayObject::sptr> vao = {};
+	//std::vector<size_t> verts = {};
+	VertexArrayObject::sptr vao = VertexArrayObject::Create();
+	size_t verts = 0;
 };
 
 struct Texture
 {
 	std::string fileName;
 	Texture2D::sptr texture;
+};
+
+struct DrawData
+{
+	unsigned entityIndex;
+	size_t modelIndex;
+	glm::mat4 model;
+	glm::mat3 rotation;
 };
 
 class ObjLoader
@@ -41,18 +51,26 @@ public:
 	ObjLoader(const std::string& fileName, bool usingMaterial = false);
 	~ObjLoader();
 
-	static void Init();
-
 	ObjLoader& LoadMesh(const std::string& fileName, bool usingMaterial = false);
 
-	void Draw(Camera camera, glm::mat4 model, glm::mat3 rotation, glm::vec3 colour,
-		glm::vec3 lightPos, glm::vec3 lightColour = glm::vec3(1.f), float specularStrength = 1.f, float shininess = 4,
+	static void Init();
+	static void Unload();
+
+	static void BeginDraw();
+
+	void Draw(unsigned entity, glm::mat4 model, glm::mat3 rotation);
+
+	static void PerformDraw(glm::mat4 view, Camera camera, glm::vec3 colour, glm::vec3 lightPos, glm::vec3 lightColour = glm::vec3(1.f),
+		float specularStrength = 1.f, float shininess = 4,
 		float ambientLightStrength = 0.05f, glm::vec3 ambientColour = glm::vec3(0.f), float ambientStrength = 0.1f
 	);
 
 	Shader::sptr GetShader() { return m_shader; }
 
 private:
+	static std::vector<DrawData> m_matQueue;
+	static std::vector<DrawData> m_texQueue;
+	static std::vector<DrawData> m_defaultQueue;
 	static Shader::sptr m_shader;
 	static Shader::sptr m_matShader;
 	static Shader::sptr m_texShader;
@@ -61,6 +79,8 @@ private:
 
 	size_t m_index = INT_MAX;
 	size_t m_texture = INT_MAX;
+	unsigned m_drawID = INT_MAX;
 	bool m_usingMaterial = false;
 	bool m_usingTexture = false;
+	bool m_addedToDraw = false;
 };

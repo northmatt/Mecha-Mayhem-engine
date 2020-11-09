@@ -1,30 +1,39 @@
 #pragma once
 
-#define GLM_ENABLE_EXPERIMENTAL
-
 #include <memory>
 #include <GLM/glm.hpp>
-#include <GLM/gtc/matrix_transform.hpp>
-#include <GLM/gtx/quaternion.hpp>
 
 /// <summary>
 /// Represents a simple perspective camera for use by first person or third person games
 /// </summary>
-
-#define CAMERA_ORTHO 0
-#define CAMERA_PERSPECTIVE 1
-
 class Camera
 {
 public:
-	typedef std::shared_ptr<Camera> sptr;
-	inline static sptr Create() {
-		return std::make_shared<Camera>();
-	}
-
-public:
 	Camera();
 	virtual ~Camera() = default;
+
+	/// <summary>
+	/// Gets whether this camera is in orthographic projection mode
+	/// </summary>
+	bool GetIsOrtho() const { return _isOrtho; }
+	/// <summary>
+	/// Sets whether this camera is in orthographic projection mode
+	/// </summary>
+	/// <param name="isOrtho">True if the camera is in orthographic mode, false for perspective</param>
+	Camera& SetIsOrtho(bool isOrtho);
+	/// <summary>
+	/// Toggles the camera's orthographic state, enabling it if it' disabled and disabling it if it is enabled
+	/// </summary>
+	inline Camera& ToggleOrtho() { SetIsOrtho(!_isOrtho); return *this; }
+	/// <summary>
+	/// Gets the distance from the camera to the top/bottom of the orthographic box when in ortho mode
+	/// </summary>
+	float GetOrthoHeight() const { return _orthoHeight; }
+	/// <summary>
+	/// Sets the distance from the camera to the top/bottom of the orthographic box when in ortho mode
+	/// </summary>
+	/// <param name="orthoHeight">The distance from the camera to the top/bottom of the orthographic box when in ortho mode</param>
+	Camera& SetOrthoHeight(float orthoHeight);
 
 	/// <summary>
 	/// Sets this camera's position in world space
@@ -43,9 +52,6 @@ public:
 	/// </summary>
 	Camera& LookAt(const glm::vec3& point);
 
-	Camera& SetRotation(const glm::quat& rotation);
-
-
 	/// <summary>
 	/// Notifies this camera that the window has resized, and updates our projection matrix
 	/// </summary>
@@ -61,16 +67,6 @@ public:
 	/// </summary>
 	Camera& SetFovDegrees(float value);
 
-	///set the ortho height
-	Camera& SetOrtho(float size) { _halfHeight = size / 2.f; __CalculateProjection(); return *this; }
-
-	///set the AspectRatio
-	Camera& SetAspect(float value) { _aspectRatio = value; __CalculateProjection(); return *this; }
-
-	///switches the camera between Orthographic and perspective
-	///use CAMERA_ORTHO (0) and CAMERA_PERSPECTIVE (1)
-	Camera& ChangePerspective(bool cameraType);
-
 	/// <summary>
 	/// Gets the camera's position in world space
 	/// </summary>
@@ -84,6 +80,8 @@ public:
 	/// </summary>
 	const glm::vec3& GetUp() const { return _up; }
 
+	float GetFovDegrees() const { return glm::degrees(_fovRadians); }
+	
 	/// <summary>
 	/// Gets the view matrix for this camera
 	/// </summary>
@@ -96,14 +94,20 @@ public:
 	/// Gets the combined view-projection matrix for this camera, calculating if needed
 	/// </summary>
 	const glm::mat4& GetViewProjection() const;
+	/// <summary>
+	/// Gets the combined view-projection matrix for this camera without any translations applied (ex: for skyboxes), calculating if needed
+	/// </summary>
+	const glm::mat4& GetViewProjNoTranslation() const;
+	Camera& SetView(glm::mat4 mat) { _view = mat; _isDirty = true; }
 
 protected:
+	bool _isOrtho;
+	float _orthoHeight;
+	
 	float _nearPlane;
 	float _farPlane;
 	float _fovRadians;
 	float _aspectRatio;
-
-	float _halfHeight;
 
 	glm::vec3 _position;
 	glm::vec3 _normal;
@@ -112,10 +116,10 @@ protected:
 	glm::mat4 _view;
 	glm::mat4 _projection;
 
-	bool _cameraType;
-
 	// The view projection, it is mutable so we can re-calculate it during const methods
 	mutable glm::mat4 _viewProjection;
+	// We'l 
+	mutable glm::mat4 _viewProjectionNoTranslate;
 	// A dirty flag that indicates whether we need to re-calculate our view projection matrix
 	mutable bool      _isDirty;
 

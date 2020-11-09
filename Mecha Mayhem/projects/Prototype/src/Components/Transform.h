@@ -1,9 +1,10 @@
 #pragma once
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/matrix.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
+
+#include "bullet/btBulletDynamicsCommon.h"
 
 class Transform
 {
@@ -12,17 +13,22 @@ public:
 
 	Transform& ChildTo(unsigned index);
 	Transform& UnChild();
-	void ComputeGlobal();
+	Transform& ComputeGlobal();
 	glm::mat4 GetModel();
 
+	Transform& SetTransform(const btTransform& trans);
+
 	Transform& SetPosition(const glm::vec3& pos);
+	Transform& SetPosition(const btVector3& pos);
 	glm::vec3 GetPosition();
+	glm::vec3 GetGlobalPosition();
 
 	Transform& SetScale(const glm::vec3& scale);
 	glm::vec3 GetScale();
 
 	Transform& SetRotation(const glm::mat3& rot);
 	Transform& SetRotation(const glm::quat& rot);
+	Transform& SetRotation(const btQuaternion& rot);
 	glm::quat GetRotation();
 	glm::mat3 GetRotationM3();
 

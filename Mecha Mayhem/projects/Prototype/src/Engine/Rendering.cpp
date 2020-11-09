@@ -12,21 +12,23 @@ namespace Rendering {
 
         for (auto cam : cameraView)
         {
-            cameraView.get<Camera>(cam).SetPosition(cameraView.get<Transform>(cam).GetPosition());
-            cameraView.get<Camera>(cam).SetRotation(cameraView.get<Transform>(cam).GetRotation());
+            glm::mat4 view = glm::inverse(cameraView.get<Transform>(cam).ComputeGlobal().GetModel());
 
             Camera& camCam = cameraView.get<Camera>(cam);
 
-            LightPos = cameraView.get<Transform>(cam).GetPosition();
+            LightPos = cameraView.get<Transform>(cam).GetGlobalPosition();
+
+            ObjLoader::BeginDraw();
 
             //draw all the objs
             for (auto entity : objView)
             {
                 Transform& trans = objView.get<Transform>(entity);
 
-                objView.get<ObjLoader>(entity).Draw(camCam, trans.GetModel(), trans.GetRotationM3(),
-                    DefaultColour, LightPos, LightColour);
+                objView.get<ObjLoader>(entity).Draw(entity, trans.GetModel(), trans.GetRotationM3());
             }
+
+            ObjLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour);
         }
     }
 

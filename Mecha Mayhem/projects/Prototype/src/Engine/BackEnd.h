@@ -35,4 +35,6 @@ private:
 	static float _aspect;
 	static float _aspect2;
 	static int _lastHeight;
+	static GLFWmonitor* monitor;
+	static int monitorVec[4];
 };
