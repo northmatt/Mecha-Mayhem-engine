@@ -1,10 +1,12 @@
 #include "VertexArrayObject.h"
 #include "IndexBuffer.h"
+#include "Logging.h"
 #include "VertexBuffer.h"
 
 VertexArrayObject::VertexArrayObject() :
 	_indexBuffer(nullptr),
-	_handle(0)
+	_handle(0),
+	_vertexCount(0)
 {
 	glCreateVertexArrays(1, &_handle);
 }
@@ -17,8 +19,11 @@ VertexArrayObject::~VertexArrayObject()
 	}
 }
 
+void VertexArrayObject::SetDebugName(const std::string& name) {
+	glObjectLabel(GL_VERTEX_ARRAY, _handle, name.length(), name.c_str());
+}
+
 void VertexArrayObject::SetIndexBuffer(const IndexBuffer::sptr& ibo) {
-	// TODO: What if we already have a buffer? should we delete it? who owns the buffer?
 	_indexBuffer = ibo;
 	Bind();
 	if (_indexBuffer != nullptr) _indexBuffer->Bind();
@@ -28,7 +33,11 @@ void VertexArrayObject::SetIndexBuffer(const IndexBuffer::sptr& ibo) {
 
 void VertexArrayObject::AddVertexBuffer(const VertexBuffer::sptr& buffer, const std::vector<BufferAttribute>& attributes)
 {
-	// TODO: Who should own this buffer now? Do we delete it when we destroy?
+	if (_vertexCount == 0) {
+		_vertexCount = buffer->GetElementCount();
+	} else {
+		LOG_ASSERT(buffer->GetElementCount() == _vertexCount, "All buffers bound to a VAO should be of the same size in our implementation!");
+	}
 	VertexBufferBinding binding;
 	binding.Buffer = buffer;
 	binding.Attributes = attributes;
@@ -44,10 +53,20 @@ void VertexArrayObject::AddVertexBuffer(const VertexBuffer::sptr& buffer, const 
 
 }
 
-void VertexArrayObject::Bind() {
+void VertexArrayObject::Bind() const {
 	glBindVertexArray(_handle);
 }
 
 void VertexArrayObject::UnBind() {
 	glBindVertexArray(0);
+}
+
+void VertexArrayObject::Render() const {
+	Bind();
+	if (_indexBuffer != nullptr) {
+		glDrawElements(GL_TRIANGLES, _indexBuffer->GetElementCount(), _indexBuffer->GetElementType(), nullptr);
+	} else {
+		glDrawArrays(GL_TRIANGLES, 0, _vertexCount / 3);
+	}
+	UnBind();
 }

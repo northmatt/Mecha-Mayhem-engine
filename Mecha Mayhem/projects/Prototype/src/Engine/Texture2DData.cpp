@@ -15,8 +15,7 @@ Texture2DData::Texture2DData(uint32_t width, uint32_t height, PixelFormat format
 	}
 }
 
-Texture2DData::~Texture2DData()
-{
+Texture2DData::~Texture2DData() {
 	free(_data);
 }
 

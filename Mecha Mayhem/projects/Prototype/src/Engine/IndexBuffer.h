@@ -11,11 +11,11 @@ class IndexBuffer : public IBuffer
 {
 public:
 	typedef std::shared_ptr<IndexBuffer> sptr;
-
 	static inline sptr Create(GLenum usage = GL_STATIC_DRAW) {
 		return std::make_shared<IndexBuffer>(usage);
 	}
-
+	
+public:
 	/// <summary>
 	/// Creates a new index buffer, with the given usage. Data will still need to be uploaded before it can be used
 	/// </summary>

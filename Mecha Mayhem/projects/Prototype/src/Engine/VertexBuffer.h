@@ -12,7 +12,8 @@ public:
 	static inline sptr Create(GLenum usage = GL_STATIC_DRAW) {
 		return std::make_shared<VertexBuffer>(usage);
 	}
-
+	
+public:
 	/// <summary>
 	/// Creates a new vertex buffer, with the given usage. Data will still need to be uploaded before it can be used
 	/// </summary>

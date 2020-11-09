@@ -91,6 +91,12 @@ GLFWwindow* BackEnd::Init(std::string name, int width, int height)
     return window;
 }
 
+void BackEnd::Unload()
+{
+	delete window;
+	window = nullptr;
+}
+
 void BackEnd::SetAspect(int width, int height)
 {
 	_aspect = float(width) / height;

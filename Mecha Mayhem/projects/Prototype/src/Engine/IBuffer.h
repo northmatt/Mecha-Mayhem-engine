@@ -5,7 +5,7 @@
 /// This is our abstract base class for all our OpenGL buffer types
 /// </summary>
 class IBuffer
-{
+{	
 public:
 	// We'll disallow moving and copying, since we want to manually control when the destructor is called
 	// We'll use these classes via pointers
@@ -41,7 +41,7 @@ public:
 	/// <summary>
 	/// Returns the number of elements that are loaded into this buffer
 	/// </summary>
-	size_t GetElementCount() const { return _elementCount; }
+	GLsizei GetElementCount() const { return static_cast<GLsizei>(_elementCount); }
 	/// <summary>
 	/// Returns the size in bytes of a single element in this buffer
 	/// </summary>

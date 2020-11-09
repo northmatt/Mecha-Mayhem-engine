@@ -12,7 +12,7 @@
 #include <GLM/glm.hpp>
 #include <GLM/gtc/matrix_transform.hpp>
 #include <GLM/gtc/type_ptr.hpp>
-#include <entt.hpp>
+#include <entt/entt.hpp>
 #include "Engine/VertexArrayObject.h"
 #include "Engine/IndexBuffer.h"
 #include "Engine/Shader.h"
@@ -22,6 +22,7 @@ class BackEnd abstract
 public:
 	//returns
 	static GLFWwindow* Init(std::string name, int width, int height);
+	static void Unload();
 
 	static void SetAspect(int width, int height);
 

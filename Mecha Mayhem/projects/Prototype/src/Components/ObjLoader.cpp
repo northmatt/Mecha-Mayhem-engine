@@ -142,12 +142,13 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 						m_textures.push_back({ textureName, texture });
 					}
 					else {
-						Texture2DData::sptr tex = Texture2DData::LoadFromFile("textures/" + textureName);
+						Texture2D::sptr tex = Texture2D::LoadFromFile("textures/" + textureName);
+						if (!tex)
+						{
+							throw std::runtime_error("Failed to open texture\nError 0: " + textureName);
+						}
 						m_texture = m_textures.size();
-						m_textures.push_back({ textureName, Texture2D::Create() });
-						m_textures[m_texture].texture->LoadData(tex);
-						m_textures[m_texture].texture->SetMagFilter(MagFilter::Linear);
-						m_textures[m_texture].texture->SetMinFilter(MinFilter::LinearMipNearest);
+						m_textures.push_back({ textureName, tex });
 					}
 				}
 				usingTexture = true;
