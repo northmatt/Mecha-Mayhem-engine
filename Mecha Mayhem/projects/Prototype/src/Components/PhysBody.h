@@ -25,10 +25,16 @@ public:
 	//makes a sphere
 	PhysBody& Init(float radius, glm::vec3 pos, float mass = 0, bool isDynamic = false);
 
+	btRigidBody* GetBody() { return m_body; }
+
 	PhysBody& SetVelocity(glm::vec3 vel);
 	PhysBody& SetVelocity(btVector3 vel);
+	btVector3 GetVelocity() { return m_body->getLinearVelocity(); }
+
 	PhysBody& SetPosition(glm::vec3 pos);
 	PhysBody& SetPosition(btVector3 pos);
+
+
 	PhysBody& SetRotation(glm::quat rot);
 	PhysBody& SetRotation(btQuaternion rot);
 

@@ -40,7 +40,6 @@ struct DrawData
 	unsigned entityIndex;
 	size_t modelIndex;
 	glm::mat4 model;
-	glm::mat3 rotation;
 };
 
 class ObjLoader
@@ -58,7 +57,7 @@ public:
 
 	static void BeginDraw();
 
-	void Draw(unsigned entity, glm::mat4 model, glm::mat3 rotation);
+	void Draw(unsigned entity, glm::mat4 model);
 
 	static void PerformDraw(glm::mat4 view, Camera camera, glm::vec3 colour, glm::vec3 lightPos, glm::vec3 lightColour = glm::vec3(1.f),
 		float specularStrength = 1.f, float shininess = 4,

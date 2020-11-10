@@ -25,7 +25,7 @@ namespace Rendering {
             {
                 Transform& trans = objView.get<Transform>(entity);
 
-                objView.get<ObjLoader>(entity).Draw(entity, trans.GetModel(), trans.GetRotationM3());
+                objView.get<ObjLoader>(entity).Draw(entity, trans.GetModel());
             }
 
             ObjLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour);

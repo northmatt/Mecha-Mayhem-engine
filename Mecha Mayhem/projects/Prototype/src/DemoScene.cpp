@@ -1,4 +1,5 @@
 #include "DemoScene.h"
+#include "Utilities/BLM.h"
 
 void DemoScene::Init(int windowWidth, int windowHeight)
 {
@@ -17,8 +18,8 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 	camCam.SetFovDegrees(60.f).ResizeWindow(width, height);
 
 	bodyEnt = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt).Init(2, glm::vec3(0, 0, 0), 1, true);
-	ECS::GetComponent<Transform>(cameraEnt).ChildTo(bodyEnt).SetPosition(glm::vec3(0, 3, 0));
+	ECS::AttachComponent<PhysBody>(bodyEnt).Init(0.5f, 2, glm::vec3(0, 0, 0), 1, true).GetBody()->setAngularFactor(btVector3(0, 0, 0));
+	ECS::GetComponent<Transform>(cameraEnt).ChildTo(bodyEnt).SetPosition(glm::vec3(0, 1, 0));
 
 	ECS::AttachComponent<PhysBody>(ECS::CreateEntity()).Init(100, 1, 100, glm::vec3(0, -30, 0));
 
@@ -34,6 +35,11 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 	Dio3 = ECS::CreateEntity();
 	ECS::AttachComponent<ObjLoader>(Dio3).LoadMesh("models/Pistol.obj", true);
 	ECS::GetComponent<Transform>(Dio3).SetPosition(glm::vec3(1.5f, -2, -2)).ChildTo(cameraEnt).SetScale(glm::vec3(0.25f));
+	{
+		unsigned P = ECS::CreateEntity();
+		ECS::AttachComponent<ObjLoader>(P).LoadMesh("models/Pistol.obj");
+		ECS::GetComponent<Transform>(P).SetPosition(glm::vec3(0, 0, 0)).ChildTo(bodyEnt).SetScale(glm::vec3(0.1f));
+	}
 	{
 		unsigned entity = ECS::CreateEntity();
 		auto& temp = ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/cringe.obj", true);
@@ -94,10 +100,10 @@ void DemoScene::Update()
 		rot.x = -pi;
 	}
 	{
-		glm::quat rotf = glm::rotate(startQuat, rot.y, glm::vec3(0, -1, 0));
-		rotf = glm::rotate(rotf, rot.x, glm::vec3(1, 0, 0));
-		//camTrans.SetRotation(rotf);
-		ballPhys.SetRotation(rotf);
+		//glm::quat rotf = glm::rotate(startQuat, rot.y, glm::vec3(0, -1, 0));
+		//rotf = glm::rotate(rotf, rot.x, glm::vec3(1, 0, 0));
+		ballPhys.SetRotation(glm::rotate(startQuat, rot.y, glm::vec3(0, -1, 0)));
+		camTrans.SetRotation(glm::rotate(startQuat, rot.x, glm::vec3(1, 0, 0)));
 	}
 	/*glm::mat4 rotf = glm::rotate(glm::mat4(1.f), rot.x, glm::vec3(1, 0, 0));
 	rotf = glm::rotate(rotf, rot.y, glm::vec3(0, 1, 0));
@@ -138,12 +144,16 @@ void DemoScene::Update()
 		pos.y -= 15;
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE)) {
-		pos.y += 15;
+		pos.y += 50;
 	}
 	if (pos.x != 0 || pos.y != 0 || pos.z != 0) {
 		pos = glm::vec4(pos, 1) * glm::rotate(glm::mat4(1.f), rot.y, glm::vec3(0, 1, 0));
 		//camTrans.SetPosition(camTrans.GetPosition() + pos);
-		ballPhys.SetVelocity(pos);
+		btVector3 temp = ballPhys.GetVelocity();
+		if (pos.x != 0)		temp.setX(pos.x);
+		if (pos.y != 0)		temp.setY(pos.y);
+		if (pos.z != 0)		temp.setZ(pos.z);
+		ballPhys.SetVelocity(temp);
 		ballPhys.SetAwake();
 	}
 

@@ -19,7 +19,7 @@ void main() {
 
 	outPosition = (transform * vec4(inPosition, 1)).xyz;
 	outColour = inColour;
-	outNormal = rotation * inNormal;
+	outNormal = mat3(transform) * inNormal;
 	outSpecStrength = inSpecStregnth;
 }
 

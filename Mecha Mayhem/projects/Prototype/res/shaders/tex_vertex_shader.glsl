@@ -7,7 +7,6 @@ layout(location = 4) in vec2 inSpecStrength;
 
 uniform mat4 MVP;
 uniform mat4 transform;
-uniform mat3 rotation;
 
 layout(location = 0) out vec3 outPosition;
 layout(location = 1) out vec3 outColour;
@@ -21,7 +20,7 @@ void main() {
 
 	outPosition = (transform * vec4(inPosition, 1)).xyz;
 	outColour = inColour;
-	outNormal = rotation * inNormal;
+	outNormal = mat3(transform) * inNormal;
 	outSpecStrength = inSpecStrength;
 	outUV = inUV;
 }

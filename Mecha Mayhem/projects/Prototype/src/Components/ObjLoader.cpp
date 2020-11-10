@@ -520,36 +520,36 @@ void ObjLoader::BeginDraw()
 	m_defaultQueue.clear();
 }
 
-void ObjLoader::Draw(unsigned entity, glm::mat4 model, glm::mat3 rotation)
+void ObjLoader::Draw(unsigned entity, glm::mat4 model)
 {
 	//Draw comments are for future improvments
 	if (m_usingTexture) {
 		//if (m_addedToDraw) {
-			m_texQueue.push_back({ entity, m_index, model, rotation });
+			m_texQueue.push_back({ entity, m_index, model });
 		/*}
 		else {
 			m_drawID = m_texQueue.size();
-			m_texQueue.push_back({ entity, m_index, model, rotation });
+			m_texQueue.push_back({ entity, m_index, model });
 			m_addedToDraw = true;
 		}*/
 	}
 	else if (m_usingMaterial) {
 		//if (m_addedToDraw) {
-			m_matQueue.push_back({ entity, m_index, model, rotation });
+			m_matQueue.push_back({ entity, m_index, model });
 		/*}
 		else {
 			m_drawID = m_matQueue.size();
-			m_matQueue.push_back({ entity, m_index, model, rotation });
+			m_matQueue.push_back({ entity, m_index, model });
 			m_addedToDraw = true;
 		}*/
 	}
 	else {
 		//if (m_addedToDraw) {
-			m_defaultQueue.push_back({ entity, m_index, model, rotation });
+			m_defaultQueue.push_back({ entity, m_index, model });
 		/*}
 		else {
 			m_drawID = m_defaultQueue.size();
-			m_defaultQueue.push_back({ entity, m_index, model, rotation });
+			m_defaultQueue.push_back({ entity, m_index, model });
 			m_addedToDraw = true;
 		}*/
 	}
@@ -582,7 +582,7 @@ void ObjLoader::PerformDraw(glm::mat4 view, Camera camera, glm::vec3 colour, glm
 		for (int i(0); i < m_defaultQueue.size(); ++i) {
 			m_shader->SetUniformMatrix("MVP", VP * m_defaultQueue[i].model);
 			m_shader->SetUniformMatrix("transform", m_defaultQueue[i].model);
-			m_shader->SetUniformMatrix("rotation", m_defaultQueue[i].rotation);
+			//m_shader->SetUniformMatrix("rotation", m_defaultQueue[i].rotation);
 
 			//for (int j(0); j < m_models[m_defaultQueue[i].modelIndex].vao.size(); ++j) {
 				m_models[m_defaultQueue[i].modelIndex].vao->Bind();
@@ -606,7 +606,7 @@ void ObjLoader::PerformDraw(glm::mat4 view, Camera camera, glm::vec3 colour, glm
 		for (int i(0); i < m_matQueue.size(); ++i) {
 			m_matShader->SetUniformMatrix("MVP", VP * m_matQueue[i].model);
 			m_matShader->SetUniformMatrix("transform", m_matQueue[i].model);
-			m_matShader->SetUniformMatrix("rotation", m_matQueue[i].rotation);
+			//m_matShader->SetUniformMatrix("rotation", m_matQueue[i].rotation);
 
 			//for (int j(0); j < m_models[m_matQueue[i].modelIndex].vao.size(); ++j) {
 				m_models[m_matQueue[i].modelIndex].vao->Bind();
@@ -631,7 +631,7 @@ void ObjLoader::PerformDraw(glm::mat4 view, Camera camera, glm::vec3 colour, glm
 		for (int i(0); i < m_texQueue.size(); ++i) {
 			m_texShader->SetUniformMatrix("MVP", VP * m_texQueue[i].model);
 			m_texShader->SetUniformMatrix("transform", m_texQueue[i].model);
-			m_texShader->SetUniformMatrix("rotation", m_texQueue[i].rotation);
+			//m_texShader->SetUniformMatrix("rotation", m_texQueue[i].rotation);
 
 			m_textures[m_models[m_texQueue[i].modelIndex].texture].texture->Bind(0);
 

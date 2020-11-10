@@ -9,7 +9,7 @@ int main() {
 	{
 		// Creating demo scene
 		std::vector<Scene*> scenes;
-		scenes.push_back(new DemoScene("Demo", glm::vec3(0, -10, 0)));
+		scenes.push_back(new DemoScene("Demo", glm::vec3(0, -50, 0)));
 
 		Scene* activeScene = scenes[0];
 
