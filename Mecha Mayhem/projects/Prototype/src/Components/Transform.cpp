@@ -34,7 +34,7 @@ Transform& Transform::ComputeGlobal()
 		//check if the parent exists, just in case
 		if (ECS::GetRegistry()->valid(m_parent)) {
 			m_global = ECS::GetComponent<Transform>(m_parent).GetModel();
-			m_global[3][2] = -m_global[3][2];
+			//m_global[3][2] = -m_global[3][2];
 		}
 		else	UnChild();
 
@@ -45,7 +45,7 @@ Transform& Transform::ComputeGlobal()
 	m_global *= glm::toMat4(m_rotation);
 	m_global = glm::scale(m_global, m_scale);
 
-	m_global[3][2] = -m_global[3][2];
+	//m_global[3][2] = -m_global[3][2];
 
 	m_dirty = false;
 
@@ -54,7 +54,8 @@ Transform& Transform::ComputeGlobal()
 
 glm::mat4 Transform::GetModel()
 {
-	if (m_dirty)	ComputeGlobal();
+	if (m_hasParent)	m_dirty = true;
+	if (m_dirty)		ComputeGlobal();
 
 	return m_global;
 }

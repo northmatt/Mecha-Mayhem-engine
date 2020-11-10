@@ -21,7 +21,7 @@ private:
 
 
 	float pi = glm::half_pi<float>() - 0.01f;
-	glm::quat startQuat = glm::quat(1, 0, 0, 0);
+	glm::quat startQuat = glm::quat(-1, 0, 0, 0);
 	glm::vec2 rot = glm::vec2(0.f);
 
 	bool buttonPressed = false;

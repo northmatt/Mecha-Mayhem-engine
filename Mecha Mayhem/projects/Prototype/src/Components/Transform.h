@@ -12,7 +12,9 @@ public:
 	Transform();
 
 	Transform& ChildTo(unsigned index);
+	bool HasParent() { return m_hasParent; }
 	Transform& UnChild();
+
 	Transform& ComputeGlobal();
 	glm::mat4 GetModel();
 

@@ -82,6 +82,15 @@ void Scene::BackEndUpdate()
         m_world->stepSimulation(m_dt, 10);
     }
 
+    //auto transView = m_reg.view<Transform>();
+
+    //for (auto entity : transView) {
+    //    //recalculate if has parent
+    //    if (transView.get(entity).HasParent()) {
+    //        m_reg.get<Transform>(entity).ComputeGlobal();
+    //    }
+    //}
+
     //always render
     Rendering::Update(&m_reg);
 }

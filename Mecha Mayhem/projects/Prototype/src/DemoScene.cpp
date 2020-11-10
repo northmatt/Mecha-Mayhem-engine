@@ -33,7 +33,7 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 
 	Dio3 = ECS::CreateEntity();
 	ECS::AttachComponent<ObjLoader>(Dio3).LoadMesh("models/Pistol.obj", true);
-	ECS::GetComponent<Transform>(Dio3).SetPosition(glm::vec3(0, -20, 0)).ChildTo(Dio2);
+	ECS::GetComponent<Transform>(Dio3).SetPosition(glm::vec3(1.5f, -2, -2)).ChildTo(cameraEnt).SetScale(glm::vec3(0.25f));
 	{
 		unsigned entity = ECS::CreateEntity();
 		auto& temp = ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/cringe.obj", true);
@@ -105,10 +105,10 @@ void DemoScene::Update()
 
 	glm::vec3 pos2 = glm::vec3(0.f);
 	if (glfwGetKey(window, GLFW_KEY_I)) {
-		pos2.z += 15 * m_dt;
+		pos2.z -= 15 * m_dt;
 	}
 	if (glfwGetKey(window, GLFW_KEY_K)) {
-		pos2.z -= 15 * m_dt;
+		pos2.z += 15 * m_dt;
 	}
 	if (glfwGetKey(window, GLFW_KEY_J)) {
 		pos2.x -= 15 * m_dt;
@@ -120,15 +120,13 @@ void DemoScene::Update()
 		ECS::GetComponent<Transform>(Dio).GetPosition() + pos2);
 	ECS::GetComponent<Transform>(Dio2).SetPosition(
 		ECS::GetComponent<Transform>(Dio2).GetPosition() + pos2);
-	ECS::GetComponent<Transform>(Dio3).SetPosition(
-		ECS::GetComponent<Transform>(Dio3).GetPosition() + pos2);
 
 	glm::vec3 pos = glm::vec3(0.f);
 	if (glfwGetKey(window, GLFW_KEY_W)) {
-		pos.z += 15;
+		pos.z -= 15;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S)) {
-		pos.z -= 15;
+		pos.z += 15;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A)) {
 		pos.x -= 15;
@@ -143,7 +141,7 @@ void DemoScene::Update()
 		pos.y += 15;
 	}
 	if (pos.x != 0 || pos.y != 0 || pos.z != 0) {
-		pos = glm::vec4(pos, 1) * glm::rotate(glm::mat4(1.f), rot.y, glm::vec3(0, -1, 0));
+		pos = glm::vec4(pos, 1) * glm::rotate(glm::mat4(1.f), rot.y, glm::vec3(0, 1, 0));
 		//camTrans.SetPosition(camTrans.GetPosition() + pos);
 		ballPhys.SetVelocity(pos);
 		ballPhys.SetAwake();

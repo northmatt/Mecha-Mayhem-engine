@@ -58,7 +58,7 @@ PhysBody& PhysBody::Init(float radius, float height, glm::vec3 pos, float mass, 
         if (m_collisionShapes[i]->)
     }*/
 
-    btCollisionShape* pillShape = new btSphereShape(radius);
+    btCollisionShape* pillShape = new btCapsuleShape(radius, height);
 
     m_collisionShapes.push_back(pillShape);
 
