@@ -105,6 +105,14 @@ Transform& Transform::SetScale(const glm::vec3& scale)
 	return *this;
 }
 
+Transform& Transform::SetScale(float scale)
+{
+	m_scale.x = scale;
+	m_scale.y = scale;
+	m_scale.z = scale;
+	return *this;
+}
+
 glm::vec3 Transform::GetScale()
 {
 	return m_scale;
@@ -141,7 +149,22 @@ glm::quat Transform::GetRotation()
 	return m_rotation;
 }
 
+glm::quat Transform::GetGlobalRotation()
+{
+	return glm::mat3(m_global);
+}
+
 glm::mat3 Transform::GetRotationM3()
 {
 	return glm::toMat3(m_rotation);
+}
+
+glm::mat3 Transform::GetGlobalRotationM3()
+{
+	return glm::mat3(m_global);
+}
+
+glm::vec3 Transform::GetForwards()
+{
+	return glm::rotate(GetGlobalRotation(), glm::vec3(0, 0, 1));
 }

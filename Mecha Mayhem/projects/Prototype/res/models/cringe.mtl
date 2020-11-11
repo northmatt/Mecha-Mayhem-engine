@@ -1,5 +1,5 @@
-# Blender MTL File: 'cringe3,1.blend'
-# Material Count: 7
+# Blender MTL File: 'coolMap.blend'
+# Material Count: 5
 
 newmtl ads/ad01
 Ns 9.000004
@@ -44,28 +44,6 @@ Ni 1.450000
 d 1.000000
 illum 2
 map_Kd .
-
-newmtl materials/models/weapons/shared/holsterstrap/holsterstrap
-Ns 328.334402
-Ka 1.000000 1.000000 1.000000
-Kd 0.800000 0.800000 0.800000
-Ks 0.500000 0.500000 0.500000
-Ke 0.000000 0.000000 0.000000
-Ni 1.450000
-d 1.000000
-illum 2
-map_Ks .
-
-newmtl materials/models/weapons/w_models/w_rif_ak47/ak47
-Ns 225.000000
-Ka 1.000000 1.000000 1.000000
-Kd 0.800000 0.800000 0.800000
-Ks 0.500000 0.500000 0.500000
-Ke 0.000000 0.000000 0.000000
-Ni 1.450000
-d 1.000000
-illum 2
-map_Ks .
 
 newmtl tools/toolsnodraw
 Ns 323.999994

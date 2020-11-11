@@ -6,7 +6,6 @@ layout(location = 3) in vec2 inSpecStregnth;
 
 uniform mat4 MVP;
 uniform mat4 transform;
-uniform mat3 rotation;
 
 layout(location = 0) out vec3 outPosition;
 layout(location = 1) out vec3 outColour;

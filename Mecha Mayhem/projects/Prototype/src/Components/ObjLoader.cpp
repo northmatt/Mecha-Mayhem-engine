@@ -341,10 +341,10 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 			std::cout << line.substr(1) << '\n';
 			if (vectorIndex > 0)
 			{
-				/*size_t size = bufferVertex.size() * (usingMaterial ? 8 : 3) + bufferUV.size() * 2 + bufferNormals.size() * 3;
+				size_t size = bufferVertex.size() * (usingMaterial ? 8 : 3) + bufferUV.size() * 2 + bufferNormals.size() * 3;
 				float* interleaved = new float[size];
-				size_t currentIndex = 0;*/
-			/*
+				size_t currentIndex = 0;* /
+
 				std::vector<float> interleaved;
 
 				for (size_t i = 0; i < bufferVertex.size(); ++i) {
@@ -520,7 +520,7 @@ void ObjLoader::BeginDraw()
 	m_defaultQueue.clear();
 }
 
-void ObjLoader::Draw(unsigned entity, glm::mat4 model)
+void ObjLoader::Draw(unsigned entity, const glm::mat4& model)
 {
 	//Draw comments are for future improvments
 	if (m_usingTexture) {
@@ -557,16 +557,25 @@ void ObjLoader::Draw(unsigned entity, glm::mat4 model)
 	return;
 }
 
-void ObjLoader::PerformDraw(glm::mat4 view, Camera camera, glm::vec3 colour, glm::vec3 lightPos, glm::vec3 lightColour,
+void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour, const glm::vec3& lightPos, const glm::vec3& lightColour,
 	float specularStrength, float shininess,
-	float ambientLightStrength, glm::vec3 ambientColour, float ambientStrength)
+	float ambientLightStrength, const glm::vec3& ambientColour, float ambientStrength)
 {
 	glm::mat4 VP = camera.GetProjection() * view;
+
+	//attempted toon shading: didn't come out great, here's the shader code:
+	/*
+	if (dot(viewDir, inNormal) < 0.1) {
+		frag_color = vec4(0, 0, 0, 1);
+		return;
+	}
+	*/
 
 	if (m_defaultQueue.size() != 0) {
 		//global stuff
 		m_shader->Bind();
 		m_shader->SetUniform("camPos", camera.GetPosition());
+		//m_shader->SetUniform("viewDir", camera.GetForward());
 
 		m_shader->SetUniform("colour", colour);
 		m_shader->SetUniform("specularStrength", specularStrength);
@@ -595,6 +604,7 @@ void ObjLoader::PerformDraw(glm::mat4 view, Camera camera, glm::vec3 colour, glm
 		//global stuff
 		m_matShader->Bind();
 		m_matShader->SetUniform("camPos", camera.GetPosition());
+		//m_matShader->SetUniform("viewDir", camera.GetForward());
 
 		m_matShader->SetUniform("lightPos", lightPos);
 		m_matShader->SetUniform("lightColour", lightColour);
@@ -618,6 +628,7 @@ void ObjLoader::PerformDraw(glm::mat4 view, Camera camera, glm::vec3 colour, glm
 	if (m_texQueue.size() != 0) {
 		m_texShader->Bind();
 		m_texShader->SetUniform("camPos", camera.GetPosition());
+		//m_texShader->SetUniform("viewDir", camera.GetForward());
 
 		m_texShader->SetUniform("lightPos", lightPos);
 		m_texShader->SetUniform("lightColour", lightColour);

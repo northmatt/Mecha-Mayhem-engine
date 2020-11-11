@@ -14,15 +14,18 @@ int main() {
 		Scene* activeScene = scenes[0];
 
 		activeScene->Init(width, height);
-		((DemoScene*)activeScene)->GetWindow(window);
+		glfwSetWindowTitle(window, activeScene->GetName().c_str());
 
 		while (!glfwWindowShouldClose(window)) {
 			glfwPollEvents();
 
+
 			activeScene->Update();
+
 
 			//do not touch plz
 			activeScene->BackEndUpdate();
+			Gameloop::Update();
 
 			glfwSwapBuffers(window);
 		}

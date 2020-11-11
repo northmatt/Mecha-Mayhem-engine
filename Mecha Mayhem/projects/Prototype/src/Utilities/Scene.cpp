@@ -1,12 +1,11 @@
 #include "Scene.h"
-#include "Utilities/BLM.h"
 
 btDbvtBroadphase* Scene::_broadphase = nullptr;
 btCollisionConfiguration * Scene::_collisionConfiguration = nullptr;
 btCollisionDispatcher * Scene::_dispatcher = nullptr;
 btSequentialImpulseConstraintSolver * Scene::_solver = nullptr;
 
-Scene::Scene(const std::string& name, glm::vec3 gravity, bool physics)
+Scene::Scene(const std::string& name, const glm::vec3& gravity, bool physics)
     : m_name(name)
 {
     if (physics) {
@@ -55,6 +54,7 @@ void Scene::Init(int windowWidth, int windowHeight)
     if (m_world)
         PhysBody::Init(m_world);
 
+    // for multi cam setup, change the m_camCount variable, and also spawn in reverse order (aka player 1 last)
     unsigned cameraEnt = ECS::CreateEntity();
     auto& camCam = ECS::AttachComponent<Camera>(cameraEnt);
     camCam.SetFovDegrees(60.f).ResizeWindow(windowWidth, windowHeight);
@@ -66,6 +66,9 @@ void Scene::BackEndUpdate()
     m_lastClock = glfwGetTime();
 
     if (m_world != nullptr) {
+
+        m_world->stepSimulation(m_dt, 10);
+
         auto physView = m_reg.view<PhysBody, Transform>();
 
         for (auto entity : physView) {
@@ -78,8 +81,6 @@ void Scene::BackEndUpdate()
                 );
             }
         }
-
-        m_world->stepSimulation(m_dt, 10);
     }
 
     //auto transView = m_reg.view<Transform>();
@@ -92,5 +93,10 @@ void Scene::BackEndUpdate()
     //}
 
     //always render
-    Rendering::Update(&m_reg);
+    if (m_camCount < 1)
+        m_camCount = 1;
+    else if (m_camCount > 4)
+        m_camCount = 4;
+
+    Rendering::Update(&m_reg, m_camCount);
 }

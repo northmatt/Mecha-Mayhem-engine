@@ -5,6 +5,7 @@ layout(location = 2) in vec3 inNormal;
 layout(location = 3) in vec2 inSpecStrength;
 
 uniform vec3 camPos;
+//uniform vec3 viewDir;
 
 uniform vec3  lightPos;
 uniform vec3  lightColour;
@@ -37,6 +38,17 @@ void main() {
 	vec3 camDir = normalize(camPos - inPos);
 	vec3 h = normalize(camDir + lightDir);
 	float spec = pow(max(dot(N, h), 0.0), inSpecStrength.y); // Shininess coefficient (can be a uniform)
+
+	//spec = floor(spec * 5) * 0.2;
+//	if (spec < 0.25)
+//		spec = 0;
+//	else if (spec < 0.5)
+//		spec = 0.25;
+//	else if (spec < 0.75)
+//		spec = 0.5;
+//	else if (spec < 1)
+//		spec = 0.75;
+
 	vec3 specular = inSpecStrength.x * spec * lightColour; // Can also use a specular color
 
 	vec3 result = (ambient + diffuse + specular) * inColour;

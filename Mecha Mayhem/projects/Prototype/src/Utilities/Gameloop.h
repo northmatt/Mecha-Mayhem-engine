@@ -4,6 +4,7 @@
 //holds all inits and unloads
 namespace Gameloop
 {
+	//init everything and return the window from backend
 	GLFWwindow* Start(const std::string& name, int width, int height) {
 		srand(time(0));
 		// We'll borrow the logger from the toolkit, but we need to initialize it
@@ -15,12 +16,20 @@ namespace Gameloop
 		//all static inits
 		ObjLoader::Init();
 		Scene::Init();
+		Input::Init(window);
 
 		return window;
 	}
 
+	//update anything with global updates
+	void Update() {
+		Input::Update();
+	}
+
+	//stop everything (use at the end to avoid issues)
 	void Stop() {
 		//unloading static things
+		Input::Unload();
 		PhysBody::Unload();
 		ECS::DettachRegistry();
 		BackEnd::Unload();

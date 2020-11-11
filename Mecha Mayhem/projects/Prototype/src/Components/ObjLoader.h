@@ -57,11 +57,11 @@ public:
 
 	static void BeginDraw();
 
-	void Draw(unsigned entity, glm::mat4 model);
+	void Draw(unsigned entity, const glm::mat4& model);
 
-	static void PerformDraw(glm::mat4 view, Camera camera, glm::vec3 colour, glm::vec3 lightPos, glm::vec3 lightColour = glm::vec3(1.f),
+	static void PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour, const glm::vec3& lightPos, const glm::vec3& lightColour = glm::vec3(1.f),
 		float specularStrength = 1.f, float shininess = 4,
-		float ambientLightStrength = 0.05f, glm::vec3 ambientColour = glm::vec3(0.f), float ambientStrength = 0.1f
+		float ambientLightStrength = 0.05f, const glm::vec3& ambientColour = glm::vec3(0.f), float ambientStrength = 0.f
 	);
 
 	Shader::sptr GetShader() { return m_shader; }
