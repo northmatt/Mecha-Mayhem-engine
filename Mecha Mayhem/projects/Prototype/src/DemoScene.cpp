@@ -9,7 +9,7 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 	std::string input = "testmap";
 	std::cout << "filename: " + input + "\n";
 	//std::cin >> input;
-	if (!m_colliders.Init(m_world, input, true, false))
+	if (!m_colliders.Init(m_world, input, false, false))
 		std::cout << input + " failed to load, no collision boxes loaded\n";
 
 	width = windowWidth;
