@@ -22,12 +22,9 @@ int main() {
 		while (!glfwWindowShouldClose(window)) {
 			glfwPollEvents();
 
-			if (Input::GetKey(KEY::LCTRL) && Input::GetKeyUp(KEY::ENTER)) {
-				glfwSetWindowTitle(window,
-					(activeScene = scenes[sceneswap = !sceneswap]->Reattach())->
-					GetName().c_str()
-				);
-			}
+			if (Input::GetKey(KEY::LCTRL) && Input::GetKeyUp(KEY::ENTER))
+				glfwSetWindowTitle(window, (activeScene = scenes[sceneswap = !sceneswap]->Reattach())->GetName().c_str());
+
 
 			activeScene->Update();
 

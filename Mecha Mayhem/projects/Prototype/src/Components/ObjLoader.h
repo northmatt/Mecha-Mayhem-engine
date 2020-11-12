@@ -37,7 +37,6 @@ struct Texture
 
 struct DrawData
 {
-	unsigned entityIndex;
 	size_t modelIndex;
 	glm::mat4 model;
 };
@@ -57,7 +56,7 @@ public:
 
 	static void BeginDraw();
 
-	void Draw(unsigned entity, const glm::mat4& model);
+	void Draw(const glm::mat4& model);
 
 	static void PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour, const glm::vec3& lightPos, const glm::vec3& lightColour = glm::vec3(1.f),
 		float specularStrength = 1.f, float shininess = 4,

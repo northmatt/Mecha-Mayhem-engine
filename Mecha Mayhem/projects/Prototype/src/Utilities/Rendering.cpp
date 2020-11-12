@@ -7,8 +7,8 @@ namespace Rendering {
         glClearColor(BackColour.x, BackColour.y, BackColour.z, BackColour.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto objView = reg->view<ObjLoader, Transform>();
-        auto cameraView = reg->view<Camera, Transform>();
+        auto& objView = reg->view<ObjLoader, Transform>();
+        auto& cameraView = reg->view<Camera, Transform>();
 
         int height = BackEnd::GetHalfHeight();
         int width = BackEnd::GetHalfWidth();
@@ -41,7 +41,7 @@ namespace Rendering {
             {
                 Transform& trans = objView.get<Transform>(entity);
 
-                objView.get<ObjLoader>(entity).Draw(entity, trans.GetModel());
+                objView.get<ObjLoader>(entity).Draw(trans.GetModel());
             }
 
             if (hitboxes != nullptr) hitboxes->Render();

@@ -44,6 +44,15 @@ Transform& Transform::UnChild()
 {
 	m_hasParent = false;
 	m_parent = 0;
+	m_dirty = true;
+
+	return *this;
+}
+
+Transform& Transform::SetUsingParentScale(bool yes)
+{
+	m_usingParentScale = yes;
+	m_dirty = true;
 
 	return *this;
 }
@@ -54,8 +63,10 @@ Transform& Transform::ComputeGlobal()
 	if (m_hasParent) {
 		//check if the parent exists, just in case
 		if (ECS::GetRegistry()->valid(m_parent)) {
-			m_global = ECS::GetComponent<Transform>(m_parent).GetModel();
-			//m_global[3][2] = -m_global[3][2];
+			if (m_usingParentScale)
+				m_global = ECS::GetComponent<Transform>(m_parent).GetModel();
+			else
+				m_global = ECS::GetComponent<Transform>(m_parent).GetScalessModel();
 		}
 		else	UnChild();
 
@@ -65,8 +76,6 @@ Transform& Transform::ComputeGlobal()
 	m_global = glm::translate(m_global, m_position);
 	m_global *= glm::toMat4(m_rotation);
 	m_global = glm::scale(m_global, m_scale);
-
-	//m_global[3][2] = -m_global[3][2];
 
 	m_dirty = false;
 
@@ -81,14 +90,27 @@ glm::mat4 Transform::GetModel()
 	return m_global;
 }
 
-Transform& Transform::SetTransform(const btTransform& trans)
+glm::mat4 Transform::GetScalessModel()
+{
+	glm::mat4 temp = one;
+	//parent stuff
+	if (m_hasParent) {
+		//check if the parent exists, just in case
+		if (ECS::GetRegistry()->valid(m_parent)) {
+			temp = ECS::GetComponent<Transform>(m_parent).GetScalessModel();
+		}
+		else	UnChild();
+
+	}
+	
+	return glm::translate(temp, m_position) * glm::toMat4(m_rotation);
+}
+
+void Transform::SetTransform(const btTransform& trans)
 {
 	SetPosition(trans.getOrigin());
 	SetRotation(trans.getRotation());
-
 	m_dirty = true;
-
-	return *this;
 }
 
 Transform& Transform::SetPosition(const glm::vec3& pos)
@@ -104,11 +126,12 @@ Transform& Transform::SetPosition(const btVector3& pos)
 	m_position.x = pos.x();
 	m_position.y = pos.y();
 	m_position.z = pos.z();
+	m_dirty = true;
 
 	return *this;
 }
 
-glm::vec3 Transform::GetPosition()
+glm::vec3 Transform::GetLocalPosition()
 {
 	return m_position;
 }
@@ -131,6 +154,8 @@ Transform& Transform::SetScale(float scale)
 	m_scale.x = scale;
 	m_scale.y = scale;
 	m_scale.z = scale;
+	m_dirty = true;
+
 	return *this;
 }
 
@@ -161,11 +186,12 @@ Transform& Transform::SetRotation(const btQuaternion& rot)
 	m_rotation.y = rot.y();
 	m_rotation.z = rot.z();
 	m_rotation.w = rot.w();
+	m_dirty = true;
 
 	return *this;
 }
 
-glm::quat Transform::GetRotation()
+glm::quat Transform::GetLocalRotation()
 {
 	return m_rotation;
 }
@@ -175,7 +201,7 @@ glm::quat Transform::GetGlobalRotation()
 	return glm::mat3(m_global);
 }
 
-glm::mat3 Transform::GetRotationM3()
+glm::mat3 Transform::GetLocalRotationM3()
 {
 	return glm::toMat3(m_rotation);
 }

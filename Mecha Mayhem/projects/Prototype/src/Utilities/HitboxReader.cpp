@@ -143,19 +143,19 @@ bool HitboxGen::SaveToFile(bool overwriteExisting)
     if (height != 0)        file << "floor " << height;
 
     for (short i(0); i < m_objects.size(); ++i) {
-        file << "\n" << "box ";
+        file << "\n" << "box";
         auto trans = m_objects[i].trans;
-        glm::vec3 pos = trans.GetPosition();
+        glm::vec3 pos = trans.GetLocalPosition();
         if (glm::length(pos) != 0)
-            file << "pos " << pos.x << " " << pos.y << " " << pos.z << " ";
+            file << " pos " << pos.x << ' ' << pos.y << ' ' << pos.z;
 
-        glm::quat rot = trans.GetRotation();
+        glm::quat rot = trans.GetLocalRotation();
         if (rot.w != 1 || rot.x != 0 || rot.y != 0 || rot.z != 0)
-            file << "rot " << rot.x << " " << rot.y << " " << rot.z << " " << rot.w << " ";
+            file << " rot " << rot.x << ' ' << rot.y << ' ' << rot.z << ' ' << rot.w;
 
         glm::vec3 scl = trans.GetScale();
         if (scl.x != 1 || scl.y != 1 || scl.z != 1)
-            file << "scl " << scl.x << " " << scl.y << " " << scl.z << " ";
+            file << " scl " << scl.x << ' ' << scl.y << ' ' << scl.z;
     }
     std::cout << "saved data\n";
 
@@ -233,12 +233,12 @@ void HitboxGen::Render()
     if (m_floor) {
         Transform floor;
         floor.SetPosition(m_floor->getWorldTransform().getOrigin()).SetScale(glm::vec3(1000, 0, 1000));
-        m_cube.Draw(0, floor.GetModel());
+        m_cube.Draw(floor.GetModel());
     }
 
     for (short i(0); i < m_objects.size(); ++i) {
-        if (i == m_current)     m_cubeCurrent.Draw(0, m_objects[i].trans.GetModel());
-        else                    m_cube.Draw(0, m_objects[i].trans.GetModel());
+        if (i != m_current)     m_cube.Draw(m_objects[i].trans.GetModel());
+        else             m_cubeCurrent.Draw(m_objects[i].trans.GetModel());
     }
 }
 
@@ -311,9 +311,9 @@ void HitboxGen::Update(float dt)
         if (change.x != 0 || change.z != 0 || change.y != 0) {
             m_objects[m_current].body->getWorldTransform().
                 setOrigin(BLM::GLMtoBT(currentTrans.SetPosition(
-                    currentTrans.GetPosition() +
-                    glm::rotate(currentTrans.GetRotation(), change)
-                ).GetPosition())
+                    currentTrans.GetLocalPosition() +
+                    glm::rotate(currentTrans.GetLocalRotation(), change)
+                ).GetLocalPosition())
             );
             change = glm::vec3(0);
         }
@@ -323,10 +323,10 @@ void HitboxGen::Update(float dt)
         if (Input::GetKeyDown(KEY::H))      change.x += glm::radians(45.f);
         if (change.x != 0 || change.z != 0) {
             m_objects[m_current].body->getWorldTransform().setRotation(BLM::GLMtoBT(
-                currentTrans.SetRotation(currentTrans.GetRotation() *
+                currentTrans.SetRotation(currentTrans.GetLocalRotation() *
                     glm::angleAxis(change.z, glm::vec3(1, 0, 0)) *
                     glm::angleAxis(change.x, glm::vec3(0, 1, 0))
-                ).GetRotation())
+                ).GetLocalRotation())
             );
             change = glm::vec3(0);
         }

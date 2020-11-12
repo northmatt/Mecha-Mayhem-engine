@@ -523,12 +523,12 @@ void ObjLoader::BeginDraw()
 	m_defaultQueue.resize(0);
 }
 
-void ObjLoader::Draw(unsigned entity, const glm::mat4& model)
+void ObjLoader::Draw(const glm::mat4& model)
 {
 	//Draw comments are for future improvments
 	if (m_usingTexture) {
 		//if (m_addedToDraw) {
-			m_texQueue.push_back({ entity, m_index, model });
+			m_texQueue.push_back({ m_index, model });
 		/*}
 		else {
 			m_drawID = m_texQueue.size();
@@ -538,7 +538,7 @@ void ObjLoader::Draw(unsigned entity, const glm::mat4& model)
 	}
 	else if (m_usingMaterial) {
 		//if (m_addedToDraw) {
-			m_matQueue.push_back({ entity, m_index, model });
+			m_matQueue.push_back({ m_index, model });
 		/*}
 		else {
 			m_drawID = m_matQueue.size();
@@ -548,7 +548,7 @@ void ObjLoader::Draw(unsigned entity, const glm::mat4& model)
 	}
 	else {
 		//if (m_addedToDraw) {
-			m_defaultQueue.push_back({ entity, m_index, model });
+			m_defaultQueue.push_back({ m_index, model });
 		/*}
 		else {
 			m_drawID = m_defaultQueue.size();
