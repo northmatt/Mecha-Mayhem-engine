@@ -9,7 +9,7 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 	std::string input = "testmap";
 	std::cout << "filename: " + input + "\n";
 	//std::cin >> input;
-	if (!m_colliders.Init(m_world, input, false, false))
+	if (!m_colliders.Init(m_world, input, true, false))
 		std::cout << input + " failed to load, no collision boxes loaded\n";
 
 	width = windowWidth;
@@ -134,6 +134,6 @@ void DemoScene::Update()
 	/// End of loop
 	if (Input::GetKeyDown(KEY::FSLASH))	m_colliders.ToggleDraw();
 	m_colliders.Update(m_dt);
-	if (Input::GetKeyDown(KEY::F10))	if (!m_colliders.SaveToFile())		std::cout << "file save failed\n";
+	if (Input::GetKeyDown(KEY::F10))	if (!m_colliders.SaveToFile(false))	std::cout << "file save failed\n";
 	if (Input::GetKeyDown(KEY::F1))		if (!m_colliders.LoadFromFile())	std::cout << "file load failed\n";
 }

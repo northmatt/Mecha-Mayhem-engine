@@ -50,12 +50,32 @@ bool HitboxGen::Init(btDiscreteDynamicsWorld* world, const std::string& filename
     else {
         if (newFile && !overwrite) {
             while (file) {
-                m_filename += "1";
+                size_t index = m_filename.size() - 1;
+                if (std::isdigit(m_filename[index])) {
+                    if (m_filename[index] < '9')
+                        ++m_filename[index];
+                    else if (index > 0) {
+                        while (index >= 0) {
+                            if (!std::isdigit(m_filename[index]))
+                                break;
+                            if (index > 0)    --index;
+                        }
+                        int num = std::stoi(m_filename.substr(++index));
+                        m_filename = m_filename.substr(0, index) + std::to_string(++num);
+                    }
+                    else {
+                        m_filename[index] = '1';
+                        m_filename += "0";
+                    }
+                        
+                }
+                else {
+                    m_filename += "1";
+                }
                 file.close();
                 file.open(m_filename);
             }
             file.open(m_filename, std::fstream::out);
-            file.close();
 
             std::cout << "found an existing file, newfile specified, so \"" + m_filename + "\" created\n";
 
@@ -131,16 +151,46 @@ bool HitboxGen::SaveToFile(bool overwriteExisting)
     if (overwriteExisting) {
         file.close();
         file.open(m_filename, std::ios::out);
-        std::cout << "overwriting existing file\n";
+        std::cout << "overwriting existing file, ";
     }
     else if (file >> std::string()) {
+        while (file) {
+            size_t index = m_filename.size() - 1;
+            if (std::isdigit(m_filename[index])) {
+                if (m_filename[index] < '9')
+                    ++m_filename[index];
+                else if (index > 0) {
+                    while (index >= 0) {
+                        if (!std::isdigit(m_filename[index]))
+                            break;
+                        if (index > 0)    --index;
+                    }
+                    int num = std::stoi(m_filename.substr(++index));
+                    m_filename = m_filename.substr(0, index) + std::to_string(++num);
+                }
+                else {
+                    m_filename[index] = '1';
+                    m_filename += "0";
+                }
+
+            }
+            else {
+                m_filename += "0";
+            }
+            file.close();
+            file.open(m_filename);
+        }
+        file.open(m_filename, std::fstream::out);
+
+        std::cout << "file has data, so \"" + m_filename + "\" created, ";
+    }
+    else {
         file.close();
-        std::cout << "data in file, won't overwrite\n";
-        return true;
+        file.open(m_filename, std::fstream::out);
     }
 
     float height = m_floor->getWorldTransform().getOrigin().y();
-    if (height != 0)        file << "floor " << height;
+    if(height != 0)     file << "floor " << height;
 
     for (short i(0); i < m_objects.size(); ++i) {
         file << "\n" << "box";
