@@ -4,8 +4,8 @@
 class DemoScene : public Scene
 {
 public:
-	DemoScene(const std::string& name, const glm::vec3& gravity = glm::vec3(0.f), bool physics = true) :
-		Scene(name, gravity, physics) {}
+	DemoScene(const std::string& name, const glm::vec3& gravity = glm::vec3(0.f)) :
+		Scene(name, gravity, true) {}
 
 	virtual void Init(int windowWidth, int windowHeight) override;
 	virtual void Update() override;
@@ -26,8 +26,5 @@ private:
 	unsigned bodyEnt = 0;
 	unsigned Dio = 0;
 	unsigned P = 0;
-
-	std::vector<unsigned> someObjs = {};
-
 };
 

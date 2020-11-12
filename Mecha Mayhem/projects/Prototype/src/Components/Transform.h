@@ -10,6 +10,9 @@ class Transform
 {
 public:
 	Transform();
+	Transform(const glm::vec3& pos);
+	Transform(const glm::vec3& pos, const glm::quat& rot);
+	Transform(const glm::vec3& pos, const glm::quat& rot, const glm::vec3& scale);
 
 	Transform& ChildTo(unsigned index);
 	bool HasParent() { return m_hasParent; }

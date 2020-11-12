@@ -1,7 +1,7 @@
 #pragma once
 #include "Engine/BackEnd.h"
 #include "Components/ECS.h"
-#include "Components/ObjLoader.h"
+#include "Utilities/HitboxReader.h"
 
 namespace Rendering
 {
@@ -11,5 +11,7 @@ namespace Rendering
 	extern glm::vec3 LightPos;
 	extern glm::vec3 LightColour;
 	extern glm::vec3 DefaultColour;
+
+	extern HitboxGen* hitboxes;
 };
 

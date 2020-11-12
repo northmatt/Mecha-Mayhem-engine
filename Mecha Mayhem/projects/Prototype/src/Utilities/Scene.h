@@ -1,6 +1,5 @@
 #pragma once
 #include "Rendering.h"
-#include "Components/PhysBody.h"
 #include "BLM.h"
 #include "Input.h"
 
@@ -13,10 +12,9 @@ public:
 	entt::registry* GetRegistry();
 	std::string GetName();
 
-	static void Init(bool causeOverload = true);
-	static void Unload(bool causeOverload = true);
-
 	virtual void Init(int windowWidth, int windowHeight);
+
+	virtual Scene* Reattach();
 
 	virtual void Update() {}
 	void BackEndUpdate();
@@ -29,10 +27,11 @@ protected:
 
 	entt::registry m_reg;
 	btDiscreteDynamicsWorld *m_world = nullptr;
+	HitboxGen m_colliders;
 
-	static btDbvtBroadphase *_broadphase;
-	static btCollisionConfiguration *_collisionConfiguration;
-	static btCollisionDispatcher *_dispatcher;
-	static btSequentialImpulseConstraintSolver *_solver;
+	btDbvtBroadphase *_broadphase = new btDbvtBroadphase();
+	btCollisionConfiguration *_collisionConfiguration = new btDefaultCollisionConfiguration();
+	btCollisionDispatcher *_dispatcher = new btCollisionDispatcher(_collisionConfiguration);
+	btSequentialImpulseConstraintSolver *_solver = new btSequentialImpulseConstraintSolver();
 };
 

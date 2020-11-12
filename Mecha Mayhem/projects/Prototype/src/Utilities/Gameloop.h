@@ -15,8 +15,8 @@ namespace Gameloop
 
 		//all static inits
 		ObjLoader::Init();
-		Scene::Init();
 		Input::Init(window);
+		HitboxGen::Init();
 
 		return window;
 	}
@@ -34,7 +34,6 @@ namespace Gameloop
 		ECS::DettachRegistry();
 		BackEnd::Unload();
 		ObjLoader::Unload();
-		Scene::Unload();
 
 		// Clean up the toolkit logger so we don't leak memory
 		Logger::Uninitialize();

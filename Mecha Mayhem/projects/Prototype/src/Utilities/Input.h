@@ -10,8 +10,11 @@ enum class KEY
 	//39
 	APOSTROPHE = GLFW_KEY_APOSTROPHE,
 
-	//48
-	ZERO = GLFW_KEY_0,
+	COMMA = GLFW_KEY_COMMA,
+	//47
+	PERIOD = GLFW_KEY_PERIOD,
+	FSLASH,// = GLFW_KEY_SLASH,
+	ZERO,// = GLFW_KEY_0,
 	ONE,
 	TWO,
 	THREE,
@@ -26,9 +29,12 @@ enum class KEY
 	A = GLFW_KEY_A,
 	B, C, D, E, F,
 	G, H, I, J, K,
-	l, M, N, O, P,
+	L, M, N, O, P,
 	Q, R, S, T, U,
 	V, W, X, Y, Z,
+	LBRACKET,// = GLFW_KEY_LEFT_BRACKET,
+	BSLASH,// = GLFW_KEY_BACKSLASH,
+	RBRACKET,// = GLFW_KEY_RIGHT_BRACKET,
 
 	//256
 	ESC = GLFW_KEY_ESCAPE,
@@ -75,26 +81,24 @@ public:
 
 	//returns whether or not the key is held
 	static bool GetKey(KEY key) {
-		if (pressed[check(int(key))])
-			return true;
-		return pressed[check(int(key))] = glfwGetKey(window, int(key));
+		return glfwGetKey(window, int(key));
 	}
 	//returns if the key was just pressed down (on press but not hold)
 	static bool GetKeyDown(KEY key) {
 		if (!pressed[check(int(key))])
-			return pressed[check(int(key))] = glfwGetKey(window, int(key));
+			return glfwGetKey(window, int(key));
 		return false;
 	}
 	//returns if the key was just released (on release but not lack of input (use !GetKey))
 	static bool GetKeyUp(KEY key) {
 		if (pressed[check(int(key))])
-			return !(pressed[check(int(key))] = glfwGetKey(window, int(key)));
+			return !glfwGetKey(window, int(key));
 		return false;
 	}
 
 	//checks all keys (kinda ineffecient)
 	static void Update() {
-		for (int i(0); i < __amt; ++i) {
+		for (short i(0); i < __amt; ++i) {
 			/*//91 - 32 = 59 and 256 - 32 = 224
 			if (i == 59)
 				i = 224;
@@ -110,11 +114,11 @@ public:
 private:
 	static int check(int test) { return test - (test <= __mid ? __lowest : __last); }
 	static GLFWwindow* window;
-	static const short __lowest = 32;			//lowest character index
-	static const short __mid = 90;				//top of lower end
+	static const short __lowest = 32;				//lowest character index
+	static const short __mid = 93;					//top of lower end
 	static const short __mid2 = __mid - __lowest;
-	static const short __last = 256 - __mid2;	//start of upper
-	static const short __amt = 347 - __last;	//highest of upper
+	static const short __last = 256 - __mid2 - 1;	//start of upper
+	static const short __amt = 347 - __last;		//highest of upper
 	static bool pressed[__amt];
 };
 

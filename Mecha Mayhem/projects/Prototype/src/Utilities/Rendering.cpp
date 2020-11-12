@@ -44,6 +44,8 @@ namespace Rendering {
                 objView.get<ObjLoader>(entity).Draw(entity, trans.GetModel());
             }
 
+            if (hitboxes != nullptr) hitboxes->Render();
+
             ObjLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.1f);
             ++count;
             //exit even if some cams haven't been checked, because only the amount specified should render
@@ -57,4 +59,5 @@ namespace Rendering {
     glm::vec3 LightPos = glm::vec3(0.f);
     glm::vec3 DefaultColour = glm::vec3(1.f);
 
+    HitboxGen* hitboxes = nullptr;
 }

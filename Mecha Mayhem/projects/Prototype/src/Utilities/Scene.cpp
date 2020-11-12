@@ -1,10 +1,5 @@
 #include "Scene.h"
 
-btDbvtBroadphase* Scene::_broadphase = nullptr;
-btCollisionConfiguration * Scene::_collisionConfiguration = nullptr;
-btCollisionDispatcher * Scene::_dispatcher = nullptr;
-btSequentialImpulseConstraintSolver * Scene::_solver = nullptr;
-
 Scene::Scene(const std::string& name, const glm::vec3& gravity, bool physics)
     : m_name(name)
 {
@@ -18,6 +13,7 @@ Scene::Scene(const std::string& name, const glm::vec3& gravity, bool physics)
 
 Scene::~Scene()
 {
+    Rendering::hitboxes = nullptr;
     delete m_world;
 }
 
@@ -31,33 +27,33 @@ std::string Scene::GetName()
     return m_name;
 }
 
-void Scene::Init(bool causeOverload)
-{
-    _broadphase = new btDbvtBroadphase();
-    _collisionConfiguration = new btDefaultCollisionConfiguration();
-    _dispatcher = new btCollisionDispatcher(_collisionConfiguration);
-    _solver = new btSequentialImpulseConstraintSolver();
-}
-
-void Scene::Unload(bool causeOverload)
-{
-    _broadphase = nullptr;
-    _collisionConfiguration = nullptr;
-    _dispatcher = nullptr;
-    _solver = nullptr;
-}
-
 void Scene::Init(int windowWidth, int windowHeight)
 {
     //generic init, use as guidelines
     ECS::AttachRegistry(&m_reg);
-    if (m_world)
+    if (m_world) {
         PhysBody::Init(m_world);
+        ECS::AttachWorld(m_world);
+        if (!m_colliders.Init(m_world, "maps/map1"))
+            std::cout << "map1 failed to load, no collision boxes loaded\n";
+    }
 
     // for multi cam setup, change the m_camCount variable, and also spawn in reverse order (aka player 1 last)
     unsigned cameraEnt = ECS::CreateEntity();
     auto& camCam = ECS::AttachComponent<Camera>(cameraEnt);
     camCam.SetFovDegrees(60.f).ResizeWindow(windowWidth, windowHeight);
+}
+
+Scene* Scene::Reattach()
+{
+    ECS::AttachRegistry(&m_reg);
+    if (m_world) {
+        PhysBody::Init(m_world);
+        ECS::AttachWorld(m_world);
+        Rendering::hitboxes = &m_colliders;
+    }
+
+    return this;
 }
 
 void Scene::BackEndUpdate()
@@ -76,21 +72,10 @@ void Scene::BackEndUpdate()
             auto phys = m_reg.get<PhysBody>(entity);
 
             if (phys.IsDynamic() || phys.Changed()) {
-                m_reg.get<Transform>(entity).SetTransform(
-                    m_reg.get<PhysBody>(entity).GetTransform()
-                );
+                m_reg.get<Transform>(entity).SetTransform(phys.GetTransform());
             }
         }
     }
-
-    //auto transView = m_reg.view<Transform>();
-
-    //for (auto entity : transView) {
-    //    //recalculate if has parent
-    //    if (transView.get(entity).HasParent()) {
-    //        m_reg.get<Transform>(entity).ComputeGlobal();
-    //    }
-    //}
 
     //always render
     if (m_camCount < 1)

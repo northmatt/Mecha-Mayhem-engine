@@ -1,6 +1,6 @@
 #pragma once
 #include <entt/entt.hpp>
-#include "Transform.h"
+#include "PhysBody.h"
 
 class ECS abstract
 {
@@ -9,6 +9,7 @@ public:
 
 	//Let the class edit the registry
 	static void AttachRegistry(entt::registry* reg);
+	static void AttachWorld(btDiscreteDynamicsWorld* world);
 
 	//Make this class not attached to anything
 	static void DettachRegistry();
@@ -42,6 +43,7 @@ public:
 
 private:
 	static entt::registry* m_registry;
+	static btDiscreteDynamicsWorld* m_world;
 };
 
 template<typename T>

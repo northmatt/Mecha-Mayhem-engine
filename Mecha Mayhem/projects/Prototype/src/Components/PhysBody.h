@@ -27,6 +27,9 @@ public:
 
 	btRigidBody* GetBody() { return m_body; }
 
+	PhysBody& SetGravity(glm::vec3 grav);
+	PhysBody& SetGravity(btVector3 grav);
+
 	PhysBody& SetVelocity(glm::vec3 vel);
 	PhysBody& SetVelocity(btVector3 vel);
 	btVector3 GetVelocity() { return m_body->getLinearVelocity(); }

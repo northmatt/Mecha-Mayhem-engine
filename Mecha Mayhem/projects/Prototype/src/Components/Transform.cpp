@@ -5,7 +5,28 @@ glm::mat4 one = glm::mat4(1.f);
 
 Transform::Transform()
 {
+	m_dirty = true;
+}
 
+Transform::Transform(const glm::vec3& pos)
+{
+	m_position = pos;
+	m_dirty = true;
+}
+
+Transform::Transform(const glm::vec3& pos, const glm::quat& rot)
+{
+	m_position = pos;
+	m_rotation = rot;
+	m_dirty = true;
+}
+
+Transform::Transform(const glm::vec3& pos, const glm::quat& rot, const glm::vec3& scale)
+{
+	m_position = pos;
+	m_rotation = rot;
+	m_scale = scale;
+	m_dirty = true;
 }
 
 Transform& Transform::ChildTo(unsigned index)
