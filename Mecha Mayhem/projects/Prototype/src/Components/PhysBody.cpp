@@ -19,15 +19,17 @@ PhysBody& PhysBody::Init(float width, float height, float depth, glm::vec3 pos, 
     bool shapeExists = false;
     btVector3 dimensions(btScalar(width / 2), btScalar(height / 2), btScalar(depth / 2));
 
+    btCollisionShape* boxShape = nullptr;
     //tests to see if the shape already exists
     /*for (int i(0); i < m_collisionShapes.size(); ++i) {
         if (m_collisionShapes[i]->)
     }*/
 
-    btCollisionShape* boxShape = new btBoxShape(dimensions);
+    if (!shapeExists) {
+        boxShape = new btBoxShape(dimensions);
 
-    m_collisionShapes.push_back(boxShape);
-
+        m_collisionShapes.push_back(boxShape);
+    }
     btTransform trans;
     trans.setIdentity();
     trans.setOrigin(BLM::GLMtoBT(pos));
@@ -36,7 +38,7 @@ PhysBody& PhysBody::Init(float width, float height, float depth, glm::vec3 pos, 
     btVector3 localInertia(0, 0, 0);
 
     //when mass is zero, we make non dynamic
-    if (m_dynamic = isDynamic && mass != 0)
+    if (m_dynamic = (isDynamic && mass != 0))
         boxShape->calculateLocalInertia(mass, localInertia);
 
     //using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
@@ -53,15 +55,17 @@ PhysBody& PhysBody::Init(float radius, float height, glm::vec3 pos, float mass, 
 {
     bool shapeExists = false;
 
+    btCollisionShape* pillShape = nullptr;
     //tests to see if the shape already exists
     /*for (int i(0); i < m_collisionShapes.size(); ++i) {
         if (m_collisionShapes[i]->)
     }*/
 
-    btCollisionShape* pillShape = new btCapsuleShape(radius, height);
+    if (!shapeExists) {
+        pillShape = new btCapsuleShape(radius, height / 0.5f);
 
-    m_collisionShapes.push_back(pillShape);
-
+        m_collisionShapes.push_back(pillShape);
+    }
     btTransform trans;
     trans.setIdentity();
     trans.setOrigin(BLM::GLMtoBT(pos));
@@ -70,7 +74,7 @@ PhysBody& PhysBody::Init(float radius, float height, glm::vec3 pos, float mass, 
     btVector3 localInertia(0, 0, 0);
 
     //when mass is zero, we make non dynamic
-    if (m_dynamic = isDynamic && mass != 0)
+    if (m_dynamic = (isDynamic && mass != 0))
         pillShape->calculateLocalInertia(mass, localInertia);
 
     //using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
@@ -87,15 +91,17 @@ PhysBody& PhysBody::Init(float radius, glm::vec3 pos, float mass, bool isDynamic
 {
     bool shapeExists = false;
 
+    btCollisionShape* sphereShape = nullptr;
     //tests to see if the shape already exists
     /*for (int i(0); i < m_collisionShapes.size(); ++i) {
         if (m_collisionShapes[i]->)
     }*/
 
-    btCollisionShape* sphereShape = new btSphereShape(radius);
+    if (!shapeExists) {
+        sphereShape = new btSphereShape(radius);
 
-    m_collisionShapes.push_back(sphereShape);
-
+        m_collisionShapes.push_back(sphereShape);
+    }
     btTransform trans;
     trans.setIdentity();
     trans.setOrigin(BLM::GLMtoBT(pos));
@@ -104,7 +110,7 @@ PhysBody& PhysBody::Init(float radius, glm::vec3 pos, float mass, bool isDynamic
     btVector3 localInertia(0, 0, 0);
 
     //when mass is zero, we make non dynamic
-    if (m_dynamic = isDynamic && mass != 0)
+    if (m_dynamic = (isDynamic && mass != 0))
         sphereShape->calculateLocalInertia(mass, localInertia);
 
     //using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
@@ -118,11 +124,28 @@ PhysBody& PhysBody::Init(float radius, glm::vec3 pos, float mass, bool isDynamic
 }
 
 
+PhysBody& PhysBody::SetGravity(glm::vec3 grav)
+{
+    if (m_body)
+        m_body->setGravity(BLM::GLMtoBT(grav));
+    
+
+    return *this;
+}
+
+PhysBody& PhysBody::SetGravity(btVector3 grav)
+{
+    if (m_body)
+        m_body->setGravity(grav);
+    
+
+    return *this;
+}
+
 PhysBody& PhysBody::SetVelocity(glm::vec3 vel)
 {
     if (m_body)
         m_body->setLinearVelocity(BLM::GLMtoBT(vel));
-    m_changed = true;
 
     return *this;
 }
@@ -131,7 +154,6 @@ PhysBody& PhysBody::SetVelocity(btVector3 vel)
 {
     if (m_body)
         m_body->setLinearVelocity(vel);
-    m_changed = true;
 
     return *this;
 }

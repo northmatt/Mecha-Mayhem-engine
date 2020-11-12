@@ -10,6 +10,9 @@ class Transform
 {
 public:
 	Transform();
+	Transform(const glm::vec3& pos);
+	Transform(const glm::vec3& pos, const glm::quat& rot);
+	Transform(const glm::vec3& pos, const glm::quat& rot, const glm::vec3& scale);
 
 	Transform& ChildTo(unsigned index);
 	bool HasParent() { return m_hasParent; }
@@ -26,13 +29,17 @@ public:
 	glm::vec3 GetGlobalPosition();
 
 	Transform& SetScale(const glm::vec3& scale);
+	Transform& SetScale(float scale);
 	glm::vec3 GetScale();
 
 	Transform& SetRotation(const glm::mat3& rot);
 	Transform& SetRotation(const glm::quat& rot);
 	Transform& SetRotation(const btQuaternion& rot);
 	glm::quat GetRotation();
+	glm::quat GetGlobalRotation();
 	glm::mat3 GetRotationM3();
+	glm::mat3 GetGlobalRotationM3();
+	glm::vec3 GetForwards();
 
 private:
 	bool m_hasParent = false;

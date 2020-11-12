@@ -29,12 +29,16 @@ public:
 	static void SetFullscreen();
 	static void SetTabbed(int width, int height);
 
+	static int GetHalfWidth() { return _lastWidth; }
+	static int GetHalfHeight() { return _lastHeight; }
+
 private:
 	static void GlfwWindowResizedCallback(GLFWwindow* window, int width, int height);
 	static GLFWwindow* window;
 	static float _aspect;
 	static float _aspect2;
 	static int _lastHeight;
+	static int _lastWidth;
 	static GLFWmonitor* monitor;
 	static int monitorVec[4];
 };

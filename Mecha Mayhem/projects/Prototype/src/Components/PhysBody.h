@@ -19,16 +19,25 @@ public:
 	//makes a box
 	PhysBody& Init(float width, float depth, float height, glm::vec3 pos, float mass = 0, bool isDynamic = false);
 	
-	//makes a pill (currently doesn't work)
+	//makes a pill
 	PhysBody& Init(float radius, float height, glm::vec3 pos, float mass = 0, bool isDynamic = false);
 
 	//makes a sphere
 	PhysBody& Init(float radius, glm::vec3 pos, float mass = 0, bool isDynamic = false);
 
+	btRigidBody* GetBody() { return m_body; }
+
+	PhysBody& SetGravity(glm::vec3 grav);
+	PhysBody& SetGravity(btVector3 grav);
+
 	PhysBody& SetVelocity(glm::vec3 vel);
 	PhysBody& SetVelocity(btVector3 vel);
+	btVector3 GetVelocity() { return m_body->getLinearVelocity(); }
+
 	PhysBody& SetPosition(glm::vec3 pos);
 	PhysBody& SetPosition(btVector3 pos);
+
+
 	PhysBody& SetRotation(glm::quat rot);
 	PhysBody& SetRotation(btQuaternion rot);
 

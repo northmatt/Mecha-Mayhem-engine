@@ -36,24 +36,28 @@ void GlDebugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsi
 
 void BackEnd::GlfwWindowResizedCallback(GLFWwindow* window, int width, int height) {
 	//force window back to right ratio
-	if (_lastHeight != height) {
+	if (_lastHeight != height / 2) {
 		int wide = height * _aspect;
 		glfwSetWindowSize(window, wide, height);
-		glViewport(0, 0, wide, height);
+		//glViewport(0, 0, wide, height);
+		_lastHeight = height / 2;
+		_lastWidth = wide / 2;
 	}
 	else {
 		int high = width * _aspect2;
 		glfwSetWindowSize(window, width, high);
-		glViewport(0, 0, width, high);
+		//glViewport(0, 0, width / 2, high / 2);
+		_lastHeight = high / 2;
+		_lastWidth = width / 2;
 	}
 
-	_lastHeight = height;
 }
 
 GLFWwindow *BackEnd::window = nullptr;
 float BackEnd::_aspect = 1;
 float BackEnd::_aspect2 = 1;
 int BackEnd::_lastHeight = 1;
+int BackEnd::_lastWidth = 1;
 GLFWmonitor* BackEnd::monitor = nullptr;
 int BackEnd::monitorVec[4] = { 0 };
 
@@ -71,6 +75,8 @@ GLFWwindow* BackEnd::Init(std::string name, int width, int height)
 	monitor = glfwGetPrimaryMonitor();
 	_aspect = float(width) / height;
 	_aspect2 = float(height) / width;
+	_lastHeight = height / 2;
+	_lastWidth = width / 2;
 
 	// Set our window resized callback
 	glfwSetWindowSizeCallback(window, GlfwWindowResizedCallback);
@@ -85,8 +91,11 @@ GLFWwindow* BackEnd::Init(std::string name, int width, int height)
 
 	// GL states
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);
 	glCullFace(GL_FRONT); //GL_BACK, GL_FRONT_AND_BACK
@@ -121,5 +130,5 @@ void BackEnd::SetFullscreen()
 
 void BackEnd::SetTabbed(int width, int height)
 {
-	glfwSetWindowMonitor(window, nullptr, 20, 20, width, height, 60);
+	glfwSetWindowMonitor(window, nullptr, 50, 50, width, height, 60);
 }

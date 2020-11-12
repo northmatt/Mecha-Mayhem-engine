@@ -1,0 +1,1 @@
+All maps get saved in the bin folder, so go there

@@ -119,9 +119,9 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 						Texture2DDescription desc = Texture2DDescription();
 						desc.Width = 1;
 						desc.Height = 1;
-						desc.Format = InternalFormat::RGB8;
+						desc.Format = InternalFormat::RGBA8;
 						Texture2D::sptr texture = Texture2D::Create(desc);
-						texture->Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.f));
+						texture->Clear(glm::vec4(0.5f, 0.5f, 0.5f, 0.75f));
 						m_texture = m_textures.size();
 						m_textures.push_back({ textureName, texture });
 					}
@@ -341,10 +341,10 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 			std::cout << line.substr(1) << '\n';
 			if (vectorIndex > 0)
 			{
-				/*size_t size = bufferVertex.size() * (usingMaterial ? 8 : 3) + bufferUV.size() * 2 + bufferNormals.size() * 3;
+				size_t size = bufferVertex.size() * (usingMaterial ? 8 : 3) + bufferUV.size() * 2 + bufferNormals.size() * 3;
 				float* interleaved = new float[size];
-				size_t currentIndex = 0;*/
-			/*
+				size_t currentIndex = 0;* /
+
 				std::vector<float> interleaved;
 
 				for (size_t i = 0; i < bufferVertex.size(); ++i) {
@@ -505,9 +505,12 @@ void ObjLoader::Unload()
 	for (int i(0); i < m_textures.size(); ++i) {
 		m_textures[i].texture = nullptr;
 	}
+	m_textures.resize(0);
 	for (int i(0); i < m_models.size(); ++i) {
 		m_models[i].vao = nullptr;
 	}
+	m_models.resize(0);
+
 	m_shader = nullptr;
 	m_matShader = nullptr;
 	m_texShader = nullptr;
@@ -515,41 +518,41 @@ void ObjLoader::Unload()
 
 void ObjLoader::BeginDraw()
 {
-	m_matQueue.clear();
-	m_texQueue.clear();
-	m_defaultQueue.clear();
+	m_matQueue.resize(0);
+	m_texQueue.resize(0);
+	m_defaultQueue.resize(0);
 }
 
-void ObjLoader::Draw(unsigned entity, glm::mat4 model, glm::mat3 rotation)
+void ObjLoader::Draw(unsigned entity, const glm::mat4& model)
 {
 	//Draw comments are for future improvments
 	if (m_usingTexture) {
 		//if (m_addedToDraw) {
-			m_texQueue.push_back({ entity, m_index, model, rotation });
+			m_texQueue.push_back({ entity, m_index, model });
 		/*}
 		else {
 			m_drawID = m_texQueue.size();
-			m_texQueue.push_back({ entity, m_index, model, rotation });
+			m_texQueue.push_back({ entity, m_index, model });
 			m_addedToDraw = true;
 		}*/
 	}
 	else if (m_usingMaterial) {
 		//if (m_addedToDraw) {
-			m_matQueue.push_back({ entity, m_index, model, rotation });
+			m_matQueue.push_back({ entity, m_index, model });
 		/*}
 		else {
 			m_drawID = m_matQueue.size();
-			m_matQueue.push_back({ entity, m_index, model, rotation });
+			m_matQueue.push_back({ entity, m_index, model });
 			m_addedToDraw = true;
 		}*/
 	}
 	else {
 		//if (m_addedToDraw) {
-			m_defaultQueue.push_back({ entity, m_index, model, rotation });
+			m_defaultQueue.push_back({ entity, m_index, model });
 		/*}
 		else {
 			m_drawID = m_defaultQueue.size();
-			m_defaultQueue.push_back({ entity, m_index, model, rotation });
+			m_defaultQueue.push_back({ entity, m_index, model });
 			m_addedToDraw = true;
 		}*/
 	}
@@ -557,16 +560,78 @@ void ObjLoader::Draw(unsigned entity, glm::mat4 model, glm::mat3 rotation)
 	return;
 }
 
-void ObjLoader::PerformDraw(glm::mat4 view, Camera camera, glm::vec3 colour, glm::vec3 lightPos, glm::vec3 lightColour,
+void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour, const glm::vec3& lightPos, const glm::vec3& lightColour,
 	float specularStrength, float shininess,
-	float ambientLightStrength, glm::vec3 ambientColour, float ambientStrength)
+	float ambientLightStrength, const glm::vec3& ambientColour, float ambientStrength)
 {
 	glm::mat4 VP = camera.GetProjection() * view;
+
+	//attempted toon shading: didn't come out great, here's the shader code:
+	/*
+	if (dot(viewDir, inNormal) < 0.1) {
+		frag_color = vec4(0, 0, 0, 1);
+		return;
+	}
+	*/
+
+	if (m_matQueue.size() != 0) {
+		//global stuff
+		m_matShader->Bind();
+		m_matShader->SetUniform("camPos", camera.GetPosition());
+		//m_matShader->SetUniform("viewDir", camera.GetForward());
+
+		m_matShader->SetUniform("lightPos", lightPos);
+		m_matShader->SetUniform("lightColour", lightColour);
+
+		m_matShader->SetUniform("ambientLightStrength", ambientLightStrength);
+		m_matShader->SetUniform("ambientColour", ambientColour);
+		m_matShader->SetUniform("ambientStrength", ambientStrength);
+
+		for (int i(0); i < m_matQueue.size(); ++i) {
+			m_matShader->SetUniformMatrix("MVP", VP * m_matQueue[i].model);
+			m_matShader->SetUniformMatrix("transform", m_matQueue[i].model);
+			//m_matShader->SetUniformMatrix("rotation", m_matQueue[i].rotation);
+
+			//for (int j(0); j < m_models[m_matQueue[i].modelIndex].vao.size(); ++j) {
+			m_models[m_matQueue[i].modelIndex].vao->Bind();
+			glDrawArrays(GL_TRIANGLES, 0, m_models[m_matQueue[i].modelIndex].verts);
+			//}
+		}
+	}
+
+	if (m_texQueue.size() != 0) {
+		m_texShader->Bind();
+		m_texShader->SetUniform("camPos", camera.GetPosition());
+		//m_texShader->SetUniform("viewDir", camera.GetForward());
+
+		m_texShader->SetUniform("lightPos", lightPos);
+		m_texShader->SetUniform("lightColour", lightColour);
+
+		m_texShader->SetUniform("ambientLightStrength", ambientLightStrength);
+		m_texShader->SetUniform("ambientColour", ambientColour);
+		m_texShader->SetUniform("ambientStrength", ambientStrength);
+
+		m_texShader->SetUniform("s_texture", 0);
+
+		for (int i(0); i < m_texQueue.size(); ++i) {
+			m_texShader->SetUniformMatrix("MVP", VP * m_texQueue[i].model);
+			m_texShader->SetUniformMatrix("transform", m_texQueue[i].model);
+			//m_texShader->SetUniformMatrix("rotation", m_texQueue[i].rotation);
+
+			m_textures[m_models[m_texQueue[i].modelIndex].texture].texture->Bind(0);
+
+			//for (int j(0); j < m_models[m_texQueue[i].modelIndex].vao.size(); ++j) {
+			m_models[m_texQueue[i].modelIndex].vao->Bind();
+			glDrawArrays(GL_TRIANGLES, 0, m_models[m_texQueue[i].modelIndex].verts);
+			//}
+		}
+	}
 
 	if (m_defaultQueue.size() != 0) {
 		//global stuff
 		m_shader->Bind();
 		m_shader->SetUniform("camPos", camera.GetPosition());
+		//m_shader->SetUniform("viewDir", camera.GetForward());
 
 		m_shader->SetUniform("colour", colour);
 		m_shader->SetUniform("specularStrength", specularStrength);
@@ -582,62 +647,11 @@ void ObjLoader::PerformDraw(glm::mat4 view, Camera camera, glm::vec3 colour, glm
 		for (int i(0); i < m_defaultQueue.size(); ++i) {
 			m_shader->SetUniformMatrix("MVP", VP * m_defaultQueue[i].model);
 			m_shader->SetUniformMatrix("transform", m_defaultQueue[i].model);
-			m_shader->SetUniformMatrix("rotation", m_defaultQueue[i].rotation);
+			//m_shader->SetUniformMatrix("rotation", m_defaultQueue[i].rotation);
 
 			//for (int j(0); j < m_models[m_defaultQueue[i].modelIndex].vao.size(); ++j) {
-				m_models[m_defaultQueue[i].modelIndex].vao->Bind();
-				glDrawArrays(GL_TRIANGLES, 0, m_models[m_defaultQueue[i].modelIndex].verts);
-			//}
-		}
-	}
-
-	if (m_matQueue.size() != 0) {
-		//global stuff
-		m_matShader->Bind();
-		m_matShader->SetUniform("camPos", camera.GetPosition());
-
-		m_matShader->SetUniform("lightPos", lightPos);
-		m_matShader->SetUniform("lightColour", lightColour);
-
-		m_matShader->SetUniform("ambientLightStrength", ambientLightStrength);
-		m_matShader->SetUniform("ambientColour", ambientColour);
-		m_matShader->SetUniform("ambientStrength", ambientStrength);
-
-		for (int i(0); i < m_matQueue.size(); ++i) {
-			m_matShader->SetUniformMatrix("MVP", VP * m_matQueue[i].model);
-			m_matShader->SetUniformMatrix("transform", m_matQueue[i].model);
-			m_matShader->SetUniformMatrix("rotation", m_matQueue[i].rotation);
-
-			//for (int j(0); j < m_models[m_matQueue[i].modelIndex].vao.size(); ++j) {
-				m_models[m_matQueue[i].modelIndex].vao->Bind();
-				glDrawArrays(GL_TRIANGLES, 0, m_models[m_matQueue[i].modelIndex].verts);
-			//}
-		}
-	}
-
-	if (m_texQueue.size() != 0) {
-		m_texShader->Bind();
-		m_texShader->SetUniform("camPos", camera.GetPosition());
-
-		m_texShader->SetUniform("lightPos", lightPos);
-		m_texShader->SetUniform("lightColour", lightColour);
-
-		m_texShader->SetUniform("ambientLightStrength", ambientLightStrength);
-		m_texShader->SetUniform("ambientColour", ambientColour);
-		m_texShader->SetUniform("ambientStrength", ambientStrength);
-
-		m_texShader->SetUniform("s_texture", 0);
-
-		for (int i(0); i < m_texQueue.size(); ++i) {
-			m_texShader->SetUniformMatrix("MVP", VP * m_texQueue[i].model);
-			m_texShader->SetUniformMatrix("transform", m_texQueue[i].model);
-			m_texShader->SetUniformMatrix("rotation", m_texQueue[i].rotation);
-
-			m_textures[m_models[m_texQueue[i].modelIndex].texture].texture->Bind(0);
-
-			//for (int j(0); j < m_models[m_texQueue[i].modelIndex].vao.size(); ++j) {
-				m_models[m_texQueue[i].modelIndex].vao->Bind();
-				glDrawArrays(GL_TRIANGLES, 0, m_models[m_texQueue[i].modelIndex].verts);
+			m_models[m_defaultQueue[i].modelIndex].vao->Bind();
+			glDrawArrays(GL_TRIANGLES, 0, m_models[m_defaultQueue[i].modelIndex].verts);
 			//}
 		}
 	}
