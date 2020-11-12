@@ -8,6 +8,7 @@ layout(location = 4) in vec2 inSpecStrength;
 uniform sampler2D s_texture;
 
 uniform vec3 camPos;
+//uniform vec3 viewDir;
 
 uniform vec3  lightPos;
 uniform vec3  lightColour;
@@ -40,10 +41,20 @@ void main() {
 	vec3 camDir = normalize(camPos - inPos);
 	vec3 h = normalize(camDir + lightDir);
 	float spec = pow(max(dot(N, h), 0.0), inSpecStrength.y); // Shininess coefficient (can be a uniform)
+	//to modify, you can do: (replace 5 with bands)
+	//spec = floor(spec * 5) * 0.2;
+//	if (spec < 0.25)
+//		spec = 0;
+//	else if (spec < 0.5)
+//		spec = 0.25;
+//	else if (spec < 0.75)
+//		spec = 0.5;
+//	else if (spec < 1)
+//		spec = 0.75;
 
-	vec4 textureColour = texture(s_texture, inUV);
 	vec3 specular = inSpecStrength.x * spec * lightColour; // Can also use a specular color
 
+	vec4 textureColour = texture(s_texture, inUV);
 	vec3 result = (ambient + diffuse + specular) * inColour * textureColour.rgb;
 
 	frag_color = vec4(result, textureColour.a);
