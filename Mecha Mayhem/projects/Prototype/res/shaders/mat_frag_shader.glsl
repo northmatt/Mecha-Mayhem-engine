@@ -2,7 +2,7 @@
 layout(location = 0) in vec3 inPos;
 layout(location = 1) in vec3 inColour;
 layout(location = 2) in vec3 inNormal;
-layout(location = 3) in vec2 inSpecStrength;
+layout(location = 3) in vec3 inSpec;
 
 uniform vec3 camPos;
 
@@ -36,7 +36,7 @@ void main() {
 	//float spec = pow(max(dot(camDir, reflectDir), 0.0), inSpecStrength.y); // Shininess coefficient (can be a uniform)
 	vec3 camDir = normalize(camPos - inPos);
 	vec3 h = normalize(camDir + lightDir);
-	float spec = pow(max(dot(N, h), 0.0), inSpecStrength.y); // Shininess coefficient (can be a uniform)
+	float spec = pow(max(dot(N, h), 0.0), inSpec.y); // Shininess coefficient (can be a uniform)
 
 	//spec = floor(spec * 5) * 0.2;
 //	if (spec < 0.25)
@@ -48,9 +48,9 @@ void main() {
 //	else if (spec < 1)
 //		spec = 0.75;
 
-	vec3 specular = inSpecStrength.x * spec * lightColour; // Can also use a specular color
+	vec3 specular = inSpec.x * spec * lightColour; // Can also use a specular color
 
 	vec3 result = (ambient + diffuse + specular) * inColour;
 
-	frag_color = vec4(result, 1.0);
+	frag_color = vec4(result, inSpec.z);
 }

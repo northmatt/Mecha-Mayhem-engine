@@ -14,7 +14,7 @@ struct Materials
 {
 	std::string name;
 	glm::vec3 colours;
-	glm::vec2 specStrength;
+	glm::vec3 specStrength;
 };
 
 ObjLoader::ObjLoader(const std::string& fileName, bool usingMaterial)
@@ -31,10 +31,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	for (int count(0); count < m_models.size(); ++count) {
 		if (m_models[count].fileName == fileName && m_models[count].mat == usingMaterial) {
 			m_index = count;
-			m_usingMaterial = usingMaterial;
-			if (m_usingTexture = m_models[count].text) {
-				m_texture = m_models[count].texture;
-			}
+
 			return *this;
 		}
 	}
@@ -51,7 +48,6 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	}
 
 	std::vector<Materials> materials;
-	bool usingTexture = false;
 
 	if (usingMaterial)
 	{
@@ -65,22 +61,23 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 
 		std::string matLine;
 		size_t matIndex = 0;
-		float tempExponent = 1.f;
+		float tempExponent = 1.f, tempTrans = 1;
 		while (std::getline(materialFile, matLine))
 		{
 			stringTrimming::ltrim(matLine);
 			if (matLine.substr(0, 6) == "newmtl")
 			{
-				materials.push_back({ matLine.substr(7), glm::vec3(1.f), glm::vec2(1.f) });
+				materials.push_back({ matLine.substr(7), glm::vec3(1.f), glm::vec3(1.f) });
+				tempExponent = tempTrans = 1;
 				matIndex = materials.size() - 1;
 			}
-			else if (matLine.substr(0, 6) == "map_Kd" && m_texture == INT_MAX)
+			else if (matLine.substr(0, 6) == "map_Kd" && m_models[ind].texture == INT_MAX)
 			{
 				std::string textureName = matLine.substr(7);
 				bool dupt = false;
 				for (int i(0); i < m_textures.size(); ++i) {
 					if (m_textures[i].fileName == textureName) {
-						m_texture = i;
+						m_models[ind].texture = i;
 						dupt = true;
 						break;
 					}
@@ -93,7 +90,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 						desc.Format = InternalFormat::RGBA8;
 						Texture2D::sptr texture = Texture2D::Create(desc);
 						texture->Clear(glm::vec4(0.5f, 0.5f, 0.5f, 0.75f));
-						m_texture = m_textures.size();
+						m_models[ind].texture = m_textures.size();
 						m_textures.push_back({ textureName, texture });
 					}
 					else {
@@ -102,18 +99,21 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 						{
 							throw std::runtime_error("Failed to open texture\nError 0: " + textureName);
 						}
-						m_texture = m_textures.size();
+						m_models[ind].texture = m_textures.size();
 						m_textures.push_back({ textureName, tex });
 					}
 				}
-				usingTexture = true;
 				m_models[ind].text = true;
-				m_models[ind].texture = m_texture;
 			}
 			else if (matLine.substr(0, 2) == "Ns")
 			{
 				std::istringstream ss = std::istringstream(matLine.substr(2));
 				ss >> tempExponent;
+			}
+			else if (matLine.substr(0, 5) == "trans")
+			{
+				std::istringstream ss = std::istringstream(matLine.substr(5));
+				ss >> tempTrans;
 			}
 			else if (matLine.size() > 1 && matLine[0] == 'K')
 			{
@@ -135,7 +135,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 					glm::vec3 colour;
 					ss >> colour.x >> colour.y >> colour.z;
 
-					materials[matIndex].specStrength = glm::vec2(colour.length(), tempExponent);
+					materials[matIndex].specStrength = glm::vec3(colour.length(), tempExponent, tempTrans);
 				}
 				else if (matLine[1] == 'a')
 				{
@@ -149,11 +149,11 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 		}
 		materialFile.close();
 
-		m_usingMaterial = true;
+		m_models[ind].mat = true;
 	}
 	else
 	{
-		m_usingMaterial = false;
+		m_models[ind].mat = false;
 	}
 
 
@@ -172,7 +172,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	glm::size_t currentColour = 0;
 	//size_t vectorIndex = 0;
 
-	bool noDraw = false;
+	bool noDraw = false, usingTexture = m_models[ind].text;
 	while (std::getline(file, line))
 	{
 		stringTrimming::trim(line);
@@ -396,6 +396,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 			interleaved.push_back(materials[bufferColours[i]].colours.z);
 			interleaved.push_back(materials[bufferColours[i]].specStrength.x);
 			interleaved.push_back(materials[bufferColours[i]].specStrength.y);
+			interleaved.push_back(materials[bufferColours[i]].specStrength.z);
 		}
 		if (usingTexture) {
 			interleaved.push_back(UV[bufferUV[i]].x);
@@ -411,24 +412,24 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 
 	//change this once UVs are added
 	if (usingTexture) {
-		size_t stride = sizeof(float) * 13;
+		size_t stride = sizeof(float) * 14;
 		//m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
 		m_models[ind].vao->AddVertexBuffer(interleaved_vbo, {
 			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
 			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3),
-			BufferAttribute(4, 2, GL_FLOAT, false, stride, sizeof(float) * 6),
-			BufferAttribute(2, 2, GL_FLOAT, false, stride, sizeof(float) * 8),
-			BufferAttribute(3, 3, GL_FLOAT, false, stride, sizeof(float) * 10)
+			BufferAttribute(4, 3, GL_FLOAT, false, stride, sizeof(float) * 6),
+			BufferAttribute(2, 2, GL_FLOAT, false, stride, sizeof(float) * 9),
+			BufferAttribute(3, 3, GL_FLOAT, false, stride, sizeof(float) * 11)
 			});
 	}
 	else if (usingMaterial) {
-		size_t stride = sizeof(float) * 11;
+		size_t stride = sizeof(float) * 12;
 		//m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
 		m_models[ind].vao->AddVertexBuffer(interleaved_vbo, {
 			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
 			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3),
-			BufferAttribute(3, 2, GL_FLOAT, false, stride, sizeof(float) * 6),
-			BufferAttribute(2, 3, GL_FLOAT, false, stride, sizeof(float) * 8)
+			BufferAttribute(3, 3, GL_FLOAT, false, stride, sizeof(float) * 6),
+			BufferAttribute(2, 3, GL_FLOAT, false, stride, sizeof(float) * 9)
 			});
 	}
 	else {
@@ -444,7 +445,6 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	m_models[ind].verts = interleaved.size();
 
 	m_index = ind;
-	m_usingTexture = usingTexture;
 
 	return *this;
 }
@@ -496,10 +496,10 @@ void ObjLoader::BeginDraw()
 
 void ObjLoader::Draw(const glm::mat4& model)
 {
-	if (m_usingTexture) {
+	if (m_models[m_index].text) {
 		m_texQueue.push_back({ m_index, model });
 	}
-	else if (m_usingMaterial) {
+	else if (m_models[m_index].mat) {
 		m_matQueue.push_back({ m_index, model });
 	}
 	else {
@@ -523,24 +523,28 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 	}
 	*/
 
-	if (m_matQueue.size() != 0) {
+	if (m_defaultQueue.size() != 0) {
 		//global stuff
-		m_matShader->Bind();
-		m_matShader->SetUniform("camPos", camera.GetPosition());
+		m_shader->Bind();
+		m_shader->SetUniform("camPos", camera.GetPosition());
 
-		m_matShader->SetUniform("lightPos", lightPos);
-		m_matShader->SetUniform("lightColour", lightColour);
+		m_shader->SetUniform("colour", colour);
+		m_shader->SetUniform("specularStrength", specularStrength);
+		m_shader->SetUniform("shininess", shininess);
 
-		m_matShader->SetUniform("ambientLightStrength", ambientLightStrength);
-		m_matShader->SetUniform("ambientColour", ambientColour);
-		m_matShader->SetUniform("ambientStrength", ambientStrength);
+		m_shader->SetUniform("lightPos", lightPos);
+		m_shader->SetUniform("lightColour", lightColour);
 
-		for (int i(0); i < m_matQueue.size(); ++i) {
-			m_matShader->SetUniformMatrix("MVP", VP * m_matQueue[i].model);
-			m_matShader->SetUniformMatrix("transform", m_matQueue[i].model);
+		m_shader->SetUniform("ambientLightStrength", ambientLightStrength);
+		m_shader->SetUniform("ambientColour", ambientColour);
+		m_shader->SetUniform("ambientStrength", ambientStrength);
 
-			m_models[m_matQueue[i].modelIndex].vao->Bind();
-			glDrawArrays(GL_TRIANGLES, 0, m_models[m_matQueue[i].modelIndex].verts);
+		for (int i(0); i < m_defaultQueue.size(); ++i) {
+			m_shader->SetUniformMatrix("MVP", VP * m_defaultQueue[i].model);
+			m_shader->SetUniformMatrix("transform", m_defaultQueue[i].model);
+
+			m_models[m_defaultQueue[i].modelIndex].vao->Bind();
+			glDrawArrays(GL_TRIANGLES, 0, m_models[m_defaultQueue[i].modelIndex].verts);
 		}
 	}
 
@@ -568,28 +572,24 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 		}
 	}
 
-	if (m_defaultQueue.size() != 0) {
+	if (m_matQueue.size() != 0) {
 		//global stuff
-		m_shader->Bind();
-		m_shader->SetUniform("camPos", camera.GetPosition());
+		m_matShader->Bind();
+		m_matShader->SetUniform("camPos", camera.GetPosition());
 
-		m_shader->SetUniform("colour", colour);
-		m_shader->SetUniform("specularStrength", specularStrength);
-		m_shader->SetUniform("shininess", shininess);
+		m_matShader->SetUniform("lightPos", lightPos);
+		m_matShader->SetUniform("lightColour", lightColour);
 
-		m_shader->SetUniform("lightPos", lightPos);
-		m_shader->SetUniform("lightColour", lightColour);
+		m_matShader->SetUniform("ambientLightStrength", ambientLightStrength);
+		m_matShader->SetUniform("ambientColour", ambientColour);
+		m_matShader->SetUniform("ambientStrength", ambientStrength);
 
-		m_shader->SetUniform("ambientLightStrength", ambientLightStrength);
-		m_shader->SetUniform("ambientColour", ambientColour);
-		m_shader->SetUniform("ambientStrength", ambientStrength);
+		for (int i(0); i < m_matQueue.size(); ++i) {
+			m_matShader->SetUniformMatrix("MVP", VP * m_matQueue[i].model);
+			m_matShader->SetUniformMatrix("transform", m_matQueue[i].model);
 
-		for (int i(0); i < m_defaultQueue.size(); ++i) {
-			m_shader->SetUniformMatrix("MVP", VP * m_defaultQueue[i].model);
-			m_shader->SetUniformMatrix("transform", m_defaultQueue[i].model);
-
-			m_models[m_defaultQueue[i].modelIndex].vao->Bind();
-			glDrawArrays(GL_TRIANGLES, 0, m_models[m_defaultQueue[i].modelIndex].verts);
+			m_models[m_matQueue[i].modelIndex].vao->Bind();
+			glDrawArrays(GL_TRIANGLES, 0, m_models[m_matQueue[i].modelIndex].verts);
 		}
 	}
 

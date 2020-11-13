@@ -3,7 +3,7 @@ layout(location = 0) in vec3 inPos;
 layout(location = 1) in vec3 inColour;
 layout(location = 2) in vec2 inUV;
 layout(location = 3) in vec3 inNormal;
-layout(location = 4) in vec2 inSpecStrength;
+layout(location = 4) in vec3 inSpec;
 
 uniform sampler2D s_texture;
 
@@ -36,12 +36,12 @@ void main() {
 	// Specular
 	vec3 camDir = normalize(camPos - inPos);
 	vec3 h = normalize(camDir + lightDir);
-	float spec = pow(max(dot(N, h), 0.0), inSpecStrength.y);
+	float spec = pow(max(dot(N, h), 0.0), inSpec.y);
 
-	vec3 specular = inSpecStrength.x * spec * lightColour; // Can also use a specular color
+	vec3 specular = inSpec.x * spec * lightColour; // Can also use a specular color
 
 	vec4 textureColour = texture(s_texture, inUV);
 	vec3 result = (ambient + diffuse + specular) * inColour * textureColour.rgb;
 
-	frag_color = vec4(result, textureColour.a);
+	frag_color = vec4(result, textureColour.a * inSpec.z);
 }

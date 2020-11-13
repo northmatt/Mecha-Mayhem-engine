@@ -38,8 +38,8 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 	ECS::GetComponent<Transform>(bodyEnt).SetScale(0.1f);
 
 	drone = ECS::CreateEntity();
-	ECS::AttachComponent<ObjMorphLoader>(drone).LoadMeshs("shield");
-	ECS::GetComponent<Transform>(drone).ChildTo(bodyEnt).SetPosition(glm::vec3(0, 3, -7.5)).SetScale(4.f);
+	ECS::AttachComponent<ObjMorphLoader>(drone).LoadMeshs("sword").LoadMeshs("shield").LoadMeshs("drone").LoadMeshs("othershield/anim", true);
+	ECS::GetComponent<Transform>(drone).ChildTo(bodyEnt).SetPosition(glm::vec3(0, 3, 7.5)).SetScale(4.f);
 
 	Dio = ECS::CreateEntity();
 	ECS::AttachComponent<ObjLoader>(Dio).LoadMesh("models/Pistol.obj", true);
@@ -68,12 +68,36 @@ void DemoScene::Update()
 
 	/// start of loop
 
-	ECS::GetComponent<Transform>(drone).SetRotation(glm::rotate(ECS::GetComponent<Transform>(drone).
-		GetLocalRotation(), glm::radians(45 * m_dt), glm::vec3(0, 1, 0))).SetPosition(
-			glm::vec3(0, 3, 7.5) * glm::inverse(ECS::GetComponent<Transform>(drone).GetLocalRotation())
-		);
+	if (Input::GetKey(KEY::APOSTROPHE)) {
+		ECS::GetComponent<Transform>(drone).SetRotation(glm::rotate(ECS::GetComponent<Transform>(drone).
+			GetLocalRotation(), glm::radians(45 * m_dt), glm::vec3(0, 1, 0))).SetPosition(
+				glm::vec3(0, 3, 7.5) * glm::inverse(ECS::GetComponent<Transform>(drone).GetLocalRotation())
+			);
+	}
+	if (Input::GetKey(KEY::SEMICOLON)) {
+		ECS::GetComponent<Transform>(drone).SetRotation(glm::rotate(ECS::GetComponent<Transform>(drone).
+			GetLocalRotation(), glm::radians(45 * m_dt), glm::vec3(0, -1, 0))).SetPosition(
+				glm::vec3(0, 3, 7.5) * glm::inverse(ECS::GetComponent<Transform>(drone).GetLocalRotation())
+			);
+	}
+
+	if (Input::GetKeyDown(KEY::ONE)) {
+		ECS::GetComponent<ObjMorphLoader>(drone).LoadMeshs("sword");
+	}
+	if (Input::GetKeyDown(KEY::TWO)) {
+		ECS::GetComponent<ObjMorphLoader>(drone).LoadMeshs("shield");
+	}
+	if (Input::GetKeyDown(KEY::THREE)) {
+		ECS::GetComponent<ObjMorphLoader>(drone).LoadMeshs("drone");
+	}
 	if (Input::GetKeyDown(KEY::FOUR)) {
-		ECS::GetComponent<ObjMorphLoader>(drone).ToggleDirection();
+		ECS::GetComponent<ObjMorphLoader>(drone).LoadMeshs("othershield/anim", true);
+	}
+	if (Input::GetKeyDown(KEY::FIVE)) {
+		ECS::GetComponent<ObjMorphLoader>(drone).ToggleDirection().SetSpeed(0.5f);
+	}
+	if (Input::GetKeyDown(KEY::SIX)) {
+		ECS::GetComponent<ObjMorphLoader>(drone).ToggleBounce();
 	}
 
 	if (Input::GetKeyDown(KEY::ESC)) {
@@ -147,4 +171,10 @@ void DemoScene::Update()
 	m_colliders.Update(m_dt);
 	if (Input::GetKeyDown(KEY::F10))	if (!m_colliders.SaveToFile(false))	std::cout << "file save failed\n";
 	if (Input::GetKeyDown(KEY::F1))		if (!m_colliders.LoadFromFile())	std::cout << "file load failed\n";
+}
+
+void DemoScene::Exit()
+{
+	if (!m_colliders.SaveToFile(false))
+		std::cout << "file save failed\n";
 }

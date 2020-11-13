@@ -23,26 +23,7 @@ public:
 	//returns true if moving forwards
 	bool GetDirection() { return !m_reversing; }
 
-	ObjMorphLoader& ToggleDirection() {
-		auto& data = m_anims[m_index];
-		if (m_reversing = !m_reversing) {
-			m_p1 = ((m_p0 = m_p1) == 0 ? m_anims[m_index].durations.size() - 1 : m_p1 - 1);
-			m_timer = m_anims[m_index].durations[m_p0] - m_timer;
-		}
-		else {
-			m_p0 = ((m_p1 = m_p0) == 0 ? m_anims[m_index].durations.size() - 1 : m_p0 - 1);
-			m_timer = m_anims[m_index].durations[m_p1] - m_timer;
-		}
-		m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].pos, pos1Buff);
-		m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].pos, pos2Buff);
-		m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].normal, norm1Buff);
-		m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].normal, norm2Buff);
-		if (m_usingMaterial) {
-			m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].colour, col1Buff);
-			m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].colour, col2Buff);
-		}
-		return *this;
-	}
+	ObjMorphLoader& ToggleDirection();
 
 	ObjMorphLoader& SetBounce(bool bounce) {
 		m_bounce = bounce;
@@ -88,35 +69,49 @@ private:
 		VertexBuffer::sptr pos;
 		VertexBuffer::sptr normal;
 		VertexBuffer::sptr colour = nullptr;
+		VertexBuffer::sptr spec = nullptr;
 	};
 
 	struct Animations {
 		std::string fileName;
 		bool mat;
-		std::vector<float> durations;
-		std::vector<size_t> frameIndices;
+		bool text = false;
+		bool bounce = false;
+		bool loop = false;
+		bool reversing = false;
+		float startTime = 0;
+		std::vector<float> durations = {};
+		std::vector<size_t> frameIndices = {};
 		std::vector<Frames> frames = {};
-		VertexBuffer::sptr spec = nullptr;
+		size_t start = 0;
+		size_t t = 0;
+		size_t texture = INT_MAX;
+		VertexBuffer::sptr UVs = nullptr;
 	};
 
 	struct DrawData {
 		float t;
 		VertexArrayObject::sptr vao;
 		glm::mat4 model;
+		size_t texture = 0;
 	};
 
+	static std::vector<DrawData> m_texQueue;
 	static std::vector<DrawData> m_matQueue;
 	static std::vector<DrawData> m_defaultQueue;
 	static std::vector<Animations> m_anims;
 	static Shader::sptr m_shader;
 	static Shader::sptr m_matShader;
+	static Shader::sptr m_texShader;
 	static std::vector<BufferAttribute> pos1Buff;
 	static std::vector<BufferAttribute> pos2Buff;
 	static std::vector<BufferAttribute> norm1Buff;
 	static std::vector<BufferAttribute> norm2Buff;
 	static std::vector<BufferAttribute> col1Buff;
 	static std::vector<BufferAttribute> col2Buff;
-	static std::vector<BufferAttribute> specBuff;
+	static std::vector<BufferAttribute> spec1Buff;
+	static std::vector<BufferAttribute> spec2Buff;
+	static std::vector<BufferAttribute> UVBuff;
 
 	VertexArrayObject::sptr m_vao = nullptr;
 
@@ -127,7 +122,6 @@ private:
 	size_t m_p0 = 0;
 	size_t m_p1 = 0;
 	size_t m_index = INT_MAX;
-	bool m_usingMaterial = false;
 
 	bool m_reversing = false;
 	bool m_bounce = false;

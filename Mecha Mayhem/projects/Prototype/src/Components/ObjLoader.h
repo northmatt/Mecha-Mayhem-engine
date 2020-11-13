@@ -18,6 +18,7 @@
 
 class ObjLoader
 {
+	friend class ObjMorphLoader;
 public:
 	//contructor
 	ObjLoader() {}
@@ -53,7 +54,7 @@ private:
 		std::string fileName;
 		bool mat;
 		bool text = false;
-		size_t texture = 0;
+		size_t texture = INT_MAX;
 		size_t verts = 0;
 		VertexArrayObject::sptr vao = VertexArrayObject::Create();
 	};
@@ -73,7 +74,4 @@ private:
 	static Shader::sptr m_texShader;
 
 	size_t m_index = INT_MAX;
-	size_t m_texture = INT_MAX;
-	bool m_usingMaterial = false;
-	bool m_usingTexture = false;
 };

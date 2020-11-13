@@ -22,8 +22,10 @@ int main() {
 		while (!glfwWindowShouldClose(window)) {
 			glfwPollEvents();
 
-			if (Input::GetKey(KEY::LCTRL) && Input::GetKeyUp(KEY::ENTER))
+			if (Input::GetKey(KEY::LCTRL) && Input::GetKeyUp(KEY::ENTER)) {
+				activeScene->Exit();
 				glfwSetWindowTitle(window, (activeScene = scenes[sceneswap = !sceneswap]->Reattach())->GetName().c_str());
+			}
 
 
 			activeScene->Update();
@@ -35,6 +37,8 @@ int main() {
 
 			glfwSwapBuffers(window);
 		}
+
+		activeScene->Exit();
 	}
 
 	Gameloop::Stop();

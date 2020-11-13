@@ -3,8 +3,11 @@ layout(location = 0) in vec3 inPos;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec3 inColour;
 layout(location = 3) in vec3 inSpec;
+layout(location = 4) in vec2 inUV;
 
 uniform vec3 camPos;
+
+uniform sampler2D s_texture;
 
 uniform vec3  lightPos;
 uniform vec3  lightColour;
@@ -37,7 +40,9 @@ void main() {
 
 	vec3 specular = inSpec.x * spec * lightColour;
 
-	vec3 result = (ambient + diffuse + specular) * inColour;
+	vec4 textureColour = texture(s_texture, inUV);
 
-	frag_color = vec4(result, inSpec.z);
+	vec3 result = (ambient + diffuse + specular) * textureColour.rgb * inColour;
+
+	frag_color = vec4(result, textureColour.a * inSpec.z);
 }
