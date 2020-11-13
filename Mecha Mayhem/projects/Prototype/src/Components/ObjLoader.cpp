@@ -1,43 +1,14 @@
 #include "ObjLoader.h"
+#include "Utilities/stringTrimming.h"
 
-#include <string>
-#include <sstream>
-
-// Borrowed from https://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
-// Thank you Shawn
-#pragma region String Trimming
-
-// trim from start (in place)
-static inline void ltrim(std::string& s) {
-	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
-		return !std::isspace(ch);
-		}));
-}
-
-// trim from end (in place)
-static inline void rtrim(std::string& s) {
-	s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
-		return !std::isspace(ch);
-		}).base(), s.end());
-}
-
-// trim from both ends (in place)
-static inline void trim(std::string& s) {
-	ltrim(s);
-	rtrim(s);
-}
-
-#pragma endregion 
-
-std::vector<DrawData> ObjLoader::m_matQueue = {};
-std::vector<DrawData> ObjLoader::m_texQueue = {};
-std::vector<DrawData> ObjLoader::m_defaultQueue = {};
+std::vector<ObjLoader::DrawData> ObjLoader::m_matQueue = {};
+std::vector<ObjLoader::DrawData> ObjLoader::m_texQueue = {};
+std::vector<ObjLoader::DrawData> ObjLoader::m_defaultQueue = {};
+std::vector<ObjLoader::Models> ObjLoader::m_models = {};
+std::vector<ObjLoader::Texture> ObjLoader::m_textures = {};
 Shader::sptr ObjLoader::m_shader = nullptr;
 Shader::sptr ObjLoader::m_matShader = nullptr;
 Shader::sptr ObjLoader::m_texShader = nullptr;
-std::vector<Models> ObjLoader::m_models = {};
-std::vector<Texture> ObjLoader::m_textures = {};
-
 
 struct Materials
 {
@@ -97,7 +68,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 		float tempExponent = 1.f;
 		while (std::getline(materialFile, matLine))
 		{
-			ltrim(matLine);
+			stringTrimming::ltrim(matLine);
 			if (matLine.substr(0, 6) == "newmtl")
 			{
 				materials.push_back({ matLine.substr(7), glm::vec3(1.f), glm::vec2(1.f) });
@@ -204,7 +175,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	bool noDraw = false;
 	while (std::getline(file, line))
 	{
-		trim(line);
+		stringTrimming::trim(line);
 
 		if (line[0] == 'v')
 		{
@@ -505,11 +476,11 @@ void ObjLoader::Unload()
 	for (int i(0); i < m_textures.size(); ++i) {
 		m_textures[i].texture = nullptr;
 	}
-	m_textures.resize(0);
+	m_textures.clear();
 	for (int i(0); i < m_models.size(); ++i) {
 		m_models[i].vao = nullptr;
 	}
-	m_models.resize(0);
+	m_models.clear();
 
 	m_shader = nullptr;
 	m_matShader = nullptr;
@@ -525,36 +496,14 @@ void ObjLoader::BeginDraw()
 
 void ObjLoader::Draw(const glm::mat4& model)
 {
-	//Draw comments are for future improvments
 	if (m_usingTexture) {
-		//if (m_addedToDraw) {
-			m_texQueue.push_back({ m_index, model });
-		/*}
-		else {
-			m_drawID = m_texQueue.size();
-			m_texQueue.push_back({ entity, m_index, model });
-			m_addedToDraw = true;
-		}*/
+		m_texQueue.push_back({ m_index, model });
 	}
 	else if (m_usingMaterial) {
-		//if (m_addedToDraw) {
-			m_matQueue.push_back({ m_index, model });
-		/*}
-		else {
-			m_drawID = m_matQueue.size();
-			m_matQueue.push_back({ entity, m_index, model });
-			m_addedToDraw = true;
-		}*/
+		m_matQueue.push_back({ m_index, model });
 	}
 	else {
-		//if (m_addedToDraw) {
-			m_defaultQueue.push_back({ m_index, model });
-		/*}
-		else {
-			m_drawID = m_defaultQueue.size();
-			m_defaultQueue.push_back({ entity, m_index, model });
-			m_addedToDraw = true;
-		}*/
+		m_defaultQueue.push_back({ m_index, model });
 	}
 
 	return;
@@ -578,7 +527,6 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 		//global stuff
 		m_matShader->Bind();
 		m_matShader->SetUniform("camPos", camera.GetPosition());
-		//m_matShader->SetUniform("viewDir", camera.GetForward());
 
 		m_matShader->SetUniform("lightPos", lightPos);
 		m_matShader->SetUniform("lightColour", lightColour);
@@ -590,19 +538,15 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 		for (int i(0); i < m_matQueue.size(); ++i) {
 			m_matShader->SetUniformMatrix("MVP", VP * m_matQueue[i].model);
 			m_matShader->SetUniformMatrix("transform", m_matQueue[i].model);
-			//m_matShader->SetUniformMatrix("rotation", m_matQueue[i].rotation);
 
-			//for (int j(0); j < m_models[m_matQueue[i].modelIndex].vao.size(); ++j) {
 			m_models[m_matQueue[i].modelIndex].vao->Bind();
 			glDrawArrays(GL_TRIANGLES, 0, m_models[m_matQueue[i].modelIndex].verts);
-			//}
 		}
 	}
 
 	if (m_texQueue.size() != 0) {
 		m_texShader->Bind();
 		m_texShader->SetUniform("camPos", camera.GetPosition());
-		//m_texShader->SetUniform("viewDir", camera.GetForward());
 
 		m_texShader->SetUniform("lightPos", lightPos);
 		m_texShader->SetUniform("lightColour", lightColour);
@@ -616,14 +560,11 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 		for (int i(0); i < m_texQueue.size(); ++i) {
 			m_texShader->SetUniformMatrix("MVP", VP * m_texQueue[i].model);
 			m_texShader->SetUniformMatrix("transform", m_texQueue[i].model);
-			//m_texShader->SetUniformMatrix("rotation", m_texQueue[i].rotation);
 
 			m_textures[m_models[m_texQueue[i].modelIndex].texture].texture->Bind(0);
 
-			//for (int j(0); j < m_models[m_texQueue[i].modelIndex].vao.size(); ++j) {
 			m_models[m_texQueue[i].modelIndex].vao->Bind();
 			glDrawArrays(GL_TRIANGLES, 0, m_models[m_texQueue[i].modelIndex].verts);
-			//}
 		}
 	}
 
@@ -631,7 +572,6 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 		//global stuff
 		m_shader->Bind();
 		m_shader->SetUniform("camPos", camera.GetPosition());
-		//m_shader->SetUniform("viewDir", camera.GetForward());
 
 		m_shader->SetUniform("colour", colour);
 		m_shader->SetUniform("specularStrength", specularStrength);
@@ -647,12 +587,9 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 		for (int i(0); i < m_defaultQueue.size(); ++i) {
 			m_shader->SetUniformMatrix("MVP", VP * m_defaultQueue[i].model);
 			m_shader->SetUniformMatrix("transform", m_defaultQueue[i].model);
-			//m_shader->SetUniformMatrix("rotation", m_defaultQueue[i].rotation);
 
-			//for (int j(0); j < m_models[m_defaultQueue[i].modelIndex].vao.size(); ++j) {
 			m_models[m_defaultQueue[i].modelIndex].vao->Bind();
 			glDrawArrays(GL_TRIANGLES, 0, m_models[m_defaultQueue[i].modelIndex].verts);
-			//}
 		}
 	}
 

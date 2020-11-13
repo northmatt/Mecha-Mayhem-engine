@@ -27,5 +27,7 @@ private:
 	unsigned bodyEnt = 0;
 	unsigned Dio = 0;
 	unsigned P = 0;
+
+	unsigned drone = 0;
 };
 

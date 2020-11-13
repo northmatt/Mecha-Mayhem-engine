@@ -5,7 +5,7 @@
 
 namespace Rendering
 {
-	void Update(entt::registry* reg, int numOfCams);
+	void Update(entt::registry* reg, int numOfCams, float dt);
 
 	extern glm::vec4 BackColour;
 	extern glm::vec3 LightPos;

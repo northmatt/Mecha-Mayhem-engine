@@ -1,5 +1,5 @@
 #pragma once
-#include "Components/ObjLoader.h"
+#include "Components/ObjMorphLoader.h"
 #include "Components/Transform.h"
 
 class HitboxGen

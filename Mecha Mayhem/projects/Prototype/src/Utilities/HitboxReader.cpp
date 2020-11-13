@@ -221,7 +221,7 @@ bool HitboxGen::LoadFromFile()
     }
     if (!m_world)   return false;
 
-    std::fstream file(m_filename);
+    std::ifstream file(m_filename);
 
     if (!file)      return false;
     std::cout << "found the file, replacing data\n";

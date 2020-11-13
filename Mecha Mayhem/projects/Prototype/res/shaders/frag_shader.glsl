@@ -4,13 +4,12 @@ layout(location = 1) in vec3 inNormal;
 
 uniform vec3 colour;
 uniform vec3 camPos;
-//uniform vec3 viewDir;
-
-uniform vec3  lightPos;
-uniform vec3  lightColour;
 
 uniform float specularStrength;
 uniform float shininess;
+
+uniform vec3  lightPos;
+uniform vec3  lightColour;
 
 uniform float ambientLightStrength;
 uniform vec3  ambientColour;

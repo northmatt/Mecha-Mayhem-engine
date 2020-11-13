@@ -37,6 +37,10 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 	ECS::AttachComponent<ObjLoader>(bodyEnt).LoadMesh("models/Pistol.obj");
 	ECS::GetComponent<Transform>(bodyEnt).SetScale(0.1f);
 
+	drone = ECS::CreateEntity();
+	ECS::AttachComponent<ObjMorphLoader>(drone).LoadMeshs("shield");
+	ECS::GetComponent<Transform>(drone).ChildTo(bodyEnt).SetPosition(glm::vec3(0, 3, -7.5)).SetScale(4.f);
+
 	Dio = ECS::CreateEntity();
 	ECS::AttachComponent<ObjLoader>(Dio).LoadMesh("models/Pistol.obj", true);
 
@@ -48,7 +52,7 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 		ChildTo(P).SetUsingParentScale(false);
 	{
 		unsigned entity = ECS::CreateEntity();
-		auto& temp = ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/cringe.obj", true);
+		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/cringe.obj", true);
 		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, -30, 0)).SetScale(4.f);
 	}
 
@@ -63,8 +67,15 @@ void DemoScene::Update()
 	auto& ballPhys = ECS::GetComponent<PhysBody>(bodyEnt).SetAwake();
 
 	/// start of loop
-	
-	//if (Input::GetKeyDown(KEY::ESC)) {
+
+	ECS::GetComponent<Transform>(drone).SetRotation(glm::rotate(ECS::GetComponent<Transform>(drone).
+		GetLocalRotation(), glm::radians(45 * m_dt), glm::vec3(0, 1, 0))).SetPosition(
+			glm::vec3(0, 3, 7.5) * glm::inverse(ECS::GetComponent<Transform>(drone).GetLocalRotation())
+		);
+	if (Input::GetKeyDown(KEY::FOUR)) {
+		ECS::GetComponent<ObjMorphLoader>(drone).ToggleDirection();
+	}
+
 	if (Input::GetKeyDown(KEY::ESC)) {
 		if (Input::GetKey(KEY::LSHIFT)) {
 			if (screen = !screen)	BackEnd::SetTabbed(width, height);

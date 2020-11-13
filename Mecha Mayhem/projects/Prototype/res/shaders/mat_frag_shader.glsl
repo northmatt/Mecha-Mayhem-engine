@@ -5,7 +5,6 @@ layout(location = 2) in vec3 inNormal;
 layout(location = 3) in vec2 inSpecStrength;
 
 uniform vec3 camPos;
-//uniform vec3 viewDir;
 
 uniform vec3  lightPos;
 uniform vec3  lightColour;
