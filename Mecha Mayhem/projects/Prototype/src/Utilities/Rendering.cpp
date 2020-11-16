@@ -63,8 +63,6 @@ namespace Rendering {
 
             ObjMorphLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.1f);
 
-            if (hitboxes != nullptr) hitboxes->Render();
-
             ++count;
             //exit even if some cams haven't been checked, because only the amount specified should render
             if (count > numOfCams)
