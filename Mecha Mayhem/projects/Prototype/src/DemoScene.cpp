@@ -65,7 +65,6 @@ void DemoScene::Update()
 {
 	//auto& camTrans = ECS::GetComponent<Transform>(cameraEnt);
 	auto& ballPhys = ECS::GetComponent<PhysBody>(bodyEnt).SetAwake();
-
 	/// start of loop
 
 	if (Input::GetKey(KEY::APOSTROPHE)) {

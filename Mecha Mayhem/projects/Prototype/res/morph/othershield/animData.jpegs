@@ -1,5 +1,5 @@
-reverse start 1 timer 2
+reverse start 1 timer 0.5
 anim 0 0.5
-anim 1 2
-anim 2 2
-anim 3 2
+anim 1 0.5
+anim 2 0.5
+anim 3 0.5

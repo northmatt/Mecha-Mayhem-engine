@@ -1,7 +1,5 @@
-bounce loop start 1
-anim 0 0.25
-anim 1 0.5
-anim 1 0.75
-anim 1 0.5
-anim 0 0.25
-anim 1 0.5
+start 0 timer 0.25
+anim 0 0.125
+anim 0 0.125
+anim 1 0.125
+anim 1 0.125

@@ -53,6 +53,8 @@ Scene* Scene::Reattach()
         Rendering::hitboxes = &m_colliders;
     }
 
+    m_lastClock = glfwGetTime();
+
     return this;
 }
 
