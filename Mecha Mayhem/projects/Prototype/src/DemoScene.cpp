@@ -182,15 +182,33 @@ void DemoScene::Update()
 	///
 	///RAYCAST TEST
 	///
-	glm::vec3 rayPos = ECS::GetComponent<Transform>(P).ComputeScalessGlobal().GetGlobalPosition();
-	glm::vec3 forwards = -ECS::GetComponent<Transform>(P).GetForwards();
-	btVector3 p =  ECS::GetComponent<PhysBody>(bodyEnt).GetRaycast(rayPos, forwards * 2000.f);
+	auto& ptrans = ECS::GetComponent<Transform>(P);
+	glm::vec3 rayPos = ptrans.ComputeScalessGlobal().GetGlobalPosition();
+	glm::vec3 forwards = -ptrans.GetForwards();
+	btVector3 p = PhysBody::GetRaycast(rayPos, forwards * 2000.f);
 	std::cout << p.x() << "," << p.y() << "," << p.z() << "\r";
 	//std::cout << rayPos.x << "," << rayPos.y << "," << rayPos.z << "\r";
 	if (p != btVector3())
 	{
 		//yes
 		ECS::GetComponent<Transform>(epic).SetPosition(BLM::BTtoGLM(p));
+	}
+	rayResult test = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos), BLM::GLMtoBT(-forwards * 50.f));
+	if (rot.x < pi * 0.25f) {
+		ECS::GetComponent<Transform>(cameraEnt).SetPosition(glm::vec3(
+			0, 0, (test.hasHit() ? (test.m_closestHitFraction > 0.1f ? 5.f : test.m_closestHitFraction * 50.f - 0.5f) : 5.f)
+		));
+	}
+	else if (rot.x < pi * 0.75f) {
+		float t = (rot.x - pi * 0.25f) * 2;
+		ECS::GetComponent<Transform>(cameraEnt).SetPosition(glm::vec3(
+			0, 0, (1 - t) * 5.f - t * 0.5f
+		));
+	}
+	else {
+		ECS::GetComponent<Transform>(cameraEnt).SetPosition(glm::vec3(
+			0, 0, 0.5f
+		));
 	}
 
 }
