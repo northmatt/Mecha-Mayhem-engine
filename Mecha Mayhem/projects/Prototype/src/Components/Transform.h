@@ -22,6 +22,7 @@ public:
 	bool GetUsingParentScale() { return m_usingParentScale; }
 
 	Transform& ComputeGlobal();
+	Transform& ComputeScalessGlobal();
 	glm::mat4 GetModel();
 	glm::mat4 GetScalessModel();
 

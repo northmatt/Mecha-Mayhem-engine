@@ -82,6 +82,27 @@ Transform& Transform::ComputeGlobal()
 	return *this;
 }
 
+Transform& Transform::ComputeScalessGlobal()
+{
+	//parent stuff
+	if (m_hasParent) {
+		//check if the parent exists, just in case
+		if (ECS::GetRegistry()->valid(m_parent)) {
+			m_global = ECS::GetComponent<Transform>(m_parent).GetScalessModel();
+		}
+		else	UnChild();
+
+	}
+	else	m_global = one;
+
+	m_global = glm::translate(m_global, m_position);
+	m_global *= glm::toMat4(m_rotation);
+
+	m_dirty = false;
+
+	return *this;
+}
+
 glm::mat4 Transform::GetModel()
 {
 	if (m_hasParent)	m_dirty = true;
@@ -213,5 +234,5 @@ glm::mat3 Transform::GetGlobalRotationM3()
 
 glm::vec3 Transform::GetForwards()
 {
-	return glm::rotate(GetGlobalRotation(), glm::vec3(0, 0, 1));
+	return glm::vec3(m_global[2][0], m_global[2][1], m_global[2][2]);
 }

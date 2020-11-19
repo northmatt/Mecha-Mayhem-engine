@@ -128,7 +128,7 @@ void DemoScene::Update()
 		//glm::quat rotf = glm::rotate(startQuat, rot.y, glm::vec3(0, -1, 0));
 		//rotf = glm::rotate(rotf, rot.x, glm::vec3(1, 0, 0));
 		ballPhys.SetRotation(glm::rotate(startQuat, rot.y, glm::vec3(0, -1, 0)));
-		ECS::GetComponent<Transform>(P).SetRotation(glm::rotate(startQuat, rot.x, glm::vec3(1, 0, 0)));
+		ECS::GetComponent<Transform>(P).SetRotation(glm::rotate(startQuat, rot.x, glm::vec3(1, 0, 0))).ComputeGlobal();
 	}
 	/*glm::mat4 rotf = glm::rotate(glm::mat4(1.f), rot.x, glm::vec3(1, 0, 0));
 	rotf = glm::rotate(rotf, rot.y, glm::vec3(0, 1, 0));
