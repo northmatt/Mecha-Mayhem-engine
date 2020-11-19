@@ -213,5 +213,5 @@ glm::mat3 Transform::GetGlobalRotationM3()
 
 glm::vec3 Transform::GetForwards()
 {
-	return glm::rotate(GetGlobalRotation(), glm::vec3(0, 0, 1));
+	return glm::vec3(m_global[2][0], m_global[2][1], m_global[2][2]);
 }

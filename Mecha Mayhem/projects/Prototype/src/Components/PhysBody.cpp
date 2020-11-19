@@ -220,3 +220,32 @@ btTransform PhysBody::GetTransform()
 
     return m_body->getWorldTransform();
 }
+
+btVector3 PhysBody::GetRaycast(glm::vec3 startPos, glm::vec3 look)
+{
+    if (m_world)
+    {
+        ///first hit
+        {
+            //player position converstion to bullet vector3
+            btVector3 from = BLM::GLMtoBT(startPos);
+            btVector3 to = BLM::GLMtoBT(look);
+
+            btCollisionWorld::ClosestRayResultCallback closestResults(from, to);
+
+            m_world->rayTest(from, to, closestResults);
+
+            //if it hits it runs this code
+            if (closestResults.hasHit())
+            {
+                //this puts the coordinate in which it hit
+                btVector3 p = from.lerp(to, closestResults.m_closestHitFraction);
+                return btVector3(p);
+
+                //debugging purposes
+              //      std::cout << p.x() << "," << p.y() << "," << p.z() << std::endl;
+            }
+        }
+    }
+}
+
