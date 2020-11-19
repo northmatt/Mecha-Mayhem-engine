@@ -18,17 +18,17 @@ bool HitboxGen::Init(btDiscreteDynamicsWorld* world, const std::string& filename
         m_world->removeRigidBody(m_floor);
     }
     m_world = world;
-    m_filename = "maps/" + filename;
+    m_filename = filename;
 
     //if overwrite, truncate
     std::fstream file;
-    if (overwrite)      file.open(m_filename, std::ios::trunc);
-    else                file.open(m_filename);
+    if (overwrite)      file.open("maps/" + m_filename + ".jpegs", std::ios::trunc);
+    else                file.open("maps/" + m_filename + ".jpegs");
 
     if (!file) {            //if file doesn't exists, overwrite means nothing, so check if new file
         if (newFile) {
-            std::cout << "creating " + m_filename + "\n";
-            file.open(m_filename, std::fstream::out);
+            std::cout << "creating \"maps/" + m_filename + ".jpegs\"\n";
+            file.open("maps/" + m_filename + ".jpegs", std::fstream::out);
             file.close();
         }
         else {
@@ -41,7 +41,7 @@ bool HitboxGen::Init(btDiscreteDynamicsWorld* world, const std::string& filename
         m_world->addRigidBody(m_floor);
     }
     else if (overwrite) {
-        std::cout << "overwriting existing file" + m_filename + "\n";
+        std::cout << "overwriting existing file \"maps/" + m_filename + ".jpegs\"\n";
 
         btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, m_planeShape);
         m_floor = new btRigidBody(rbInfo);
@@ -50,21 +50,41 @@ bool HitboxGen::Init(btDiscreteDynamicsWorld* world, const std::string& filename
     else {
         if (newFile && !overwrite) {
             while (file) {
-                m_filename += "1";
+                size_t index = m_filename.size() - 1;
+                if (std::isdigit(m_filename[index])) {
+                    if (m_filename[index] < '9')
+                        ++m_filename[index];
+                    else if (index > 0) {
+                        while (index >= 0) {
+                            if (!std::isdigit(m_filename[index]))
+                                break;
+                            if (index > 0)    --index;
+                        }
+                        int num = std::stoi(m_filename.substr(++index));
+                        m_filename = m_filename.substr(0, index) + std::to_string(++num);
+                    }
+                    else {
+                        m_filename[index] = '1';
+                        m_filename += "0";
+                    }
+                        
+                }
+                else {
+                    m_filename += "0";
+                }
                 file.close();
-                file.open(m_filename);
+                file.open("maps/" + m_filename + ".jpegs");
             }
-            file.open(m_filename, std::fstream::out);
-            file.close();
+            file.open("maps/" + m_filename + ".jpegs", std::fstream::out);
 
-            std::cout << "found an existing file, newfile specified, so \"" + m_filename + "\" created\n";
+            std::cout << "found an existing file, newfile specified, so \"maps/" + m_filename + ".jpegs\" created\n";
 
             btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, m_planeShape);
             m_floor = new btRigidBody(rbInfo);
             m_world->addRigidBody(m_floor);
         }
         else {
-            std::cout << "found the file, reading data\n";
+            std::cout << "found \"maps/" + m_filename + ".jpegs\", reading data\n";
 
             btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, m_planeShape);
             m_floor = new btRigidBody(rbInfo);
@@ -124,38 +144,69 @@ bool HitboxGen::SaveToFile(bool overwriteExisting)
     }
     if (!m_world)   return false;
 
-    std::fstream file(m_filename);
+    std::fstream file("maps/" + m_filename + ".jpegs");
 
     if (!file)      return false;
 
     if (overwriteExisting) {
         file.close();
-        file.open(m_filename, std::ios::out);
-        std::cout << "overwriting existing file\n";
+        file.open("maps/" + m_filename + ".jpegs", std::ios::out);
+        std::cout << "overwriting \"maps/" + m_filename + ".jpegs\", ";
     }
     else if (file >> std::string()) {
+        std::string oldName = m_filename;
+        while (file) {
+            size_t index = m_filename.size() - 1;
+            if (std::isdigit(m_filename[index])) {
+                if (m_filename[index] < '9')
+                    ++m_filename[index];
+                else if (index > 0) {
+                    while (index >= 0) {
+                        if (!std::isdigit(m_filename[index]))
+                            break;
+                        if (index > 0)    --index;
+                    }
+                    int num = std::stoi(m_filename.substr(++index));
+                    m_filename = m_filename.substr(0, index) + std::to_string(++num);
+                }
+                else {
+                    m_filename[index] = '1';
+                    m_filename += "0";
+                }
+
+            }
+            else {
+                m_filename += "0";
+            }
+            file.close();
+            file.open("maps/" + m_filename + ".jpegs");
+        }
+        file.open("maps/" + m_filename + ".jpegs", std::fstream::out);
+
+        std::cout << "\"maps/" + oldName + ".jpegs\" has data, so \"maps/" + m_filename + ".jpegs\" created, ";
+    }
+    else {
         file.close();
-        std::cout << "data in file, won't overwrite\n";
-        return true;
+        file.open(m_filename, std::fstream::out);
     }
 
     float height = m_floor->getWorldTransform().getOrigin().y();
-    if (height != 0)        file << "floor " << height;
+    if(height != 0)     file << "floor " << height;
 
     for (short i(0); i < m_objects.size(); ++i) {
-        file << "\n" << "box ";
+        file << "\n" << "box";
         auto trans = m_objects[i].trans;
-        glm::vec3 pos = trans.GetPosition();
+        glm::vec3 pos = trans.GetLocalPosition();
         if (glm::length(pos) != 0)
-            file << "pos " << pos.x << " " << pos.y << " " << pos.z << " ";
+            file << " pos " << pos.x << ' ' << pos.y << ' ' << pos.z;
 
-        glm::quat rot = trans.GetRotation();
+        glm::quat rot = trans.GetLocalRotation();
         if (rot.w != 1 || rot.x != 0 || rot.y != 0 || rot.z != 0)
-            file << "rot " << rot.x << " " << rot.y << " " << rot.z << " " << rot.w << " ";
+            file << " rot " << rot.x << ' ' << rot.y << ' ' << rot.z << ' ' << rot.w;
 
         glm::vec3 scl = trans.GetScale();
         if (scl.x != 1 || scl.y != 1 || scl.z != 1)
-            file << "scl " << scl.x << " " << scl.y << " " << scl.z << " ";
+            file << " scl " << scl.x << ' ' << scl.y << ' ' << scl.z;
     }
     std::cout << "saved data\n";
 
@@ -171,10 +222,10 @@ bool HitboxGen::LoadFromFile()
     }
     if (!m_world)   return false;
 
-    std::fstream file(m_filename);
+    std::ifstream file("maps/" + m_filename + ".jpegs");
 
     if (!file)      return false;
-    std::cout << "found the file, replacing data\n";
+    std::cout << "found the \"maps/" + m_filename + ".jpegs\", replacing data\n";
     for (int i(0); i < m_objects.size(); ++i) {
         m_world->removeRigidBody(m_objects[i].body);
     }
@@ -220,6 +271,8 @@ bool HitboxGen::LoadFromFile()
         }
     }
 
+    file.close();
+
     if (m_current >= m_objects.size())  m_current = m_objects.size() - 1;
     if (m_objects.size() == 0)          m_current = 0;
 
@@ -233,12 +286,12 @@ void HitboxGen::Render()
     if (m_floor) {
         Transform floor;
         floor.SetPosition(m_floor->getWorldTransform().getOrigin()).SetScale(glm::vec3(1000, 0, 1000));
-        m_cube.Draw(0, floor.GetModel());
+        m_cube.Draw(floor.GetModel());
     }
 
     for (short i(0); i < m_objects.size(); ++i) {
-        if (i == m_current)     m_cubeCurrent.Draw(0, m_objects[i].trans.GetModel());
-        else                    m_cube.Draw(0, m_objects[i].trans.GetModel());
+        if (i != m_current)     m_cube.Draw(m_objects[i].trans.GetModel());
+        else             m_cubeCurrent.Draw(m_objects[i].trans.GetModel());
     }
 }
 
@@ -280,6 +333,7 @@ void HitboxGen::Update(float dt)
     if (Input::GetKeyDown(KEY::M)) {
         btCollisionShape* tempBox = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
         m_boxShape.push_back(tempBox);
+
         btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, tempBox);
         btRigidBody* tempBod = new btRigidBody(rbInfo);
         tempBod->getWorldTransform() = m_objects[m_current].body->getWorldTransform();
@@ -311,9 +365,9 @@ void HitboxGen::Update(float dt)
         if (change.x != 0 || change.z != 0 || change.y != 0) {
             m_objects[m_current].body->getWorldTransform().
                 setOrigin(BLM::GLMtoBT(currentTrans.SetPosition(
-                    currentTrans.GetPosition() +
-                    glm::rotate(currentTrans.GetRotation(), change)
-                ).GetPosition())
+                    currentTrans.GetLocalPosition() +
+                    glm::rotate(currentTrans.GetLocalRotation(), change)
+                ).GetLocalPosition())
             );
             change = glm::vec3(0);
         }
@@ -323,10 +377,10 @@ void HitboxGen::Update(float dt)
         if (Input::GetKeyDown(KEY::H))      change.x += glm::radians(45.f);
         if (change.x != 0 || change.z != 0) {
             m_objects[m_current].body->getWorldTransform().setRotation(BLM::GLMtoBT(
-                currentTrans.SetRotation(currentTrans.GetRotation() *
+                currentTrans.SetRotation(currentTrans.GetLocalRotation() *
                     glm::angleAxis(change.z, glm::vec3(1, 0, 0)) *
                     glm::angleAxis(change.x, glm::vec3(0, 1, 0))
-                ).GetRotation())
+                ).GetLocalRotation())
             );
             change = glm::vec3(0);
         }

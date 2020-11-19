@@ -1,16 +1,13 @@
 #version 410
 layout(location = 0) in vec3 inPos;
-layout(location = 1) in vec2 inUV;
-layout(location = 2) in vec3 inNormal;
+layout(location = 1) in vec3 inNormal;
+layout(location = 2) in vec3 inColour;
+layout(location = 3) in vec3 inSpec;
 
-uniform vec3 colour;
 uniform vec3 camPos;
 
 uniform vec3  lightPos;
 uniform vec3  lightColour;
-
-uniform float specularStrength;
-uniform float shininess;
 
 uniform float ambientLightStrength;
 uniform vec3  ambientColour;
@@ -27,7 +24,7 @@ void main() {
 	vec3 lightDir = normalize(lightPos - inPos);
 
 	float dif = max(dot(N, lightDir), 0.0);
-	vec3 diffuse = dif * lightColour;// add diffuse intensity
+	vec3 diffuse = dif * lightColour;
 
 	//Attenuation
 	float dist = length(lightPos - inPos);
@@ -35,11 +32,12 @@ void main() {
 
 	// Specular
 	vec3 camDir = normalize(camPos - inPos);
-	vec3 reflectDir = reflect(-lightDir, N);
-	float spec = pow(max(dot(camDir, reflectDir), 0.0), shininess); // Shininess coefficient (can be a uniform)
-	vec3 specular = specularStrength * spec * lightColour; // Can also use a specular color
+	vec3 h = normalize(camDir + lightDir);
+	float spec = pow(max(dot(N, h), 0.0), inSpec.y);
 
-	vec3 result = (ambient + diffuse + specular) * colour;
+	vec3 specular = inSpec.x * spec * lightColour;
 
-	frag_color = vec4(result, 1.0);
+	vec3 result = (ambient + diffuse + specular) * inColour;
+
+	frag_color = vec4(result, inSpec.z);
 }

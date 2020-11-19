@@ -1,7 +1,7 @@
 #pragma once
 #include <glfw/glfw3.h>
 
-//in numerical order
+//in numerical order https://www.glfw.org/docs/3.3/group__keys.html
 enum class KEY
 {
 	//32
@@ -10,7 +10,9 @@ enum class KEY
 	//39
 	APOSTROPHE = GLFW_KEY_APOSTROPHE,
 
+	//44
 	COMMA = GLFW_KEY_COMMA,
+
 	//47
 	PERIOD = GLFW_KEY_PERIOD,
 	FSLASH,// = GLFW_KEY_SLASH,
@@ -24,6 +26,8 @@ enum class KEY
 	SEVEN,
 	EIGHT,
 	NINE,
+
+	SEMICOLON = GLFW_KEY_SEMICOLON,
 
 	//65
 	A = GLFW_KEY_A,

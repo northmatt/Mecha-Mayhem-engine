@@ -17,6 +17,7 @@ public:
 	virtual Scene* Reattach();
 
 	virtual void Update() {}
+	virtual void Exit() {}
 	void BackEndUpdate();
 
 protected:

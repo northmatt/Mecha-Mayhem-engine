@@ -2,13 +2,14 @@
 
 namespace Rendering {
 
-    void Update(entt::registry* reg, int numOfCams)
+    void Update(entt::registry* reg, int numOfCams, float dt)
     {
         glClearColor(BackColour.x, BackColour.y, BackColour.z, BackColour.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto objView = reg->view<ObjLoader, Transform>();
-        auto cameraView = reg->view<Camera, Transform>();
+        auto& objView = reg->view<ObjLoader, Transform>();
+        auto& morphView = reg->view<ObjMorphLoader, Transform>();
+        auto& cameraView = reg->view<Camera, Transform>();
 
         int height = BackEnd::GetHalfHeight();
         int width = BackEnd::GetHalfWidth();
@@ -41,12 +42,27 @@ namespace Rendering {
             {
                 Transform& trans = objView.get<Transform>(entity);
 
-                objView.get<ObjLoader>(entity).Draw(entity, trans.GetModel());
+                objView.get<ObjLoader>(entity).Draw(trans.GetModel());
             }
 
             if (hitboxes != nullptr) hitboxes->Render();
 
             ObjLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.1f);
+
+            ObjMorphLoader::BeginDraw();
+
+            //draw all the objs
+            for (auto entity : morphView)
+            {
+                Transform& trans = morphView.get<Transform>(entity);
+
+                if (count == 1)
+                    morphView.get<ObjMorphLoader>(entity).Update(dt);
+                morphView.get<ObjMorphLoader>(entity).Draw(trans.GetModel());
+            }
+
+            ObjMorphLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.1f);
+
             ++count;
             //exit even if some cams haven't been checked, because only the amount specified should render
             if (count > numOfCams)

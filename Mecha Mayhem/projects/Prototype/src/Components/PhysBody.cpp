@@ -22,7 +22,11 @@ PhysBody& PhysBody::Init(float width, float height, float depth, glm::vec3 pos, 
     btCollisionShape* boxShape = nullptr;
     //tests to see if the shape already exists
     /*for (int i(0); i < m_collisionShapes.size(); ++i) {
-        if (m_collisionShapes[i]->)
+        if (m_collisionShapes[i]->) {
+            shapeExists = true;
+            boxShape = m_collisionShapes[i];
+            break;
+        }
     }*/
 
     if (!shapeExists) {
@@ -56,13 +60,16 @@ PhysBody& PhysBody::Init(float radius, float height, glm::vec3 pos, float mass, 
     bool shapeExists = false;
 
     btCollisionShape* pillShape = nullptr;
-    //tests to see if the shape already exists
     /*for (int i(0); i < m_collisionShapes.size(); ++i) {
-        if (m_collisionShapes[i]->)
+        if (m_collisionShapes[i]->) {
+            shapeExists = true;
+            pillShape = m_collisionShapes[i];
+            break;
+        }
     }*/
 
     if (!shapeExists) {
-        pillShape = new btCapsuleShape(radius, height / 0.5f);
+        pillShape = new btCapsuleShape(radius, height - radius * 2);
 
         m_collisionShapes.push_back(pillShape);
     }
@@ -92,9 +99,12 @@ PhysBody& PhysBody::Init(float radius, glm::vec3 pos, float mass, bool isDynamic
     bool shapeExists = false;
 
     btCollisionShape* sphereShape = nullptr;
-    //tests to see if the shape already exists
     /*for (int i(0); i < m_collisionShapes.size(); ++i) {
-        if (m_collisionShapes[i]->)
+        if (std::string(m_collisionShapes[i]->getName())) {
+            shapeExists = true;
+            boxShape = m_collisionShapes[i];
+            break;
+        }
     }*/
 
     if (!shapeExists) {

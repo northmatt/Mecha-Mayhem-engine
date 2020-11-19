@@ -9,6 +9,7 @@ public:
 
 	virtual void Init(int windowWidth, int windowHeight) override;
 	virtual void Update() override;
+	virtual void Exit() override;
 
 private:
 
@@ -23,8 +24,11 @@ private:
 	bool screen = true;
 
 	unsigned cameraEnt = 0;
+	unsigned cameraEnt2 = 0;
 	unsigned bodyEnt = 0;
 	unsigned Dio = 0;
 	unsigned P = 0;
+
+	unsigned drone = 0;
 };
 
