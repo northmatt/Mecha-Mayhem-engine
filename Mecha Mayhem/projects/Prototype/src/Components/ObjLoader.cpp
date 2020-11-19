@@ -15,6 +15,7 @@ struct Materials
 	std::string name;
 	glm::vec3 colours;
 	glm::vec3 specStrength;
+	bool isText = false;
 };
 
 ObjLoader::ObjLoader(const std::string& fileName, bool usingMaterial)
@@ -103,6 +104,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 						m_textures.push_back({ textureName, tex });
 					}
 				}
+				materials[matIndex].isText = true;
 				m_models[ind].text = true;
 			}
 			else if (matLine.substr(0, 2) == "Ns")
@@ -158,7 +160,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 
 
 	std::vector<glm::vec3> vertex = { glm::vec3() };
-	std::vector<glm::vec2> UV = { glm::vec3() };
+	std::vector<glm::vec2> UV = { glm::vec2(0.f) };
 	std::vector<glm::vec3> normals = { glm::vec3() };
 
 	std::vector<size_t> bufferVertex;
@@ -172,7 +174,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	glm::size_t currentColour = 0;
 	//size_t vectorIndex = 0;
 
-	bool noDraw = false, usingTexture = m_models[ind].text;
+	bool noDraw = false, usingTexture = m_models[ind].text, drawingText = false;
 	while (std::getline(file, line))
 	{
 		stringTrimming::trim(line);
@@ -234,7 +236,10 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 				else if (i % 3 == 1 && usingTexture)
 				{
 					//it's the UV index, we do care
-					bufferUV.push_back(index);
+					if (drawingText)
+						bufferUV.push_back(index);
+					else
+						bufferUV.push_back(0);
 				}
 				else if (i % 3 == 2)
 				{
@@ -278,7 +283,10 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 					else if (j == 1 && usingTexture)
 					{
 						//it's the UV index, we do care
-						bufferUV.push_back(index);
+						if (drawingText)
+							bufferUV.push_back(index);
+						else
+							bufferUV.push_back(0);
 
 					}
 					else if (j == 2)
@@ -299,6 +307,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 			{
 				if (materialName == materials[j].name) {
 					currentColour = j;
+					drawingText = materials[j].isText;
 					break;
 				}
 			}

@@ -33,21 +33,21 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 	bodyEnt = ECS::CreateEntity();
 	ECS::AttachComponent<PhysBody>(bodyEnt).Init(0.5f, 2, glm::vec3(0, 10, 0), 1, true).
 		SetGravity(glm::vec3(0)).GetBody()->setAngularFactor(btVector3(0, 0, 0));
-	ECS::AttachComponent<ObjLoader>(bodyEnt).LoadMesh("models/Pistol.obj");
-	ECS::GetComponent<Transform>(bodyEnt).SetScale(0.1f);
+	ECS::AttachComponent<ObjLoader>(bodyEnt).LoadMesh("models/Char.obj", true);
+	//ECS::GetComponent<Transform>(bodyEnt).SetScale(0.1f);
 
 	drone = ECS::CreateEntity();
 	ECS::AttachComponent<ObjMorphLoader>(drone).LoadMeshs("sword").LoadMeshs("shield").LoadMeshs("drone").LoadMeshs("othershield/anim", true);
-	ECS::GetComponent<Transform>(drone).ChildTo(bodyEnt).SetPosition(glm::vec3(0, 3, 7.5)).SetScale(4.f);
+	ECS::GetComponent<Transform>(drone).ChildTo(bodyEnt).SetPosition(glm::vec3(0, 0, 1.f)).SetScale(0.3f);
 
 	Dio = ECS::CreateEntity();
 	ECS::AttachComponent<ObjLoader>(Dio).LoadMesh("models/Pistol.obj", true);
 
 	P = ECS::CreateEntity();
-	ECS::GetComponent<Transform>(P).SetPosition(glm::vec3(0, 1, 0)).ChildTo(bodyEnt);
-	ECS::GetComponent<Transform>(Dio).SetPosition(glm::vec3(0.5f, 0, -0.5f)).
-		ChildTo(P).SetUsingParentScale(false).SetScale(0.1f);
-	ECS::GetComponent<Transform>(cameraEnt).SetPosition(glm::vec3(0, 0, 5)).
+	ECS::GetComponent<Transform>(P).SetPosition(glm::vec3(0, 0.75f, 0)).ChildTo(bodyEnt);
+	ECS::GetComponent<Transform>(Dio).SetPosition(glm::vec3(0.4f, 0.25f, -0.5f)).
+		ChildTo(bodyEnt).SetUsingParentScale(false).SetScale(0.05f);
+	ECS::GetComponent<Transform>(cameraEnt).SetPosition(glm::vec3(0, 0, camDistance)).
 		ChildTo(P).SetUsingParentScale(false);
 	{
 		unsigned entity = ECS::CreateEntity();
@@ -76,13 +76,13 @@ void DemoScene::Update()
 	if (Input::GetKey(KEY::APOSTROPHE)) {
 		ECS::GetComponent<Transform>(drone).SetRotation(glm::rotate(ECS::GetComponent<Transform>(drone).
 			GetLocalRotation(), glm::radians(45 * m_dt), glm::vec3(0, 1, 0))).SetPosition(
-				glm::vec3(0, 3, 7.5) * glm::inverse(ECS::GetComponent<Transform>(drone).GetLocalRotation())
+				glm::vec3(0, 0, 1.f) * glm::inverse(ECS::GetComponent<Transform>(drone).GetLocalRotation())
 			);
 	}
 	if (Input::GetKey(KEY::SEMICOLON)) {
 		ECS::GetComponent<Transform>(drone).SetRotation(glm::rotate(ECS::GetComponent<Transform>(drone).
 			GetLocalRotation(), glm::radians(45 * m_dt), glm::vec3(0, -1, 0))).SetPosition(
-				glm::vec3(0, 3, 7.5) * glm::inverse(ECS::GetComponent<Transform>(drone).GetLocalRotation())
+				glm::vec3(0, 0, 1.f) * glm::inverse(ECS::GetComponent<Transform>(drone).GetLocalRotation())
 			);
 	}
 
@@ -185,23 +185,25 @@ void DemoScene::Update()
 	glm::vec3 rayPos = ptrans.ComputeScalessGlobal().GetGlobalPosition();
 	glm::vec3 forwards = -ptrans.GetForwards();
 	btVector3 p = PhysBody::GetRaycast(rayPos, forwards * 2000.f);
-	std::cout << p.x() << "," << p.y() << "," << p.z() << "\r";
-	//std::cout << rayPos.x << "," << rayPos.y << "," << rayPos.z << "\r";
 	if (p != btVector3())
 	{
 		//yes
 		ECS::GetComponent<Transform>(epic).SetPosition(BLM::BTtoGLM(p));
 	}
-	rayResult test = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos), BLM::GLMtoBT(-forwards * 50.f));
+	RayResult test = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos), BLM::GLMtoBT(-forwards * camDistance * 10.f));
+	//RayResult test = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos), BLM::GLMtoBT(-forwards * camDistance));
 	if (rot.x < pi * 0.25f) {
 		ECS::GetComponent<Transform>(cameraEnt).SetPosition(glm::vec3(
-			0, 0, (test.hasHit() ? (test.m_closestHitFraction > 0.1f ? 5.f : test.m_closestHitFraction * 50.f - 0.5f) : 5.f)
+			0, 0, (test.hasHit() ? (test.m_closestHitFraction >= 0.1f ?
+				camDistance : test.m_closestHitFraction * camDistance * 10.f - 0.5f) : camDistance)
+			//0, 0, (test.hasHit() ? (test.m_closestHitFraction >= 1.f ?
+				//camDistance : test.m_closestHitFraction * camDistance - 0.5f) : camDistance)
 		));
 	}
-	else if (rot.x < pi * 0.75f) {
-		float t = (rot.x - pi * 0.25f) * 2;
+	else if (rot.x < pi * 0.5f) {
+		float t = (rot.x / pi - 0.25f) * 4;
 		ECS::GetComponent<Transform>(cameraEnt).SetPosition(glm::vec3(
-			0, 0, (1 - t) * 5.f - t * 0.5f
+			0, 0, (1 - t) * camDistance - t * 0.5f
 		));
 	}
 	else {

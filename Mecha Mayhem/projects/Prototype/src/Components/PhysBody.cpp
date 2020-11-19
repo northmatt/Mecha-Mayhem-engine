@@ -221,10 +221,10 @@ btTransform PhysBody::GetTransform()
     return m_body->getWorldTransform();
 }
 
-rayResult PhysBody::GetRaycastResult(btVector3 from, btVector3 to)
+RayResult PhysBody::GetRaycastResult(btVector3 from, btVector3 to)
 {
     if (m_world) {
-        rayResult closestResults(from, to);
+        RayResult closestResults(from, to);
 
         m_world->rayTest(from, to, closestResults);
 
@@ -242,7 +242,7 @@ btVector3 PhysBody::GetRaycastWithDistanceLimit(glm::vec3 startPos, glm::vec3 lo
             btVector3 from = BLM::GLMtoBT(startPos);
             btVector3 to = BLM::GLMtoBT(look);
 
-            rayResult closestResults = GetRaycastResult(from, to);
+            RayResult closestResults = GetRaycastResult(from, to);
 
             //if it hits it runs this code
             if (closestResults.hasHit())
@@ -268,7 +268,7 @@ btVector3 PhysBody::GetRaycast(glm::vec3 startPos, glm::vec3 look)
             btVector3 from = BLM::GLMtoBT(startPos);
             btVector3 to = BLM::GLMtoBT(look);
 
-            rayResult closestResults = GetRaycastResult(from, to);
+            RayResult closestResults = GetRaycastResult(from, to);
 
             //if it hits it runs this code
             if (closestResults.hasHit())
@@ -291,7 +291,7 @@ btVector3 PhysBody::GetRaycast(glm::vec3 look)
             btVector3 from = m_body->getWorldTransform().getOrigin();
             btVector3 to = BLM::GLMtoBT(look);
 
-            rayResult closestResults = GetRaycastResult(from, to);
+            RayResult closestResults = GetRaycastResult(from, to);
 
             //if it hits it runs this code
             if (closestResults.hasHit())
