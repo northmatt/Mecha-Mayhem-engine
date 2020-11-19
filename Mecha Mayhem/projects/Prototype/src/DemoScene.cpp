@@ -182,7 +182,7 @@ void DemoScene::Update()
 	///
 	///RAYCAST TEST
 	///
-	glm::vec3 rayPos = ECS::GetComponent<Transform>(P).ComputeGlobal().GetGlobalPosition();
+	glm::vec3 rayPos = ECS::GetComponent<Transform>(P).ComputeScalessGlobal().GetGlobalPosition();
 	glm::vec3 forwards = -ECS::GetComponent<Transform>(P).GetForwards();
 	btVector3 p =  ECS::GetComponent<PhysBody>(bodyEnt).GetRaycast(rayPos, forwards * 2000.f);
 	std::cout << p.x() << "," << p.y() << "," << p.z() << "\r";
