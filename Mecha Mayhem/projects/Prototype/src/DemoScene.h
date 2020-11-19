@@ -30,5 +30,7 @@ private:
 	unsigned P = 0;
 
 	unsigned drone = 0;
+
+	unsigned epic = 0;
 };
 

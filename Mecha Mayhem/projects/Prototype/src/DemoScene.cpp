@@ -2,6 +2,7 @@
 
 void DemoScene::Init(int windowWidth, int windowHeight)
 {
+
 	//generic init, use as guidelines
 	ECS::AttachRegistry(&m_reg);
 	PhysBody::Init(m_world);
@@ -59,6 +60,13 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 	/// End of creating entities
 	Rendering::DefaultColour = glm::vec4(1.f, 0.5f, 0.5f, 1.f);
 	Rendering::hitboxes = &m_colliders;
+
+	//cube
+	epic = ECS::CreateEntity();
+	ECS::AttachComponent<ObjLoader>(epic).LoadMesh("models/GodHimself.obj");
+
+
+
 }
 
 void DemoScene::Update()
@@ -170,6 +178,21 @@ void DemoScene::Update()
 	m_colliders.Update(m_dt);
 	if (Input::GetKeyDown(KEY::F10))	if (!m_colliders.SaveToFile(false))	std::cout << "file save failed\n";
 	if (Input::GetKeyDown(KEY::F1))		if (!m_colliders.LoadFromFile())	std::cout << "file load failed\n";
+
+	///
+	///RAYCAST TEST
+	///
+	glm::vec3 rayPos = ECS::GetComponent<Transform>(P).ComputeGlobal().GetGlobalPosition();
+	glm::vec3 forwards = -ECS::GetComponent<Transform>(P).GetForwards();
+	btVector3 p =  ECS::GetComponent<PhysBody>(bodyEnt).GetRaycast(rayPos, forwards * 2000.f);
+	std::cout << p.x() << "," << p.y() << "," << p.z() << "\r";
+	//std::cout << rayPos.x << "," << rayPos.y << "," << rayPos.z << "\r";
+	if (p != btVector3())
+	{
+		//yes
+		ECS::GetComponent<Transform>(epic).SetPosition(BLM::BTtoGLM(p));
+	}
+
 }
 
 void DemoScene::Exit()

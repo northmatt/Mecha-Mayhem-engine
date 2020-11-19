@@ -46,6 +46,8 @@ public:
 	//should only be used in Scene.cpp
 	btTransform GetTransform();
 
+	btVector3 GetRaycast(glm::vec3 startPos, glm::vec3 look);
+
 private:
 	btRigidBody* m_body = nullptr;
 	bool m_dynamic = false;
