@@ -32,5 +32,7 @@ private:
 	unsigned drone = 0;
 
 	unsigned epic = 0;
+
+	Sound2D ouch{ "oof.mp4.mp3", "sfx" };
 };
 

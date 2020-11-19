@@ -2,8 +2,6 @@
 
 void DemoScene::Init(int windowWidth, int windowHeight)
 {
-
-	//generic init, use as guidelines
 	ECS::AttachRegistry(&m_reg);
 	PhysBody::Init(m_world);
 	ECS::AttachWorld(m_world);
@@ -102,6 +100,7 @@ void DemoScene::Update()
 	}
 	if (Input::GetKeyDown(KEY::FIVE)) {
 		ECS::GetComponent<ObjMorphLoader>(drone).ToggleDirection().SetSpeed(0.5f);
+		ouch.play();
 	}
 	if (Input::GetKeyDown(KEY::SIX)) {
 		ECS::GetComponent<ObjMorphLoader>(drone).ToggleBounce();
