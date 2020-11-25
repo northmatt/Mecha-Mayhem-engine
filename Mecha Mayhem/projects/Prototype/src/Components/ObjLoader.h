@@ -30,7 +30,7 @@ public:
 	static void Init();
 	static void Unload();
 
-	static void BeginDraw();
+	static void BeginDraw(unsigned amt = 0);
 
 	void Draw(const glm::mat4& model);
 

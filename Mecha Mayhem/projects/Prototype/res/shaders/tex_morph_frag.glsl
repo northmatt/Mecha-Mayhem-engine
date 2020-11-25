@@ -7,14 +7,14 @@ layout(location = 4) in vec2 inUV;
 
 uniform vec3 camPos;
 
-uniform sampler2D s_texture;
-
 uniform vec3  lightPos;
 uniform vec3  lightColour;
 
 uniform float ambientLightStrength;
 uniform vec3  ambientColour;
 uniform float ambientStrength;
+
+uniform sampler2D s_texture;
 
 out vec4 frag_color;
 

@@ -11,6 +11,9 @@ public:
 	virtual void Update() override;
 	virtual void Exit() override;
 
+	void ShootLazer(float width, glm::quat rotation, glm::vec3 pos);
+	void updateLazer();
+
 private:
 
 	int width = 0;
@@ -22,6 +25,9 @@ private:
 	glm::vec2 rot = glm::vec2(0.f);
 
 	bool screen = true;
+	bool swap = false;
+
+	int Lazer = -1;
 
 	unsigned cameraEnt = 0;
 	unsigned cameraEnt2 = 0;

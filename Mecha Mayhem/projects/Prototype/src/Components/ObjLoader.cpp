@@ -72,7 +72,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 				tempExponent = tempTrans = 1;
 				matIndex = materials.size() - 1;
 			}
-			else if (matLine.substr(0, 6) == "map_Kd" && m_models[ind].texture == INT_MAX)
+			else if (matLine.substr(0, 6) == "map_Kd")
 			{
 				std::string textureName = matLine.substr(7);
 				bool dupt = false;
@@ -496,11 +496,14 @@ void ObjLoader::Unload()
 	m_texShader = nullptr;
 }
 
-void ObjLoader::BeginDraw()
+void ObjLoader::BeginDraw(unsigned amt)
 {
-	m_matQueue.resize(0);
 	m_texQueue.resize(0);
+	m_texQueue.reserve(amt);
+	m_matQueue.resize(0);
+	m_matQueue.reserve(amt);
 	m_defaultQueue.resize(0);
+	m_defaultQueue.reserve(amt);
 }
 
 void ObjLoader::Draw(const glm::mat4& model)
