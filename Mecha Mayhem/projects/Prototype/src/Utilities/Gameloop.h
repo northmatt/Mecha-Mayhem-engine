@@ -18,6 +18,7 @@ namespace Gameloop
 		ObjMorphLoader::Init();
 		Input::Init(window);
 		HitboxGen::Init();
+		SoundManager::init("./sounds/", 20);
 
 		return window;
 	}
@@ -25,6 +26,7 @@ namespace Gameloop
 	//update anything with global updates
 	void Update() {
 		Input::Update();
+		SoundManager::update();
 	}
 
 	//stop everything (use at the end to avoid issues)
@@ -36,6 +38,7 @@ namespace Gameloop
 		BackEnd::Unload();
 		ObjLoader::Unload();
 		ObjMorphLoader::Unload();
+		SoundManager::stopEverything();
 
 		// Clean up the toolkit logger so we don't leak memory
 		Logger::Uninitialize();

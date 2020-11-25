@@ -16,7 +16,7 @@ private:
 	int width = 0;
 	int height = 0;
 
-
+	float camDistance = 5.f;
 	float pi = glm::half_pi<float>() - 0.01f;
 	glm::quat startQuat = glm::quat(-1, 0, 0, 0);
 	glm::vec2 rot = glm::vec2(0.f);
@@ -32,5 +32,7 @@ private:
 	unsigned drone = 0;
 
 	unsigned epic = 0;
+
+	Sound2D ouch{ "oof.mp4.mp3", "sfx" };
 };
 

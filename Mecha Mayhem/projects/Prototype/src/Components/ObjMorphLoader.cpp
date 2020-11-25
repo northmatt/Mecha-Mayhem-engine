@@ -23,6 +23,7 @@ struct Materials
 	std::string name;
 	glm::vec3 colours;
 	glm::vec3 specStrength;
+	bool isText = false;
 };
 
 ObjMorphLoader::ObjMorphLoader(const std::string& baseFileName, bool usingMaterial)
@@ -201,6 +202,7 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 						ObjLoader::m_textures.push_back({ textureName, tex });
 					}
 				}
+				materials[matIndex].isText = true;
 				data.text = true;
 			}
 			else if (matLine.substr(0, 2) == "Ns")
@@ -280,7 +282,7 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 		glm::size_t currentColour = 0;
 		//size_t vectorIndex = 0;
 		
-		bool usingTexture = data.text;
+		bool usingTexture = data.text, drawingText = false;
 		while (std::getline(file, line))
 		{
 			stringTrimming::trim(line);
@@ -342,7 +344,10 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 					else if (i % 3 == 1 && usingTexture)
 					{
 						//it's the UV index, we do care
-						bufferUV.push_back(index);
+						if (drawingText)
+							bufferUV.push_back(index);
+						else
+							bufferUV.push_back(0);
 					}
 					else if (i % 3 == 2)
 					{
@@ -386,7 +391,10 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 						else if (j == 1 && usingTexture)
 						{
 							//it's the UV index, we do care
-							bufferUV.push_back(index);
+							if (drawingText)
+								bufferUV.push_back(index);
+							else
+								bufferUV.push_back(0);
 
 						}
 						else if (j == 2)
@@ -407,6 +415,7 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 				{
 					if (materialName == materials[j].name) {
 						currentColour = j;
+						drawingText = materials[j].isText;
 						break;
 					}
 				}
