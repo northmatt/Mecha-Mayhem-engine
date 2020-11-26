@@ -58,7 +58,7 @@ private:
 	static btCollisionShape* m_planeShape;
 	static Transform m_defaultTrans;
 
-	bool m_draw = true;
+	bool m_draw = false;
 	size_t m_current = 0;
 	std::string m_filename;
 
