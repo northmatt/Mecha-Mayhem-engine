@@ -3,6 +3,7 @@
 #include "BLM.h"
 #include "Input.h"
 #include <SoundSystem.h>
+#include "ControllerInput.h"
 
 class Scene
 {

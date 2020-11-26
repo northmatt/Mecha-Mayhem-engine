@@ -1,6 +1,7 @@
 #pragma once
 #include "Utilities/Scene.h"
 
+ 
 class DemoScene : public Scene
 {
 public:
@@ -10,6 +11,7 @@ public:
 	virtual void Init(int windowWidth, int windowHeight) override;
 	virtual void Update() override;
 	virtual void Exit() override;
+
 
 private:
 

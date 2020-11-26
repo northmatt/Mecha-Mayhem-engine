@@ -25,8 +25,12 @@ namespace Gameloop
 
 	//update anything with global updates
 	void Update() {
+		//Keybored
 		Input::Update();
+		//lowercase lol, sound stuff yea
 		SoundManager::update();
+		//Controller Checks n stuff
+		ControllerInput::ControllerUpdate();
 	}
 
 	//stop everything (use at the end to avoid issues)
