@@ -15,34 +15,10 @@
 #include "Engine/BackEnd.h"
 #include "Components/Camera.h"
 #include "Engine/Texture2D.h"
-#include "Engine/Texture2DData.h"
-
-struct Models
-{
-	std::string fileName;
-	bool mat;
-	bool text = false;
-	size_t texture = 0;
-	//std::vector<VertexArrayObject::sptr> vao = {};
-	//std::vector<size_t> verts = {};
-	VertexArrayObject::sptr vao = VertexArrayObject::Create();
-	size_t verts = 0;
-};
-
-struct Texture
-{
-	std::string fileName;
-	Texture2D::sptr texture;
-};
-
-struct DrawData
-{
-	size_t modelIndex;
-	glm::mat4 model;
-};
 
 class ObjLoader
 {
+	friend class ObjMorphLoader;
 public:
 	//contructor
 	ObjLoader() {}
@@ -54,7 +30,7 @@ public:
 	static void Init();
 	static void Unload();
 
-	static void BeginDraw();
+	static void BeginDraw(unsigned amt = 0);
 
 	void Draw(const glm::mat4& model);
 
@@ -63,22 +39,39 @@ public:
 		float ambientLightStrength = 0.05f, const glm::vec3& ambientColour = glm::vec3(0.f), float ambientStrength = 0.f
 	);
 
-	Shader::sptr GetShader() { return m_shader; }
+
+	struct Texture
+	{
+		std::string fileName;
+		Texture2D::sptr texture;
+	};
+	static std::vector<Texture> m_textures;
 
 private:
+
+	struct Models
+	{
+		std::string fileName;
+		bool mat;
+		bool text = false;
+		size_t texture = INT_MAX;
+		size_t verts = 0;
+		VertexArrayObject::sptr vao = VertexArrayObject::Create();
+	};
+
+	struct DrawData
+	{
+		size_t modelIndex;
+		glm::mat4 model;
+	};
+
 	static std::vector<DrawData> m_matQueue;
 	static std::vector<DrawData> m_texQueue;
 	static std::vector<DrawData> m_defaultQueue;
+	static std::vector<Models> m_models;
 	static Shader::sptr m_shader;
 	static Shader::sptr m_matShader;
 	static Shader::sptr m_texShader;
-	static std::vector<Models> m_models;
-	static std::vector<Texture> m_textures;
 
 	size_t m_index = INT_MAX;
-	size_t m_texture = INT_MAX;
-	unsigned m_drawID = INT_MAX;
-	bool m_usingMaterial = false;
-	bool m_usingTexture = false;
-	bool m_addedToDraw = false;
 };

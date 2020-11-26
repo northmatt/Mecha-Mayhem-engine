@@ -9,8 +9,8 @@ int main() {
 	{
 		// Creating demo scene
 		std::vector<Scene*> scenes;
-		scenes.push_back(new DemoScene("Demo", glm::vec3(0, -50, 0)));
-		scenes.push_back(new DemoScene("Demo 2", glm::vec3(0, -50, 0)));
+		scenes.push_back(new DemoScene("Demo", glm::vec3(0, -100, 0)));
+		scenes.push_back(new DemoScene("Demo 2", glm::vec3(0, -100, 0)));
 
 		scenes[0]->Init(width, height);
 		scenes[1]->Init(width, height);
@@ -21,9 +21,12 @@ int main() {
 
 		while (!glfwWindowShouldClose(window)) {
 			glfwPollEvents();
+			ControllerInput::ControllerRefresh();
 
-			if (Input::GetKey(KEY::LCTRL) && Input::GetKeyUp(KEY::ENTER))
+			if (Input::GetKey(KEY::LCTRL) && Input::GetKeyUp(KEY::ENTER)) {
+				activeScene->Exit();
 				glfwSetWindowTitle(window, (activeScene = scenes[sceneswap = !sceneswap]->Reattach())->GetName().c_str());
+			}
 
 
 			activeScene->Update();
@@ -35,6 +38,8 @@ int main() {
 
 			glfwSwapBuffers(window);
 		}
+
+		activeScene->Exit();
 	}
 
 	Gameloop::Stop();

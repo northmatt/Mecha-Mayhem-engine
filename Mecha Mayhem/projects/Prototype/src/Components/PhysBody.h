@@ -1,6 +1,8 @@
 #pragma once
 #include "Components/Transform.h"
 
+typedef btCollisionWorld::ClosestRayResultCallback RayResult;
+
 class PhysBody
 {
 public:
@@ -45,6 +47,11 @@ public:
 
 	//should only be used in Scene.cpp
 	btTransform GetTransform();
+
+	static RayResult GetRaycastResult(btVector3 from, btVector3 to);
+	static btVector3 GetRaycastWithDistanceLimit(glm::vec3 startPos, glm::vec3 look, float limit);
+	static btVector3 GetRaycast(glm::vec3 startPos, glm::vec3 look);
+	btVector3 GetRaycast(glm::vec3 look);
 
 private:
 	btRigidBody* m_body = nullptr;

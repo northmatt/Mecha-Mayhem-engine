@@ -15,15 +15,22 @@ namespace Gameloop
 
 		//all static inits
 		ObjLoader::Init();
+		ObjMorphLoader::Init();
 		Input::Init(window);
 		HitboxGen::Init();
+		SoundManager::init("./sounds/", 20);
 
 		return window;
 	}
 
 	//update anything with global updates
 	void Update() {
+		//Keybored
 		Input::Update();
+		//lowercase lol, sound stuff yea
+		SoundManager::update();
+		//Controller Checks n stuff
+		ControllerInput::ControllerUpdate();
 	}
 
 	//stop everything (use at the end to avoid issues)
@@ -34,6 +41,8 @@ namespace Gameloop
 		ECS::DettachRegistry();
 		BackEnd::Unload();
 		ObjLoader::Unload();
+		ObjMorphLoader::Unload();
+		SoundManager::stopEverything();
 
 		// Clean up the toolkit logger so we don't leak memory
 		Logger::Uninitialize();

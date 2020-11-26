@@ -2,6 +2,8 @@
 #include "Rendering.h"
 #include "BLM.h"
 #include "Input.h"
+#include "ControllerInput.h"
+#include <SoundSystem.h>
 
 class Scene
 {
@@ -17,6 +19,7 @@ public:
 	virtual Scene* Reattach();
 
 	virtual void Update() {}
+	virtual void Exit() { SoundManager::stopEverything(); }
 	void BackEndUpdate();
 
 protected:

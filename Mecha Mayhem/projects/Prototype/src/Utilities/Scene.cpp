@@ -53,6 +53,8 @@ Scene* Scene::Reattach()
         Rendering::hitboxes = &m_colliders;
     }
 
+    m_lastClock = glfwGetTime();
+
     return this;
 }
 
@@ -83,5 +85,5 @@ void Scene::BackEndUpdate()
     else if (m_camCount > 4)
         m_camCount = 4;
 
-    Rendering::Update(&m_reg, m_camCount);
+    Rendering::Update(&m_reg, m_camCount, m_dt);
 }

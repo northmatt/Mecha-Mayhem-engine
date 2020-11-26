@@ -18,17 +18,17 @@ bool HitboxGen::Init(btDiscreteDynamicsWorld* world, const std::string& filename
         m_world->removeRigidBody(m_floor);
     }
     m_world = world;
-    m_filename = "maps/" + filename;
+    m_filename = filename;
 
     //if overwrite, truncate
     std::fstream file;
-    if (overwrite)      file.open(m_filename, std::ios::trunc);
-    else                file.open(m_filename);
+    if (overwrite)      file.open("maps/" + m_filename + ".jpegs", std::ios::trunc);
+    else                file.open("maps/" + m_filename + ".jpegs");
 
     if (!file) {            //if file doesn't exists, overwrite means nothing, so check if new file
         if (newFile) {
-            std::cout << "creating " + m_filename + "\n";
-            file.open(m_filename, std::fstream::out);
+            std::cout << "creating \"maps/" + m_filename + ".jpegs\"\n";
+            file.open("maps/" + m_filename + ".jpegs", std::fstream::out);
             file.close();
         }
         else {
@@ -41,7 +41,7 @@ bool HitboxGen::Init(btDiscreteDynamicsWorld* world, const std::string& filename
         m_world->addRigidBody(m_floor);
     }
     else if (overwrite) {
-        std::cout << "overwriting existing file" + m_filename + "\n";
+        std::cout << "overwriting existing file \"maps/" + m_filename + ".jpegs\"\n";
 
         btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, m_planeShape);
         m_floor = new btRigidBody(rbInfo);
@@ -70,21 +70,21 @@ bool HitboxGen::Init(btDiscreteDynamicsWorld* world, const std::string& filename
                         
                 }
                 else {
-                    m_filename += "1";
+                    m_filename += "0";
                 }
                 file.close();
-                file.open(m_filename);
+                file.open("maps/" + m_filename + ".jpegs");
             }
-            file.open(m_filename, std::fstream::out);
+            file.open("maps/" + m_filename + ".jpegs", std::fstream::out);
 
-            std::cout << "found an existing file, newfile specified, so \"" + m_filename + "\" created\n";
+            std::cout << "found an existing file, newfile specified, so \"maps/" + m_filename + ".jpegs\" created\n";
 
             btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, m_planeShape);
             m_floor = new btRigidBody(rbInfo);
             m_world->addRigidBody(m_floor);
         }
         else {
-            std::cout << "found the file, reading data\n";
+            std::cout << "found \"maps/" + m_filename + ".jpegs\", reading data\n";
 
             btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, m_planeShape);
             m_floor = new btRigidBody(rbInfo);
@@ -144,16 +144,17 @@ bool HitboxGen::SaveToFile(bool overwriteExisting)
     }
     if (!m_world)   return false;
 
-    std::fstream file(m_filename);
+    std::fstream file("maps/" + m_filename + ".jpegs");
 
     if (!file)      return false;
 
     if (overwriteExisting) {
         file.close();
-        file.open(m_filename, std::ios::out);
-        std::cout << "overwriting existing file, ";
+        file.open("maps/" + m_filename + ".jpegs", std::ios::out);
+        std::cout << "overwriting \"maps/" + m_filename + ".jpegs\", ";
     }
     else if (file >> std::string()) {
+        std::string oldName = m_filename;
         while (file) {
             size_t index = m_filename.size() - 1;
             if (std::isdigit(m_filename[index])) {
@@ -178,11 +179,11 @@ bool HitboxGen::SaveToFile(bool overwriteExisting)
                 m_filename += "0";
             }
             file.close();
-            file.open(m_filename);
+            file.open("maps/" + m_filename + ".jpegs");
         }
-        file.open(m_filename, std::fstream::out);
+        file.open("maps/" + m_filename + ".jpegs", std::fstream::out);
 
-        std::cout << "file has data, so \"" + m_filename + "\" created, ";
+        std::cout << "\"maps/" + oldName + ".jpegs\" has data, so \"maps/" + m_filename + ".jpegs\" created, ";
     }
     else {
         file.close();
@@ -221,10 +222,10 @@ bool HitboxGen::LoadFromFile()
     }
     if (!m_world)   return false;
 
-    std::fstream file(m_filename);
+    std::ifstream file("maps/" + m_filename + ".jpegs");
 
     if (!file)      return false;
-    std::cout << "found the file, replacing data\n";
+    std::cout << "found the \"maps/" + m_filename + ".jpegs\", replacing data\n";
     for (int i(0); i < m_objects.size(); ++i) {
         m_world->removeRigidBody(m_objects[i].body);
     }
@@ -269,6 +270,8 @@ bool HitboxGen::LoadFromFile()
             m_floor->getWorldTransform().getOrigin().setY(height);
         }
     }
+
+    file.close();
 
     if (m_current >= m_objects.size())  m_current = m_objects.size() - 1;
     if (m_objects.size() == 0)          m_current = 0;
@@ -330,6 +333,7 @@ void HitboxGen::Update(float dt)
     if (Input::GetKeyDown(KEY::M)) {
         btCollisionShape* tempBox = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
         m_boxShape.push_back(tempBox);
+
         btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, tempBox);
         btRigidBody* tempBod = new btRigidBody(rbInfo);
         tempBod->getWorldTransform() = m_objects[m_current].body->getWorldTransform();

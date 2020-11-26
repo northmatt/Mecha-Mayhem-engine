@@ -220,3 +220,90 @@ btTransform PhysBody::GetTransform()
 
     return m_body->getWorldTransform();
 }
+
+RayResult PhysBody::GetRaycastResult(btVector3 from, btVector3 to)
+{
+    if (m_world) {
+        RayResult closestResults(from, to);
+
+        m_world->rayTest(from, to, closestResults);
+
+        return closestResults;
+    }
+}
+
+btVector3 PhysBody::GetRaycastWithDistanceLimit(glm::vec3 startPos, glm::vec3 look, float limit)
+{
+    if (m_world)
+    {
+        ///first hit
+        {
+            //player position converstion to bullet vector3
+            btVector3 from = BLM::GLMtoBT(startPos);
+            btVector3 to = BLM::GLMtoBT(look);
+
+            RayResult closestResults = GetRaycastResult(from, to);
+
+            //if it hits it runs this code
+            if (closestResults.hasHit())
+            {
+                //this puts the coordinate in which it hit
+                return from.lerp(to, closestResults.m_closestHitFraction > limit ? limit : closestResults.m_closestHitFraction);
+            }
+            else
+            {
+                return from.lerp(to, limit);
+            }
+        }
+    }
+}
+
+btVector3 PhysBody::GetRaycast(glm::vec3 startPos, glm::vec3 look)
+{
+    if (m_world)
+    {
+        ///first hit
+        {
+            //player position converstion to bullet vector3
+            btVector3 from = BLM::GLMtoBT(startPos);
+            btVector3 to = BLM::GLMtoBT(look);
+
+            RayResult closestResults = GetRaycastResult(from, to);
+
+            //if it hits it runs this code
+            if (closestResults.hasHit())
+            {
+                //this puts the coordinate in which it hit
+                btVector3 p = from.lerp(to, closestResults.m_closestHitFraction);
+                return p;
+            }
+        }
+    }
+}
+
+btVector3 PhysBody::GetRaycast(glm::vec3 look)
+{
+    if (m_world)
+    {
+        ///first hit
+        {
+            //player position converstion to bullet vector3
+            btVector3 from = m_body->getWorldTransform().getOrigin();
+            btVector3 to = BLM::GLMtoBT(look);
+
+            RayResult closestResults = GetRaycastResult(from, to);
+
+            //if it hits it runs this code
+            if (closestResults.hasHit())
+            {
+                //this puts the coordinate in which it hit
+                btVector3 p = from.lerp(to, closestResults.m_closestHitFraction);
+                return p;
+
+                //debugging purposes
+              //      std::cout << p.x() << "," << p.y() << "," << p.z() << std::endl;
+            }
+        }
+    }
+}
+
