@@ -858,8 +858,8 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 		m_shader->SetUniform("specularStrength", specularStrength);
 		m_shader->SetUniform("shininess", shininess);
 
-		m_shader->SetUniform("lightPos", *lightPos);
-		m_shader->SetUniform("lightColour", *lightColour);
+		m_shader->SetUniform("lightsPos", *lightPos);
+		m_shader->SetUniform("lightsColour", *lightColour);
 		m_shader->SetUniform("lightCount", lightCount);
 
 		m_shader->SetUniform("ambientLightStrength", ambientLightStrength);
@@ -879,8 +879,8 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 		m_texShader->Bind();
 		m_texShader->SetUniform("camPos", camera.GetPosition());
 
-		m_texShader->SetUniform("lightPos", *lightPos);
-		m_texShader->SetUniform("lightColour", *lightColour);
+		m_texShader->SetUniform("lightsPos", *lightPos);
+		m_texShader->SetUniform("lightsColour", *lightColour);
 		m_texShader->SetUniform("lightCount", lightCount);
 
 		m_texShader->SetUniform("ambientLightStrength", ambientLightStrength);
@@ -905,8 +905,8 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 		m_matShader->Bind();
 		m_matShader->SetUniform("camPos", camera.GetPosition());
 
-		m_matShader->SetUniform("lightPos", *lightPos);
-		m_matShader->SetUniform("lightColour", *lightColour);
+		m_matShader->SetUniform("lightsPos", *lightPos);
+		m_matShader->SetUniform("lightsColour", *lightColour);
 		m_matShader->SetUniform("lightCount", lightCount);
 
 		m_matShader->SetUniform("ambientLightStrength", ambientLightStrength);

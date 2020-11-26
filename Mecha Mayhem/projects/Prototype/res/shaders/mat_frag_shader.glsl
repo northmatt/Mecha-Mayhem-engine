@@ -1,13 +1,17 @@
 #version 410
+#define MAX_LIGHTS 10
 layout(location = 0) in vec3 inPos;
 layout(location = 1) in vec3 inColour;
-layout(location = 2) in vec3 inNormal;
-layout(location = 3) in vec3 inSpec;
+layout(location = 2) in vec2 inUV;
+layout(location = 3) in vec3 inNormal;
+layout(location = 4) in vec3 inSpec;
 
 uniform vec3 camPos;
 
-uniform vec3  lightPos;
-uniform vec3  lightColour;
+uniform vec3  lightsPos[MAX_LIGHTS];
+uniform vec3  lightsColour[MAX_LIGHTS];
+uniform int lightCount;
+uniform bool unLit;
 
 uniform float ambientLightStrength;
 uniform vec3  ambientColour;
@@ -16,41 +20,34 @@ uniform float ambientStrength;
 out vec4 frag_color;
 
 void main() {
-	// Lecture 5
-	vec3 ambient = ((ambientLightStrength * lightColour) + (ambientColour * ambientStrength));
+	//optimized for less garbage collection and memory mangement
+	if (inSpec.z == 0)
+		discard;
 
-	// Diffuse
-	vec3 N = normalize(inNormal);
-	vec3 lightDir = normalize(lightPos - inPos);
+	vec3 result = vec3(0.0, 0.0, 0.0);
 
-	float dif = max(dot(N, lightDir), 0.0);
-	vec3 diffuse = dif * lightColour;// add diffuse intensity
+	if (unLit)
+		result = inColour;
+	else {
+		vec3 N = normalize(inNormal);
+		vec3 camDir = normalize(camPos - inPos);
+		vec3 lightDir = vec3(0.0, 0.0, 0.0);
+		vec3 total = vec3(0.0, 0.0, 0.0);
 
-	//Attenuation
-	float dist = length(lightPos - inPos);
-	diffuse = diffuse / dist; // (dist*dist)
+		for(int i = 0; i < lightCount; ++i) {
+			lightDir = normalize(lightsPos[i] - inPos);
 
-	// Specular
-	//vec3 camDir = normalize(camPos - inPos);
-	//vec3 reflectDir = reflect(-lightDir, N);
-	//float spec = pow(max(dot(camDir, reflectDir), 0.0), inSpecStrength.y); // Shininess coefficient (can be a uniform)
-	vec3 camDir = normalize(camPos - inPos);
-	vec3 h = normalize(camDir + lightDir);
-	float spec = pow(max(dot(N, h), 0.0), inSpec.y); // Shininess coefficient (can be a uniform)
+			//Add diffuse intensity with attenuation
+			float diffuse = max(dot(N, lightDir), 0.0) / length(lightsPos[i] - inPos);
 
-	//spec = floor(spec * 5) * 0.2;
-//	if (spec < 0.25)
-//		spec = 0;
-//	else if (spec < 0.5)
-//		spec = 0.25;
-//	else if (spec < 0.75)
-//		spec = 0.5;
-//	else if (spec < 1)
-//		spec = 0.75;
+			//Specular		SpecStrength													ShininessCoefficient
+			float specular = inSpec.x * pow(max(dot(N, normalize(camDir + lightDir)), 0.0), inSpec.y);
 
-	vec3 specular = inSpec.x * spec * lightColour; // Can also use a specular color
+			total += (ambientLightStrength + diffuse + specular) * lightsColour[i];
+		}
 
-	vec3 result = (ambient + diffuse + specular) * inColour;
+		result = (ambientColour * ambientStrength + total) * inColour;
+	}
 
 	frag_color = vec4(result, inSpec.z);
 }

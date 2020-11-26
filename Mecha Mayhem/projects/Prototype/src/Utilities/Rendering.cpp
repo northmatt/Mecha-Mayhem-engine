@@ -73,7 +73,7 @@ namespace Rendering {
     glm::vec3 LightColour[MAX_LIGHTS] = { glm::vec3(3.f) };
     glm::vec3 LightPos[MAX_LIGHTS] = { glm::vec3(0.f) };
     glm::vec3 DefaultColour = glm::vec3(1.f);
-    size_t LightCount = 5;
+    size_t LightCount = 2;
 
     HitboxGen* hitboxes = nullptr;
 }
