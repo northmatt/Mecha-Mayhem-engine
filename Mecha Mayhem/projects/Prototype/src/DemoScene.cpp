@@ -259,9 +259,9 @@ void DemoScene::Update()
 
 	if (Input::GetKey(KEY::P)) {
 		if (Input::GetKey(KEY::LSHIFT))
-			Rendering::LightColour = glm::vec3(3.f);
+			Rendering::LightColour[0] = glm::vec3(3.f);
 		else
-			Rendering::LightColour = glm::vec3((rand() % 30) / 10.f, (rand() % 30) / 10.f, (rand() % 30) / 10.f);
+			Rendering::LightColour[0] = glm::vec3((rand() % 30) / 10.f, (rand() % 30) / 10.f, (rand() % 30) / 10.f);
 	}
 
 	/// End of loop

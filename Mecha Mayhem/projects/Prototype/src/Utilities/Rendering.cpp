@@ -70,9 +70,10 @@ namespace Rendering {
     }
 
     glm::vec4 BackColour = { 0.2f, 0.2f, 0.2f, 1.f };
-    glm::vec3 LightColour = glm::vec3(3.f);
-    glm::vec3 LightPos = glm::vec3(0.f);
+    glm::vec3 LightColour[MAX_LIGHTS] = { glm::vec3(3.f) };
+    glm::vec3 LightPos[MAX_LIGHTS] = { glm::vec3(0.f) };
     glm::vec3 DefaultColour = glm::vec3(1.f);
+    size_t LightCount = 5;
 
     HitboxGen* hitboxes = nullptr;
 }
