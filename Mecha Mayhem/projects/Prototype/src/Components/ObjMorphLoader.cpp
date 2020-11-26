@@ -170,7 +170,7 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 				tempExponent = tempTrans = 1;
 				matIndex = materials.size() - 1;
 			}
-			else if (matLine.substr(0, 6) == "map_Kd" && data.texture == INT_MAX)
+			else if (matLine.substr(0, 6) == "map_Kd")
 			{
 				std::string textureName = matLine.substr(7);
 				bool dupt = false;
@@ -268,7 +268,7 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 
 
 		std::vector<glm::vec3> vertex = { glm::vec3() };
-		std::vector<glm::vec2> UV = { glm::vec3() };
+		std::vector<glm::vec2> UV = { glm::vec2() };
 		std::vector<glm::vec3> normals = { glm::vec3() };
 
 		std::vector<size_t> bufferVertex;
@@ -519,6 +519,49 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 	return *this;
 }
 
+void ObjMorphLoader::BlendTo(const std::string& baseFileName, float delay, int frame)
+{
+	auto& data = m_anims[m_index];
+	if (data.fileName == baseFileName || m_blend) {
+		return;
+	}
+
+	bool dupt = false;
+	for (int i(0); i < m_anims.size(); ++i) {
+		if (m_anims[i].fileName == baseFileName && m_anims[i].mat == data.mat) {
+			if (m_anims[i].frames[0].pos->GetElementCount() == data.frames[0].pos->GetElementCount() &&
+				m_anims[i].frameIndices.size() > frame) {
+				dupt = true;
+				break;
+			}
+		}
+	}
+	if (!dupt)
+		return;
+
+	m_blend = true;
+	m_transitionSpeed = delay;
+	m_indexHold = m_index;
+	m_p0Hold = frame;
+	float timerHold = m_timer;
+	size_t p0hold = m_p0, p1hold = m_p1;
+	LoadMeshs(baseFileName, data.mat);
+	m_timer = timerHold;
+	m_p0 = p0hold;
+	m_p1 = p1hold;
+
+	m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].pos, pos1Buff);
+	m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].pos, pos2Buff);
+	m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].normal, norm1Buff);
+	m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].normal, norm2Buff);
+	if (data.mat) {
+		m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].colour, col1Buff);
+		m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].colour, col2Buff);
+		m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].spec, spec1Buff);
+		m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].spec, spec2Buff);
+	}
+}
+
 void ObjMorphLoader::Init()
 {
 	m_matShader = Shader::Create();
@@ -542,8 +585,8 @@ void ObjMorphLoader::Init()
 	norm2Buff = { BufferAttribute(3, 3, GL_FLOAT, false, NULL, NULL) };
 	col1Buff =  { BufferAttribute(4, 3, GL_FLOAT, false, NULL, NULL) };
 	col2Buff =  { BufferAttribute(5, 3, GL_FLOAT, false, NULL, NULL) };
-	spec1Buff =  { BufferAttribute(6, 3, GL_FLOAT, false, NULL, NULL) };
-	spec2Buff =  { BufferAttribute(7, 3, GL_FLOAT, false, NULL, NULL) };
+	spec1Buff = { BufferAttribute(6, 3, GL_FLOAT, false, NULL, NULL) };
+	spec2Buff = { BufferAttribute(7, 3, GL_FLOAT, false, NULL, NULL) };
 	UVBuff =    { BufferAttribute(8, 3, GL_FLOAT, false, NULL, NULL) };
 
 	m_texQueue.clear();
@@ -596,16 +639,132 @@ ObjMorphLoader& ObjMorphLoader::ToggleDirection()
 	return *this;
 }
 
-void ObjMorphLoader::BeginDraw()
+void ObjMorphLoader::BeginDraw(unsigned amt)
 {
 	m_texQueue.resize(0);
+	m_texQueue.reserve(amt);
 	m_matQueue.resize(0);
+	m_matQueue.reserve(amt);
 	m_defaultQueue.resize(0);
+	m_defaultQueue.reserve(amt);
 }
 
 void ObjMorphLoader::Update(float dt)
 {
 	auto& data = m_anims[m_index];
+
+	if (m_blend) {
+
+		if (m_indexHold != INT_MAX) {
+			auto& data2 = m_anims[m_indexHold];
+			m_timer += m_speed * dt;
+
+			if (m_reversing) {
+				if (m_timer >= data2.durations[m_p0]) {
+					m_timer -= data2.durations[m_p0];
+					m_indexHold = INT_MAX;
+					size_t p0 = m_p1;
+					m_p1 = (m_p0 = m_p0Hold) - 1;
+
+					m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].pos, pos1Buff);
+					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].pos, pos2Buff);
+					m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].normal, norm1Buff);
+					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].normal, norm2Buff);
+					if (data.mat) {
+						m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].colour, col1Buff);
+						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].colour, col2Buff);
+						m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].spec, spec1Buff);
+						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].spec, spec2Buff);
+					}
+				}
+				else
+					m_t = m_timer / data2.durations[m_p0];
+			}
+			else {
+				if (m_timer >= data2.durations[m_p1]) {
+					m_timer -= data2.durations[m_p1];
+					m_indexHold = INT_MAX;
+					size_t p0 = m_p1;
+					m_p1 = (m_p0 = m_p0Hold) + 1;
+
+					m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].pos, pos1Buff);
+					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].pos, pos2Buff);
+					m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].normal, norm1Buff);
+					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].normal, norm2Buff);
+					if (data.mat) {
+						m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].colour, col1Buff);
+						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].colour, col2Buff);
+						m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].spec, spec1Buff);
+						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].spec, spec2Buff);
+					}
+				}
+				else
+					m_t = m_timer / data2.durations[m_p1];
+			}
+		}
+		if (m_indexHold == INT_MAX) {
+
+			m_timer += m_speed * dt;
+
+			if (m_reversing) {
+				if (m_timer >= m_transitionSpeed) {
+					m_timer -= m_transitionSpeed;
+					m_p1 = (m_p0 = m_p1) - 1;
+					if (m_p0 == 0) {
+						if (m_bounce) {
+							m_reversing = false;
+							m_p1 = 1;
+						}
+						else	m_p1 = data.durations.size() - 1;
+					}
+					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].pos, pos1Buff);
+					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].pos, pos2Buff);
+					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].normal, norm1Buff);
+					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].normal, norm2Buff);
+					if (data.mat) {
+						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].colour, col1Buff);
+						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].colour, col2Buff);
+						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].spec, spec1Buff);
+						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].spec, spec2Buff);
+					}
+					m_t = m_timer / data.durations[m_p0];
+
+					m_blend = false;
+				}
+				else
+					m_t = m_timer / m_transitionSpeed;
+			}
+			else {
+				if (m_timer >= m_transitionSpeed) {
+					m_timer -= m_transitionSpeed;
+					m_p1 = (m_p0 = m_p1) + 1;
+					if (m_p1 == data.durations.size()) {
+						if (m_bounce) {
+							m_reversing = true;
+							m_p1 = m_p0 - 1;
+						}
+						else	m_p1 = 0;
+					}
+					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].pos, pos1Buff);
+					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].pos, pos2Buff);
+					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].normal, norm1Buff);
+					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].normal, norm2Buff);
+					if (data.mat) {
+						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].colour, col1Buff);
+						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].colour, col2Buff);
+						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].spec, spec1Buff);
+						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].spec, spec2Buff);
+					}
+					m_t = m_timer / data.durations[m_p1];
+
+					m_blend = false;
+				}
+				else
+					m_t = m_timer / m_transitionSpeed;
+			}
+		}
+		return;
+	}
 
 	bool change = false;
 
@@ -634,7 +793,6 @@ void ObjMorphLoader::Update(float dt)
 					if (m_bounce) {
 						m_reversing = false;
 						m_p1 = 1;
-						break;
 					}
 					else	m_p1 = data.durations.size() - 1;
 				}
@@ -649,7 +807,6 @@ void ObjMorphLoader::Update(float dt)
 					if (m_bounce) {
 						m_reversing = true;
 						m_p1 = m_p0 - 1;
-						break;
 					}
 					else	m_p1 = 0;
 				}

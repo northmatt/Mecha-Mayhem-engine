@@ -1,245 +1,316 @@
 #include "ControllerInput.h"
-//Face Button presses
-void AButtonPress();
-void BButtonPress();
-void XButtonPress();
-void YButtonPress();
 
-//DPad Button Presses
-void UpDPadPress();
-void RightDPadPress();
-void DownDPadPress();
-void LeftDPadPress();
+ControllerInput::Controller ControllerInput::m_controllers[XUSER_MAX_COUNT] = {};
 
-//Bumpers
-void RBButtonPress();
-void LBButtonPress();
-
-//Analog Stick Presses
-void LStickPress();
-void RStickPress();
-
-void StartButtonPress();
-void BackButtonPress();
-
-void LTriggerMove(float amount);
-void RTriggerMove(float amount);
-
-void LStickMove(float x, float y);
-void RStickMove(float x, float y);
-
-
-void ControllerInput::ControllerUpdate() 
+void ControllerInput::ControllerRefresh()
 {
-    //This basically checks all the controllers, and if they are plugged in
-    DWORD dwResult;
-    for (DWORD i = 0; i < XUSER_MAX_COUNT; i++)
-    {
-        XINPUT_STATE state;
-        ZeroMemory(&state, sizeof(XINPUT_STATE));
+	//This basically checks all the controllers, and if they are plugged in
+	DWORD dwResult;
+	for (DWORD i = 0; i < XUSER_MAX_COUNT; ++i)
+	{
+		XINPUT_STATE state;
+		ZeroMemory(&state, sizeof(XINPUT_STATE));
 
-        // Simply get the state of the controller from XInput.
-        dwResult = XInputGetState(i, &state);
+		// Simply get the state of the controller from XInput.
+		dwResult = XInputGetState(i, &state);
 
-        if (dwResult == ERROR_SUCCESS)
-        {
-            // Controller is connected
-
-            //
-            //face buttons
-            //
-            if (state.Gamepad.wButtons == XINPUT_GAMEPAD_A)
-            {
-                AButtonPress();
-            }
-            if (state.Gamepad.wButtons == XINPUT_GAMEPAD_B)
-            {
-                BButtonPress();
-            }
-            if (state.Gamepad.wButtons == XINPUT_GAMEPAD_X)
-            {
-                XButtonPress();
-            }
-            if (state.Gamepad.wButtons == XINPUT_GAMEPAD_Y)
-            {
-                YButtonPress();
-            }
-            //
-            //dpad
-            //
-            if (state.Gamepad.wButtons == XINPUT_GAMEPAD_DPAD_UP)
-            {
-                UpDPadPress();
-            }
-            if (state.Gamepad.wButtons == XINPUT_GAMEPAD_DPAD_RIGHT)
-            {
-                RightDPadPress();
-            }
-            if (state.Gamepad.wButtons == XINPUT_GAMEPAD_DPAD_DOWN)
-            {
-                DownDPadPress();
-            }
-            if (state.Gamepad.wButtons == XINPUT_GAMEPAD_DPAD_LEFT)
-            {
-                LeftDPadPress();
-            }
-            //
-            //Shoulder Bumpers
-            //
-            if (state.Gamepad.wButtons == XINPUT_GAMEPAD_LEFT_SHOULDER)
-            {
-                LBButtonPress();
-            }
-            if (state.Gamepad.wButtons == XINPUT_GAMEPAD_RIGHT_SHOULDER)
-            {
-                RBButtonPress();
-            }
-            //
-            //Analog click
-            //
-            if (state.Gamepad.wButtons == XINPUT_GAMEPAD_LEFT_THUMB)
-            {
-                LStickPress();
-            }
-            if (state.Gamepad.wButtons == XINPUT_GAMEPAD_RIGHT_THUMB)
-            {
-                RStickPress();
-            }
-            //
-            //Start/Back Button Presses
-            //
-            if (state.Gamepad.wButtons == XINPUT_GAMEPAD_START)
-            {
-                StartButtonPress();
-            }
-            if (state.Gamepad.wButtons == XINPUT_GAMEPAD_BACK)
-            {
-                BackButtonPress();
-            }
-
-
-            //
-            //Analog Stick Movement
-            //
-            float leftTrigger = (float)state.Gamepad.bLeftTrigger / 255;
-            float rightTrigger = (float)state.Gamepad.bRightTrigger / 255;
-            if (leftTrigger > 0.1)
-            {
-                LTriggerMove(leftTrigger);
-            }
-            if (rightTrigger > 0.1)
-            {
-                RTriggerMove(rightTrigger);
-            }
-            float normLX = fmaxf(-1, (float)state.Gamepad.sThumbLX / 32767);
-            float normLY = fmaxf(-1, (float)state.Gamepad.sThumbLY / 32767);
-            //std::cout << normLX << " " << normLY  << "\n";
-            if (normLX > 0.1f || normLX < -0.1f)
-            {
-                LStickMove(normLX, normLY);
-            }
-            float normRX = fmaxf(-1, (float)state.Gamepad.sThumbRX / 32767);
-            float normRY = fmaxf(-1, (float)state.Gamepad.sThumbRY / 32767);
-            
-            if (normRX > 0.1f || normRX < -0.1f)
-            {
-                RStickMove(normRX, normRY);
-            }
-
-        }
-        else
-        {
-            // Controller is not connected
-        }
-    }
+		if (dwResult == ERROR_SUCCESS)
+		{
+			// Controller is connected
+			m_controllers[i].connected = true;
+			m_controllers[i].gamepad = state.Gamepad;
+		}
+		else
+		{
+			// Controller is not connected
+			m_controllers[i].connected = false;
+		}
+	}
 }
 
-void AButtonPress()
+void ControllerInput::ControllerUpdate()
 {
-    std::cout << "A";
+	//This basically checks all the controllers, and if they are plugged in
+	DWORD dwResult;
+	for (DWORD i = 0; i < XUSER_MAX_COUNT; ++i)
+	{
+		XINPUT_STATE state;
+		ZeroMemory(&state, sizeof(XINPUT_STATE));
+
+		// Simply get the state of the controller from XInput.
+		dwResult = XInputGetState(i, &state);
+
+		if (dwResult == ERROR_SUCCESS)
+		{
+			// Controller is connected
+			m_controllers[i].connected = true;
+
+			AButtonPress(i);
+			BButtonPress(i);
+			XButtonPress(i);
+			YButtonPress(i);
+
+			UpDPadPress(i);
+			DownDPadPress(i);
+			LeftDPadPress(i);
+			RightDPadPress(i);
+
+			StartButtonPress(i);
+			BackButtonPress(i);
+
+			LBButtonPress(i);
+			LTriggerMove(i);
+			LStickMove(i);
+			LStickPress(i);
+
+			RBButtonPress(i);
+			RTriggerMove(i);
+			RStickMove(i);
+			RStickPress(i);
+		}
+		else
+		{
+			// Controller is not connected
+			m_controllers[i].connected = false;
+		}
+	}
 }
 
-void BButtonPress()
+bool ControllerInput::GetButton(BUTTON input, CONUSER controllerIndex)
 {
-    std::cout << "B";
+	if (!m_controllers[int(controllerIndex)].connected) return false;
+
+	return m_controllers[int(controllerIndex)].gamepad.wButtons & SHORT(input);
+
 }
 
-void XButtonPress()
+bool ControllerInput::GetButtonDown(BUTTON input, CONUSER controllerIndex)
 {
-    std::cout << "X";
+	if (!m_controllers[int(controllerIndex)].connected) return false;
+	//look into if statements instead of big switch?
+	switch (input) {
+	case BUTTON::A:	if (!m_controllers[int(controllerIndex)].faceButtons[0]) return m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_A;
+				  else return false;
+	default:	return m_controllers[int(controllerIndex)].gamepad.wButtons & int(input);
+	}
 }
 
-void YButtonPress()
+bool ControllerInput::GetButtonUp(BUTTON input, CONUSER controllerIndex)
 {
-    std::cout << "Y";
+	if (!m_controllers[int(controllerIndex)].connected) return false;
+	return false;
 }
 
-void UpDPadPress()
+float ControllerInput::GetLT(CONUSER controllerIndex)
 {
-    std::cout << "Up";
+	if (!m_controllers[int(controllerIndex)].connected) return 0;
+
+	if (m_controllers[int(controllerIndex)].gamepad.bLeftTrigger < XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
+		return 0;
+
+	return m_controllers[int(controllerIndex)].gamepad.bLeftTrigger / 255.f;
 }
 
-void RightDPadPress()
+float ControllerInput::GetLX(CONUSER controllerIndex)
 {
-    std::cout << "Right";
+	if (!m_controllers[int(controllerIndex)].connected) return 0;
+
+	SHORT value = m_controllers[int(controllerIndex)].gamepad.sThumbLX;
+
+	if (value < XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE &&
+		value > -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)
+		return 0;
+
+	return value / 32767.f;
 }
 
-void DownDPadPress()
+float ControllerInput::GetLY(CONUSER controllerIndex)
 {
-    std::cout << "Down";
+	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	
+	SHORT value = m_controllers[int(controllerIndex)].gamepad.sThumbLY;
+
+	if (value < XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE &&
+		value > -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)
+		return 0;
+
+	return value / 32767.f;
 }
 
-void LeftDPadPress()
+float ControllerInput::GetRT(CONUSER controllerIndex)
 {
-    std::cout << "Left";
+	if (!m_controllers[int(controllerIndex)].connected) return 0;
+
+	if (m_controllers[int(controllerIndex)].gamepad.bRightTrigger < XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
+		return 0;
+
+	return m_controllers[int(controllerIndex)].gamepad.bRightTrigger / 255.f;
 }
 
-void RBButtonPress()
+float ControllerInput::GetRX(CONUSER controllerIndex)
 {
-    std::cout << "RB";
+	if (!m_controllers[int(controllerIndex)].connected) return 0;
+
+	SHORT value = m_controllers[int(controllerIndex)].gamepad.sThumbRX;
+
+	if (value < XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE &&
+		value > -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE)
+		return 0;
+
+	return value / 32767.f;
 }
 
-void LBButtonPress()
+float ControllerInput::GetRY(CONUSER controllerIndex)
 {
-    std::cout << "LB";
+	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	
+	SHORT value = m_controllers[int(controllerIndex)].gamepad.sThumbRY;
+
+	if (value < XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE &&
+		value > -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE)
+		return 0;
+
+	return value / 32767.f;
 }
 
-void LStickPress()
+//split for raw
+
+int ControllerInput::GetLTRaw(CONUSER controllerIndex)
 {
-    std::cout << "L3/left stick press";
+	if (!m_controllers[int(controllerIndex)].connected) return 0;
+
+	return m_controllers[int(controllerIndex)].gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD ? 1 : 0;
 }
 
-void RStickPress()
+int ControllerInput::GetLXRaw(CONUSER controllerIndex)
 {
-    std::cout << "R3/Right stick press";
+	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	SHORT change = m_controllers[int(controllerIndex)].gamepad.sThumbLX;
+	return change > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE ? 1 : (change < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE ? -1 : 0);
 }
 
-void StartButtonPress()
+int ControllerInput::GetLYRaw(CONUSER controllerIndex)
 {
-    std::cout << "Start";
+	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	SHORT change = m_controllers[int(controllerIndex)].gamepad.sThumbLY;
+	return change > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE ? 1 : (change < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE ? -1 : 0);
 }
 
-void BackButtonPress()
+int ControllerInput::GetRTRaw(CONUSER controllerIndex)
 {
-    std::cout << "Back";
+	if (!m_controllers[int(controllerIndex)].connected) return 0;
+
+	return m_controllers[int(controllerIndex)].gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD ? 1 : 0;
 }
 
-void LTriggerMove(float amount)
+int ControllerInput::GetRXRaw(CONUSER controllerIndex)
 {
-    std::cout << amount <<"\n";
+	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	SHORT change = m_controllers[int(controllerIndex)].gamepad.sThumbRX;
+	return change > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE ? 1 : (change < -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE ? -1 : 0);
 }
 
-void RTriggerMove(float amount)
+int ControllerInput::GetRYRaw(CONUSER controllerIndex)
 {
-    std::cout << amount << "\n";
+	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	SHORT change = m_controllers[int(controllerIndex)].gamepad.sThumbRY;
+	return change > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE ? 1 : (change < -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE ? -1 : 0);
 }
 
-void LStickMove(float x, float y)
+//split for tests
+
+void ControllerInput::AButtonPress(short ind)
 {
-    std::cout << x << " " << y << "\n";
+	m_controllers[ind].faceButtons[0] = m_controllers[ind].gamepad.wButtons & XINPUT_GAMEPAD_A;
 }
 
-void RStickMove(float x, float y)
+void ControllerInput::BButtonPress(short ind)
 {
-    std::cout << x << " " << y << "\n";
+	m_controllers[ind].faceButtons[1] = m_controllers[ind].gamepad.wButtons & XINPUT_GAMEPAD_B;
+}
+
+void ControllerInput::XButtonPress(short ind)
+{
+	m_controllers[ind].faceButtons[2] = m_controllers[ind].gamepad.wButtons & XINPUT_GAMEPAD_X;
+}
+
+void ControllerInput::YButtonPress(short ind)
+{
+	m_controllers[ind].faceButtons[3] = m_controllers[ind].gamepad.wButtons & XINPUT_GAMEPAD_Y;
+}
+
+void ControllerInput::UpDPadPress(short ind)
+{
+	m_controllers[ind].dPadButtons[0] = m_controllers[ind].gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP;
+}
+
+void ControllerInput::RightDPadPress(short ind)
+{
+	m_controllers[ind].dPadButtons[1] = m_controllers[ind].gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT;
+}
+
+void ControllerInput::DownDPadPress(short ind)
+{
+	m_controllers[ind].dPadButtons[2] = m_controllers[ind].gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN;
+}
+
+void ControllerInput::LeftDPadPress(short ind)
+{
+	m_controllers[ind].dPadButtons[3] = m_controllers[ind].gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT;
+}
+
+void ControllerInput::LBButtonPress(short ind)
+{
+	m_controllers[ind].bumpers[0] = m_controllers[ind].gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER;
+}
+
+void ControllerInput::RBButtonPress(short ind)
+{
+	m_controllers[ind].bumpers[1] = m_controllers[ind].gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER;
+}
+
+void ControllerInput::LStickPress(short ind)
+{
+	m_controllers[ind].lStick[4] = m_controllers[ind].gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB;
+}
+
+void ControllerInput::RStickPress(short ind)
+{
+	m_controllers[ind].rStick[4] = m_controllers[ind].gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB;
+}
+
+void ControllerInput::StartButtonPress(short ind)
+{
+	m_controllers[ind].startButton = m_controllers[ind].gamepad.wButtons & XINPUT_GAMEPAD_START;
+}
+
+void ControllerInput::BackButtonPress(short ind)
+{
+	m_controllers[ind].backButton = m_controllers[ind].gamepad.wButtons * XINPUT_GAMEPAD_BACK;
+}
+
+void ControllerInput::LTriggerMove(short ind)
+{
+	m_controllers[ind].triggers[0] = m_controllers[ind].gamepad.bLeftTrigger;
+}
+
+void ControllerInput::RTriggerMove(short ind)
+{
+	m_controllers[ind].triggers[1] = m_controllers[ind].gamepad.bRightTrigger;
+}
+
+void ControllerInput::LStickMove(short ind)
+{
+	m_controllers[ind].lStick[0] = m_controllers[ind].gamepad.sThumbLY > 0;
+	m_controllers[ind].lStick[2] = m_controllers[ind].gamepad.sThumbLY < 0;
+	m_controllers[ind].lStick[1] = m_controllers[ind].gamepad.sThumbLX > 0;
+	m_controllers[ind].lStick[3] = m_controllers[ind].gamepad.sThumbLX < 0;
+}
+
+void ControllerInput::RStickMove(short ind)
+{
+	m_controllers[ind].rStick[0] = m_controllers[ind].gamepad.sThumbRY > 0;
+	m_controllers[ind].rStick[2] = m_controllers[ind].gamepad.sThumbRY < 0;
+	m_controllers[ind].rStick[1] = m_controllers[ind].gamepad.sThumbRX > 0;
+	m_controllers[ind].rStick[3] = m_controllers[ind].gamepad.sThumbRX < 0;
 }

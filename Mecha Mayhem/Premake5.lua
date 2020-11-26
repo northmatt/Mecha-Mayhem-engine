@@ -102,6 +102,7 @@ Dependencies = {
 	"ImGui",
 	"opengl32.lib",
 	"imagehlp.lib",
+	"Xinput9_1_0.lib",
 	"dependencies/fmod/fmod64.lib",
 	"dependencies/gzip/zlib.lib",
 	"tinyGLTF",

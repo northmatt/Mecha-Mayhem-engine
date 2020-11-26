@@ -31,11 +31,10 @@ namespace Rendering {
 
             Camera& camCam = cameraView.get<Camera>(cam);
 
-            LightPos = camCam.SetPosition(camTrans.GetGlobalPosition()).
-                SetForward(camTrans.GetForwards()).
-                GetPosition();
+            camCam.SetPosition(camTrans.GetGlobalPosition()).
+                SetForward(camTrans.GetForwards());
 
-            ObjLoader::BeginDraw();
+            ObjLoader::BeginDraw(objView.size());
 
             //draw all the objs
             for (auto entity : objView)
@@ -47,9 +46,9 @@ namespace Rendering {
 
             if (hitboxes != nullptr) hitboxes->Render();
 
-            ObjLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.1f);
+            ObjLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.5f);
 
-            ObjMorphLoader::BeginDraw();
+            ObjMorphLoader::BeginDraw(morphView.size());
 
             //draw all the objs
             for (auto entity : morphView)
@@ -61,7 +60,7 @@ namespace Rendering {
                 morphView.get<ObjMorphLoader>(entity).Draw(trans.GetModel());
             }
 
-            ObjMorphLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.1f);
+            ObjMorphLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.5f);
 
             ++count;
             //exit even if some cams haven't been checked, because only the amount specified should render

@@ -11,6 +11,9 @@ public:
 
 	ObjMorphLoader& LoadMeshs(const std::string& baseFileName, bool usingMaterial = false);
 
+	//will not load if file doesn't exist
+	void BlendTo(const std::string& baseFileName, float delay = 0.1f, int frame = 0);
+
 	static void Init();
 	static void Unload();
 	
@@ -19,6 +22,12 @@ public:
 			ToggleDirection();
 		return *this;
 	}
+
+	bool IsDone() { return m_t == 1; }
+	size_t Getp0() { return m_p0; }
+	size_t Getp1() { return m_p1; }
+
+	bool IsAnim(const std::string& test) { return m_anims[m_index].fileName == test; }
 
 	//returns true if moving forwards
 	bool GetDirection() { return !m_reversing; }
@@ -52,7 +61,7 @@ public:
 	ObjMorphLoader& SetSpeed(float speed) { m_speed = speed; return *this; }
 	float GetSpeed() { return m_speed; }
 
-	static void BeginDraw();
+	static void BeginDraw(unsigned amt = 0);
 
 	void Update(float dt);
 
@@ -118,12 +127,16 @@ private:
 	float m_timer = 0;
 	float m_t = 0;
 	float m_speed = 1;
+	float m_transitionSpeed = 0;
 
 	size_t m_p0 = 0;
 	size_t m_p1 = 0;
 	size_t m_index = INT_MAX;
+	size_t m_indexHold = INT_MAX;
+	size_t m_p0Hold = 0;
 
 	bool m_reversing = false;
 	bool m_bounce = false;
 	bool m_loop = false;
+	bool m_blend = false;
 };

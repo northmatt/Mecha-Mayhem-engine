@@ -2,8 +2,8 @@
 #include "Rendering.h"
 #include "BLM.h"
 #include "Input.h"
-#include <SoundSystem.h>
 #include "ControllerInput.h"
+#include <SoundSystem.h>
 
 class Scene
 {
