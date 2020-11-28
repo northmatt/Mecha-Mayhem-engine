@@ -508,6 +508,8 @@ void ObjLoader::BeginDraw(unsigned amt)
 
 void ObjLoader::Draw(const glm::mat4& model)
 {
+	if (!m_enabled)	return;
+
 	if (m_models[m_index].text) {
 		m_texQueue.push_back({ m_index, model });
 	}

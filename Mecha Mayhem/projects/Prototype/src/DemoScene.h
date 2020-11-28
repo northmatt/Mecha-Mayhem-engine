@@ -20,29 +20,24 @@ private:
 	int height = 0;
 
 	float camDistance = 5.f;
-	float pi = glm::half_pi<float>() - 0.01f;
 	glm::quat startQuat = glm::quat(-1, 0, 0, 0);
-	glm::vec2 rot = glm::vec2(0.f);
-	glm::vec2 rot2 = glm::vec2(0.f);
 
 	bool screen = true;
 	bool swap = false;
 
-	int Lazer = -1;
-	int Lazer2 = -1;
+	entt::entity Lazer = entt::null;
+	entt::entity Lazer2 = entt::null;
 
-	unsigned cameraEnt = 0;
-	unsigned cameraEnt2 = 0;
-	unsigned bodyEnt = 0;
-	unsigned bodyEnt2 = 0;
-	unsigned bodyEntoff = 0;
-	unsigned bodyEntoff2 = 0;
-	unsigned P = 0;
-	unsigned P2 = 0;
+	entt::entity cameraEnt = 0;
+	entt::entity cameraEnt2 = 0;
+	entt::entity bodyEnt = 0;
+	entt::entity bodyEnt2 = 0;
+	entt::entity P = 0;
+	entt::entity P2 = 0;
 
-	unsigned drone = 0;
+	entt::entity drone = 0;
 
-	unsigned epic = 0;
+	entt::entity epic = 0;
 
 	Sound2D ouch{ "oof.mp4.mp3", "sfx" };
 };

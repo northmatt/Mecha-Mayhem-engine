@@ -8,10 +8,11 @@ enum class CONUSER
 	ONE = 0,
 	TWO,
 	THREE,
-	FOUR
+	FOUR,
+	NONE	//for target dummies
 };
 
-enum class BUTTON
+enum BUTTON
 {
 	/*
 	A = 0,
@@ -29,6 +30,7 @@ enum class BUTTON
 	LS,		//Left Stick press
 	RS		//Right Stick press
 	*/
+
 	A = XINPUT_GAMEPAD_A,
 	B = XINPUT_GAMEPAD_B,
 	X = XINPUT_GAMEPAD_X,

@@ -19,6 +19,7 @@ namespace Gameloop
 		Input::Init(window);
 		HitboxGen::Init();
 		SoundManager::init("./sounds/", 20);
+		Player::Init(BackEnd::GetAspect());
 
 		return window;
 	}
@@ -31,6 +32,8 @@ namespace Gameloop
 		SoundManager::update();
 		//Controller Checks n stuff
 		ControllerInput::ControllerUpdate();
+		//update the static dt
+		Time::Update(glfwGetTime());
 	}
 
 	//stop everything (use at the end to avoid issues)

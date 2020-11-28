@@ -43,6 +43,7 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 	m_bounce = false;
 	m_loop = false;
 	m_reversing = false;
+	m_enabled = true;
 
 	for (int count(0); count < m_anims.size(); ++count) {
 		if (m_anims[count].fileName == baseFileName && m_anims[count].mat == usingMaterial) {
@@ -651,6 +652,8 @@ void ObjMorphLoader::BeginDraw(unsigned amt)
 
 void ObjMorphLoader::Update(float dt)
 {
+	if (!m_enabled)	return;
+
 	auto& data = m_anims[m_index];
 
 	if (m_blend) {
@@ -835,6 +838,8 @@ void ObjMorphLoader::Update(float dt)
 
 void ObjMorphLoader::Draw(const glm::mat4& model)
 {
+	if (!m_enabled)	return;
+
 	if (m_anims[m_index].text)
 		m_texQueue.push_back({ m_t, m_vao, model, m_anims[m_index].texture });
 	else if (m_anims[m_index].mat)

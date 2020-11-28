@@ -33,7 +33,7 @@ unsigned ECS::CreateEntity(bool hasPhysics)
     return entity;
 }
 
-void ECS::DestroyEntity(unsigned entity)
+void ECS::DestroyEntity(entt::entity entity)
 {
     if (m_registry->has<PhysBody>(entity)) {
         m_world->removeRigidBody(m_registry->get<PhysBody>(entity).GetBody());

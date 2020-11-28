@@ -39,6 +39,9 @@ public:
 		float ambientLightStrength = 0.05f, const glm::vec3& ambientColour = glm::vec3(0.f), float ambientStrength = 0.f
 	);
 
+	void Enable() { m_enabled = true; }
+	void Disable() { m_enabled = false; }
+	bool GetEnabled() { return m_enabled; }
 
 	struct Texture
 	{
@@ -73,5 +76,6 @@ private:
 	static Shader::sptr m_matShader;
 	static Shader::sptr m_texShader;
 
+	bool m_enabled = true;
 	size_t m_index = INT_MAX;
 };

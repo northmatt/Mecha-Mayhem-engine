@@ -25,6 +25,7 @@ public:
 	static void Unload();
 
 	static void SetAspect(int width, int height);
+	static float GetAspect() { return _aspect; }
 
 	static void SetFullscreen();
 	static void SetTabbed(int width, int height);
