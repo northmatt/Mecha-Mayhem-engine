@@ -1,24 +1,8 @@
 #pragma once
-#include <Logging.h>
-#include <iostream>
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-#include <filesystem>
-#include <json.hpp>
-#include <fstream>
-
-#include <GLM/glm.hpp>
-#include <GLM/gtc/type_ptr.hpp>
-
-#include "Engine/BackEnd.h"
-#include "Components/Camera.h"
-#include "Engine/Texture2D.h"
+#include "Sprite.h"
 
 class ObjLoader
 {
-	friend class ObjMorphLoader;
 public:
 	//contructor
 	ObjLoader() {}
@@ -43,13 +27,6 @@ public:
 	void Disable() { m_enabled = false; }
 	bool GetEnabled() { return m_enabled; }
 
-	struct Texture
-	{
-		std::string fileName;
-		Texture2D::sptr texture;
-	};
-	static std::vector<Texture> m_textures;
-
 private:
 
 	struct Models
@@ -58,7 +35,6 @@ private:
 		bool mat;
 		bool text = false;
 		size_t texture = INT_MAX;
-		size_t verts = 0;
 		VertexArrayObject::sptr vao = VertexArrayObject::Create();
 	};
 

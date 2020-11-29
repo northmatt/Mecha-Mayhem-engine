@@ -175,8 +175,8 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 			{
 				std::string textureName = matLine.substr(7);
 				bool dupt = false;
-				for (int i(0); i < ObjLoader::m_textures.size(); ++i) {
-					if (ObjLoader::m_textures[i].fileName == textureName) {
+				for (int i(0); i < Sprite::m_textures.size(); ++i) {
+					if (Sprite::m_textures[i].fileName == textureName) {
 						data.texture = i;
 						dupt = true;
 						break;
@@ -187,11 +187,14 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 						Texture2DDescription desc = Texture2DDescription();
 						desc.Width = 1;
 						desc.Height = 1;
+						desc.GenerateMipMaps = false;
+						desc.MinificationFilter = MinFilter::Nearest;
+						desc.MagnificationFilter = MagFilter::Nearest;
 						desc.Format = InternalFormat::RGBA8;
 						Texture2D::sptr texture = Texture2D::Create(desc);
-						texture->Clear(glm::vec4(0.5f, 0.5f, 0.5f, 0.75f));
-						data.texture = ObjLoader::m_textures.size();
-						ObjLoader::m_textures.push_back({ textureName, texture });
+						texture->Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.f));
+						data.texture = Sprite::m_textures.size();
+						Sprite::m_textures.push_back({ textureName, texture });
 					}
 					else {
 						Texture2D::sptr tex = Texture2D::LoadFromFile("textures/" + textureName);
@@ -199,8 +202,8 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 						{
 							throw std::runtime_error("Failed to open texture\nError 0: " + textureName);
 						}
-						data.texture = ObjLoader::m_textures.size();
-						ObjLoader::m_textures.push_back({ textureName, tex });
+						data.texture = Sprite::m_textures.size();
+						Sprite::m_textures.push_back({ textureName, tex });
 					}
 				}
 				materials[matIndex].isText = true;
@@ -897,7 +900,7 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 			m_texShader->SetUniformMatrix("transform", m_texQueue[i].model);
 			m_texShader->SetUniform("t", m_texQueue[i].t);
 
-			ObjLoader::m_textures[m_texQueue[i].texture].texture->Bind(0);
+			Sprite::m_textures[m_texQueue[i].texture].texture->Bind(0);
 
 			m_texQueue[i].vao->Render();
 		}

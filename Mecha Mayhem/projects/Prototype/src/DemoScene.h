@@ -10,6 +10,10 @@ public:
 	virtual void Init(int windowWidth, int windowHeight) override;
 	virtual void Update() override;
 	virtual void Exit() override;
+	virtual Scene* Reattach() override {
+		Player::SetCamDistance(camDistance);
+		return Scene::Reattach();
+	}
 
 	void ShootLazer(float width, glm::quat rotation, glm::vec3 pos, bool isp1);
 	void updateLazer();

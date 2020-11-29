@@ -2,7 +2,7 @@
 #include "Utilities/Time.h"
 #include "Utilities/BLM.h"
 
-const float Player::m_camDistance = 5.f;
+float Player::m_camDistance = 5.f;
 Camera Player::m_orthoCam = Camera();
 const glm::mat4 Player::m_modelOffset = glm::mat4(
 	0, 0, 0, 0,
@@ -11,17 +11,18 @@ const glm::mat4 Player::m_modelOffset = glm::mat4(
 	0, -1, 0, 0
 );
 
-void Player::Init(float aspectRatio)
+void Player::Init(int width, int height)
 {
-	m_orthoCam.SetOrthoHeight(10).SetPosition(glm::vec3(0, 0, 0))
-		.SetIsOrtho(true).ResizeWindow(aspectRatio, 1.f);
+	m_orthoCam.SetOrthoHeight(10).SetPosition(glm::vec3(0, 0, 0)).SetNear(-10).Setfar(10)
+		.SetIsOrtho(true).ResizeWindow(width, height);
 
-	ObjMorphLoader("char/idle", true).LoadMeshs("char/walk", true).LoadMeshs("char/air", true);
+	ObjMorphLoader("char/idle", true).LoadMeshs("char/walk", true)
+		.LoadMeshs("char/air", true).LoadMeshs("char/death", true);
 }
 
-void Player::SetUIAspect(float aspectRatio)
+void Player::SetUIAspect(int width, int height)
 {
-	m_orthoCam.ResizeWindow(aspectRatio, 1.f);
+	m_orthoCam.ResizeWindow(width, height);
 }
 
 Player& Player::Init(CONUSER user, short characterModel)
@@ -39,10 +40,22 @@ Player& Player::Init(CONUSER user, short characterModel)
 	return *this;
 }
 
-void Player::Draw(const glm::mat4& model, short camNum)
+void Player::Draw(const glm::mat4& model, short camNum, short numOfCams)
 {
 	if (short(m_user) == camNum) {
 		//draw ui
+		m_healthBar.Draw(m_orthoCam.GetViewProjection(), glm::mat4(
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, -8.5f, 0, 1
+		));
+		m_dashBar.Draw(m_orthoCam.GetViewProjection(), glm::mat4(
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, -7.25f, 0, 1
+		));
 
 		//is false when cam is too close
 		if (!m_drawSelf)	return;
@@ -76,64 +89,57 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 	//dont care if not a player or dead
 	if (m_user == CONUSER::NONE || m_health == 0)	return;
 
-	{
-		m_rot.x += ControllerInput::GetRY(m_user) * 3.f * Time::dt;
-		m_rot.y += ControllerInput::GetRX(m_user) * 3.f * Time::dt;
-
-		if (m_rot.x > pi)			m_rot.x = pi;
-		else if (m_rot.x < -pi)		m_rot.x = -pi;
-
-		{
-			//glm::quat rotf = glm::rotate(startQuat, rot.y, glm::vec3(0, -1, 0));
-			//rotf = glm::rotate(rotf, rot.x, glm::vec3(1, 0, 0));
-			body.SetRotation(glm::rotate(m_startRot, m_rot.y, glm::vec3(0, -1, 0)));
-			head.SetRotation(glm::rotate(m_startRot, m_rot.x, glm::vec3(1, 0, 0))).ComputeGlobal();
-		}
-		/*glm::mat4 rotf = glm::rotate(glm::mat4(1.f), rot.x, glm::vec3(1, 0, 0));
-		rotf = glm::rotate(rotf, rot.y, glm::vec3(0, 1, 0));
-		camTrans.SetRotation(glm::mat3(rotf));*/
-
-		glm::vec3 vel = glm::vec3(0.f);
-		vel.y = body.GetVelocity().y();
-
-		vel.x += ControllerInput::GetLX(m_user) * 15;
-		vel.z -= ControllerInput::GetLY(m_user) * 15;
-
-		if (ControllerInput::GetButton(BUTTON::B, m_user) && vel.y > -500) {
-			vel.y -= 15 * Time::dt;
-			//ballPhys.SetVelocity(btVector3(0.f, 0.f, 0.f));
-		}
-		if (ControllerInput::GetButtonDown(BUTTON::A, m_user)) {
-			vel.y = 35 /*x at least two times this*/;
-			//pos.y += 15;
-		}
-
-		grounded = vel.y > 0.1f || vel.y < -0.1f;
-
-		if (!grounded) {
-			m_charModel.BlendTo(m_charModelIndex + "/air");
-		}
-		else if (vel.x != 0 || vel.z != 0) {
-			m_charModel.BlendTo(m_charModelIndex + "/walk");
-		}
-		else {
-			m_charModel.BlendTo(m_charModelIndex + "/idle");
-		}
-		vel = glm::vec4(vel, 1) * glm::rotate(glm::mat4(1.f), m_rot.y, glm::vec3(0, 1, 0));
-		body.SetVelocity(vel);
+	if (ControllerInput::GetButton(BUTTON::X, m_user)) {
+		m_charModel.BlendTo(m_charModelIndex + "/death", 0.25f);
+		return;
 	}
+	body.SetAwake();
+
+	m_rot.x += ControllerInput::GetRY(m_user) * 3.f * Time::dt;
+	m_rot.y += ControllerInput::GetRX(m_user) * 3.f * Time::dt;
+
+	if (m_rot.x > pi)			m_rot.x = pi;
+	else if (m_rot.x < -pi)		m_rot.x = -pi;
+
+	body.SetRotation(glm::rotate(m_startRot, m_rot.y, glm::vec3(0, -1, 0)));
+	head.SetRotation(glm::rotate(m_startRot, m_rot.x, glm::vec3(1, 0, 0))).ComputeGlobal();
+
+	glm::vec3 vel = glm::vec3(0.f);
+	vel.y = body.GetVelocity().y();
+
+	vel.x += ControllerInput::GetLX(m_user) * 15;
+	vel.z -= ControllerInput::GetLY(m_user) * 15;
+
+	if (grounded = vel.y < 0.1f && vel.y > -0.1f) {
+		//jump
+		if (ControllerInput::GetButtonDown(BUTTON::A, m_user))
+			vel.y = 20;		//low jump
+
+		//ground anims
+		if (vel.x != 0 || vel.z != 0)
+			m_charModel.BlendTo(m_charModelIndex + "/walk");
+		else
+			m_charModel.BlendTo(m_charModelIndex + "/idle");
+	}
+	else {
+		m_charModel.BlendTo(m_charModelIndex + "/air");
+	}
+
+	vel = glm::vec4(vel, 1) * glm::rotate(glm::mat4(1.f), m_rot.y, glm::vec3(0, 1, 0));
+	body.SetVelocity(vel);
 
 	glm::vec3 rayPos = head.ComputeScalessGlobal().GetGlobalPosition();
 	//camera
-	RayResult test = PhysBody::GetRaycastResult(
-		BLM::GLMtoBT(rayPos), BLM::GLMtoBT(head.GetForwards() * m_camDistance * 10.f)
-	);
+	btVector3 test = PhysBody::GetRaycast(rayPos, head.GetForwards() * (m_camDistance * 10.f));
 	if (m_rot.x < pi * 0.25f) {
-		if (test.hasHit()) {
-			personalCam.SetPosition(glm::vec3(0, 0, (test.m_closestHitFraction >= 0.1f ?
-				m_camDistance : test.m_closestHitFraction * m_camDistance * 10.f - 0.5f))
-			);
-			m_drawSelf = test.m_closestHitFraction > 0.033f;
+		if (test != btVector3()) {
+			float distance = glm::length(rayPos - BLM::BTtoGLM(test));
+
+			if (distance > m_camDistance)
+				personalCam.SetPosition(glm::vec3(0, 0, m_camDistance));
+			else
+				personalCam.SetPosition(glm::vec3(0, 0, distance));
+			m_drawSelf = distance > 0.75f;
 		}
 		else {
 			personalCam.SetPosition(glm::vec3(0, 0, m_camDistance));

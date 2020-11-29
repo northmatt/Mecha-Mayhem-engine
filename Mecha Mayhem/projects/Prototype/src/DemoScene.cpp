@@ -10,7 +10,7 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 	//std::cin >> input;
 	if (!m_colliders.Init(m_world, input, false, false))
 		std::cout << input + " failed to load, no collision boxes loaded\n";
-
+	
 	width = windowWidth;
 	height = windowHeight;
 
@@ -94,7 +94,7 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 	epic = ECS::CreateEntity();
 	ECS::AttachComponent<ObjLoader>(epic).LoadMesh("models/GodHimself.obj");
 
-	Player::SetUIAspect(width / height);
+	Player::SetUIAspect(width, height);
 }
 
 void DemoScene::Update()
@@ -147,12 +147,12 @@ void DemoScene::Update()
 			if (m_camCount == 2) {
 				ECS::GetComponent<Camera>(cameraEnt).ResizeWindow(width / 2, height);
 				ECS::GetComponent<Camera>(cameraEnt2).ResizeWindow(width / 2, height);
-				Player::SetUIAspect(width / 2 / height);
+				Player::SetUIAspect(width / 2.f, height);
 			}
 			else {
 				ECS::GetComponent<Camera>(cameraEnt).ResizeWindow(width, height);
 				ECS::GetComponent<Camera>(cameraEnt2).ResizeWindow(width, height);
-				Player::SetUIAspect(width / height);
+				Player::SetUIAspect(width, height);
 			}
 		}
 	}
@@ -216,7 +216,7 @@ void DemoScene::Update()
 
 void DemoScene::Exit()
 {
-	if (!m_colliders.SaveToFile(false))
+	if (!m_colliders.SaveToFile())
 		std::cout << "file save failed\n";
 }
 

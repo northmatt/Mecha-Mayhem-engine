@@ -55,6 +55,22 @@ Camera& Camera::LookAt(const glm::vec3& point) {
 	return *this;
 }
 
+Camera& Camera::SetNear(float near)
+{
+	_nearPlane = near;
+	__CalculateProjection();
+
+	return *this;
+}
+
+Camera& Camera::Setfar(float far)
+{
+	_farPlane = far;
+	__CalculateProjection();
+
+	return *this;
+}
+
 Camera& Camera::SetUp(const glm::vec3& up) {
 	_up = up;
 	__CalculateView();

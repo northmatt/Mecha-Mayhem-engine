@@ -59,15 +59,19 @@ namespace Rendering {
                 }
             );
 
+            Sprite::BeginDraw(numOfCams * 2);
+
             //draw all players
             playerView.each(
                 [&](Player& p, PhysBody& body, Transform& trans) {
                     if (count == 0)     p.Update(body);
-                    p.Draw(trans.GetModel(), count);
+                    p.Draw(trans.GetModel(), count, numOfCams);
                 }
             );
 
             ObjMorphLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.5f);
+
+            Sprite::PerformDraw();
 
             //exit even if some cams haven't been checked, because only the amount specified should render
             if (++count >= numOfCams)
