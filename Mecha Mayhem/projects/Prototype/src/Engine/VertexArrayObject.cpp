@@ -68,5 +68,5 @@ void VertexArrayObject::Render() const {
 	} else {
 		glDrawArrays(GL_TRIANGLES, 0, _vertexCount / 3);
 	}
-	UnBind();
+	//UnBind();
 }

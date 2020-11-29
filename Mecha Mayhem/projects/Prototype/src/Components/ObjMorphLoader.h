@@ -73,6 +73,10 @@ public:
 		float ambientLightStrength = 0.05f, const glm::vec3& ambientColour = glm::vec3(0.f), float ambientStrength = 0.f
 	);
 
+	void Enable() { m_enabled = true; }
+	void Disable() { m_enabled = false; }
+	bool GetEnabled() { return m_enabled; }
+
 private:
 	struct Frames {
 		VertexBuffer::sptr pos;
@@ -139,4 +143,5 @@ private:
 	bool m_bounce = false;
 	bool m_loop = false;
 	bool m_blend = false;
+	bool m_enabled = true;
 };

@@ -5,7 +5,6 @@ std::vector<ObjLoader::DrawData> ObjLoader::m_matQueue = {};
 std::vector<ObjLoader::DrawData> ObjLoader::m_texQueue = {};
 std::vector<ObjLoader::DrawData> ObjLoader::m_defaultQueue = {};
 std::vector<ObjLoader::Models> ObjLoader::m_models = {};
-std::vector<ObjLoader::Texture> ObjLoader::m_textures = {};
 Shader::sptr ObjLoader::m_shader = nullptr;
 Shader::sptr ObjLoader::m_matShader = nullptr;
 Shader::sptr ObjLoader::m_texShader = nullptr;
@@ -76,8 +75,8 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 			{
 				std::string textureName = matLine.substr(7);
 				bool dupt = false;
-				for (int i(0); i < m_textures.size(); ++i) {
-					if (m_textures[i].fileName == textureName) {
+				for (int i(0); i < Sprite::m_textures.size(); ++i) {
+					if (Sprite::m_textures[i].fileName == textureName) {
 						m_models[ind].texture = i;
 						dupt = true;
 						break;
@@ -88,11 +87,14 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 						Texture2DDescription desc = Texture2DDescription();
 						desc.Width = 1;
 						desc.Height = 1;
+						desc.GenerateMipMaps = false;
+						desc.MinificationFilter = MinFilter::Nearest;
+						desc.MagnificationFilter = MagFilter::Nearest;
 						desc.Format = InternalFormat::RGBA8;
 						Texture2D::sptr texture = Texture2D::Create(desc);
 						texture->Clear(glm::vec4(0.5f, 0.5f, 0.5f, 0.75f));
-						m_models[ind].texture = m_textures.size();
-						m_textures.push_back({ textureName, texture });
+						m_models[ind].texture = Sprite::m_textures.size();
+						Sprite::m_textures.push_back({ textureName, texture });
 					}
 					else {
 						Texture2D::sptr tex = Texture2D::LoadFromFile("textures/" + textureName);
@@ -100,8 +102,8 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 						{
 							throw std::runtime_error("Failed to open texture\nError 0: " + textureName);
 						}
-						m_models[ind].texture = m_textures.size();
-						m_textures.push_back({ textureName, tex });
+						m_models[ind].texture = Sprite::m_textures.size();
+						Sprite::m_textures.push_back({ textureName, tex });
 					}
 				}
 				materials[matIndex].isText = true;
@@ -450,9 +452,6 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 			});
 	}
 
-	//m_models[ind].verts.push_back(interleaved.size());
-	m_models[ind].verts = interleaved.size();
-
 	m_index = ind;
 
 	return *this;
@@ -482,10 +481,6 @@ void ObjLoader::Init()
 
 void ObjLoader::Unload()
 {
-	for (int i(0); i < m_textures.size(); ++i) {
-		m_textures[i].texture = nullptr;
-	}
-	m_textures.clear();
 	for (int i(0); i < m_models.size(); ++i) {
 		m_models[i].vao = nullptr;
 	}
@@ -508,6 +503,8 @@ void ObjLoader::BeginDraw(unsigned amt)
 
 void ObjLoader::Draw(const glm::mat4& model)
 {
+	if (!m_enabled)	return;
+
 	if (m_models[m_index].text) {
 		m_texQueue.push_back({ m_index, model });
 	}
@@ -555,8 +552,7 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 			m_shader->SetUniformMatrix("MVP", VP * m_defaultQueue[i].model);
 			m_shader->SetUniformMatrix("transform", m_defaultQueue[i].model);
 
-			m_models[m_defaultQueue[i].modelIndex].vao->Bind();
-			glDrawArrays(GL_TRIANGLES, 0, m_models[m_defaultQueue[i].modelIndex].verts);
+			m_models[m_defaultQueue[i].modelIndex].vao->Render();
 		}
 	}
 
@@ -577,10 +573,9 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 			m_texShader->SetUniformMatrix("MVP", VP * m_texQueue[i].model);
 			m_texShader->SetUniformMatrix("transform", m_texQueue[i].model);
 
-			m_textures[m_models[m_texQueue[i].modelIndex].texture].texture->Bind(0);
+			Sprite::m_textures[m_models[m_texQueue[i].modelIndex].texture].texture->Bind(0);
 
-			m_models[m_texQueue[i].modelIndex].vao->Bind();
-			glDrawArrays(GL_TRIANGLES, 0, m_models[m_texQueue[i].modelIndex].verts);
+			m_models[m_texQueue[i].modelIndex].vao->Render();
 		}
 	}
 
@@ -600,8 +595,7 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 			m_matShader->SetUniformMatrix("MVP", VP * m_matQueue[i].model);
 			m_matShader->SetUniformMatrix("transform", m_matQueue[i].model);
 
-			m_models[m_matQueue[i].modelIndex].vao->Bind();
-			glDrawArrays(GL_TRIANGLES, 0, m_models[m_matQueue[i].modelIndex].verts);
+			m_models[m_matQueue[i].modelIndex].vao->Render();
 		}
 	}
 

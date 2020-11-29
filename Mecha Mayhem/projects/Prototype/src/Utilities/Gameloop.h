@@ -16,9 +16,12 @@ namespace Gameloop
 		//all static inits
 		ObjLoader::Init();
 		ObjMorphLoader::Init();
+		Sprite::Init();
+
 		Input::Init(window);
 		HitboxGen::Init();
 		SoundManager::init("./sounds/", 20);
+		Player::Init(width, height);
 
 		return window;
 	}
@@ -31,6 +34,8 @@ namespace Gameloop
 		SoundManager::update();
 		//Controller Checks n stuff
 		ControllerInput::ControllerUpdate();
+		//update the static dt
+		Time::Update(glfwGetTime());
 	}
 
 	//stop everything (use at the end to avoid issues)
@@ -42,6 +47,8 @@ namespace Gameloop
 		BackEnd::Unload();
 		ObjLoader::Unload();
 		ObjMorphLoader::Unload();
+		Sprite::Unload();
+
 		SoundManager::stopEverything();
 
 		// Clean up the toolkit logger so we don't leak memory

@@ -248,11 +248,15 @@ btVector3 PhysBody::GetRaycastWithDistanceLimit(glm::vec3 startPos, glm::vec3 lo
             if (closestResults.hasHit())
             {
                 //this puts the coordinate in which it hit
-                return from.lerp(to, closestResults.m_closestHitFraction > limit ? limit : closestResults.m_closestHitFraction);
+                btVector3 p = from.lerp(to, closestResults.m_closestHitFraction);
+                if (p.length() > limit)
+                    return from.lerp(to.normalize(), limit);
+                else
+                    return closestResults.m_hitPointWorld;
             }
             else
             {
-                return from.lerp(to, limit);
+                return from.lerp(to.normalize(), limit);
             }
         }
     }
