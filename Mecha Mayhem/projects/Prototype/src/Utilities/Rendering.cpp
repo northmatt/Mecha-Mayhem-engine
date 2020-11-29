@@ -46,7 +46,7 @@ namespace Rendering {
 
             if (hitboxes != nullptr) hitboxes->Render();
 
-            ObjLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.5f);
+            ObjLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, LightCount, 1, 4, 0.5f);
 
             ObjMorphLoader::BeginDraw(morphView.size());
 
