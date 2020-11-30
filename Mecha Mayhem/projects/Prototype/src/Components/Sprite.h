@@ -41,9 +41,9 @@ public:
 
 	static void PerformDraw();
 
-	Sprite& SetScale(float scl) { m_scale = scl; }
-	Sprite& SetWidth(float width) { m_width = width; }
-	Sprite& SetHeight(float height) { m_height = height; }
+	void SetScale(float scl) { m_scale = scl; }
+	void SetWidth(float width) { m_width = width; }
+	void SetHeight(float height) { m_height = height; }
 
 	struct Texture
 	{

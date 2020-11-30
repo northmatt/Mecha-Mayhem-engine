@@ -34,36 +34,26 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	camCam.SetFovDegrees(60.f).ResizeWindow(width, height);
 
 	bodyEnt1 = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt1).Init(0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
+	ECS::AttachComponent<PhysBody>(bodyEnt1).Init(bodyEnt1, 0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
 		/*SetGravity(glm::vec3(0)).*/
 		SetRotation(startQuat).GetBody()->setAngularFactor(btVector3(0, 0, 0));
 	ECS::GetComponent<PhysBody>(bodyEnt1).GetBody()->setFriction(0);
-	ECS::AttachComponent<Player>(bodyEnt1).Init(CONUSER::ONE, 1).SetRotation(glm::radians(180.f), 0);
+	auto& pppp = ECS::AttachComponent<Player>(bodyEnt1).Init(CONUSER::ONE, 1).SetRotation(glm::radians(180.f), 0);
 
 	bodyEnt2 = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt2).Init(0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
+	ECS::AttachComponent<PhysBody>(bodyEnt2).Init(bodyEnt2, 0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
 		/*SetGravity(glm::vec3(0)).*/
 		SetRotation(startQuat).GetBody()->setAngularFactor(btVector3(0, 0, 0));
 	ECS::GetComponent<PhysBody>(bodyEnt2).GetBody()->setFriction(0);
 	ECS::AttachComponent<Player>(bodyEnt2).Init(CONUSER::TWO, 1).SetRotation(glm::radians(180.f), 0);
 
-	auto Dio = ECS::CreateEntity();
-	ECS::AttachComponent<ObjLoader>(Dio).LoadMesh("models/Pistol.obj", true);
-
-	auto Dio2 = ECS::CreateEntity();
-	ECS::AttachComponent<ObjLoader>(Dio2).LoadMesh("models/Pistol.obj", true);
-
 	Head1 = ECS::CreateEntity();
 	ECS::GetComponent<Transform>(Head1).SetPosition(glm::vec3(0, 0.75f, 0)).ChildTo(bodyEnt1);
-	ECS::GetComponent<Transform>(Dio).SetPosition(glm::vec3(0.4f, 0.25f, -0.5f)).
-		ChildTo(bodyEnt1).SetUsingParentScale(false).SetScale(0.05f);
 	ECS::GetComponent<Transform>(cameraEnt1).SetPosition(glm::vec3(0, 0, camDistance)).
 		ChildTo(Head1).SetUsingParentScale(false);
 
 	Head2 = ECS::CreateEntity();
 	ECS::GetComponent<Transform>(Head2).SetPosition(glm::vec3(0, 0.75f, 0)).ChildTo(bodyEnt2);
-	ECS::GetComponent<Transform>(Dio2).SetPosition(glm::vec3(0.4f, 0.25f, -0.5f)).
-		ChildTo(bodyEnt2).SetUsingParentScale(false).SetScale(0.05f);
 	ECS::GetComponent<Transform>(cameraEnt2).SetPosition(glm::vec3(0, 0, camDistance)).
 		ChildTo(Head2).SetUsingParentScale(false);
 	
@@ -71,6 +61,12 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 		auto entity = ECS::CreateEntity();
 		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("maps/tutorialMap.obj", true);
 		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, 0, 0));
+	}
+
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<ObjMorphLoader>(entity).LoadMeshs("title", true);
+		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, 2.5f, -50)).SetScale(2.f);
 	}
 
 	/// End of creating entities
@@ -83,6 +79,9 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 
 void Tutorial::Update()
 {
+	auto& p1 = ECS::GetComponent<Player>(bodyEnt1);
+	auto& p2 = ECS::GetComponent<Player>(bodyEnt2);
+
 	if (Input::GetKeyDown(KEY::ESC)) {
 		if (Input::GetKey(KEY::LSHIFT)) {
 			if (screen = !screen)	BackEnd::SetTabbed(width, height);
@@ -108,21 +107,15 @@ void Tutorial::Update()
 	if (Input::GetKeyDown(KEY::F10))	if (!m_colliders.SaveToFile(false))	std::cout << "file save failed\n";
 	if (Input::GetKeyDown(KEY::F1))		if (!m_colliders.LoadFromFile())	std::cout << "file load failed\n";
 
-	ECS::GetComponent<Player>(bodyEnt1).GetInput(
+	p1.GetInput(
 		ECS::GetComponent<PhysBody>(bodyEnt1),
 		ECS::GetComponent<Transform>(Head1),
 		ECS::GetComponent<Transform>(cameraEnt1)
 	);
 
-	ECS::GetComponent<Player>(bodyEnt2).GetInput(
+	p2.GetInput(
 		ECS::GetComponent<PhysBody>(bodyEnt2),
 		ECS::GetComponent<Transform>(Head2),
 		ECS::GetComponent<Transform>(cameraEnt2)
 	);
-}
-
-void Tutorial::Exit()
-{
-	if (!m_colliders.SaveToFile())
-		std::cout << "file save failed\n";
 }

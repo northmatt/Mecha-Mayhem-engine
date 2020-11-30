@@ -9,13 +9,19 @@ public:
 
 	virtual void Init(int windowWidth, int windowHeight) override;
 	virtual void Update() override;
-	virtual void Exit() override;
 	virtual Scene* Reattach() override {
+		if (m_camCount == 2)
+			Player::SetUIAspect(width / 2.f, height);
+		else
+			Player::SetUIAspect(width, height);
 		Player::SetCamDistance(camDistance);
 		return Scene::Reattach();
 	}
 
 private:
+
+	entt::entity Lazer = entt::null;
+	entt::entity Lazer2 = entt::null;
 
 	int width = 0;
 	int height = 0;
