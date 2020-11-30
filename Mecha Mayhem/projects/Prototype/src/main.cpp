@@ -12,7 +12,7 @@ int main() {
 		std::vector<Scene*> scenes;
 		scenes.push_back(new Tutorial("Tutorial", glm::vec3(0, -100, 0)));
 		scenes.push_back(new DemoScene("Demo 2", glm::vec3(0, -100, 0)));
-
+		 
 		scenes[0]->Init(width, height);
 		scenes[1]->Init(width, height);
 

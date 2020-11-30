@@ -2,6 +2,7 @@
 #include "Utilities/ControllerInput.h"
 #include "PhysBody.h"
 #include "ObjMorphLoader.h"
+#include "SoundSystem.h"
 
 class Player
 {
@@ -88,6 +89,7 @@ private:
 	static constexpr float pi = glm::half_pi<float>() - 0.01f;
 	static float m_camDistance;
 	static float m_dashDistance;
+	static Sound2D shootLaser;
 
 	CONUSER m_user = CONUSER::NONE;
 
