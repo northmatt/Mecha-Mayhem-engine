@@ -199,7 +199,7 @@ void DemoScene::Update()
 		}
 	}
 
-
+ 
 	updateLazer();
 }
 

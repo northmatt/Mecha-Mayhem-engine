@@ -12,11 +12,13 @@ const glm::mat4 Player::m_modelOffset = glm::mat4(
 	0, 0, 0, 0,
 	0, -1, 0, 0
 );
+Sound2D Player::shootLaser = Sound2D();
 
 void Player::Init(int width, int height)
 {
 	m_orthoCam.SetOrthoHeight(10).SetPosition(glm::vec3(0, 0, 0)).SetNear(-10).Setfar(10)
 		.SetIsOrtho(true).ResizeWindow(width, height);
+	shootLaser = Sound2D("laser.mp3", "shooting");
 
 	ObjMorphLoader("effects/dash", true).LoadMeshs("effects/laser", true)
 		.LoadMeshs("char/idle", true).LoadMeshs("char/walk", true)
@@ -252,6 +254,8 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 		if (m_weaponCooldown == 0) {
 			if (ControllerInput::GetRTRaw(m_user)) {
 				UseWeapon(body);
+				shootLaser.play();
+				m_weaponCooldown = 0.5f;
 			}
 		}
 	}
