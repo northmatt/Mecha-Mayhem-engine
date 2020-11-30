@@ -25,6 +25,9 @@ public:
 	//Delete an entity
 	static void DestroyEntity(entt::entity entity);
 
+	//check if the entity is in the registry
+	static bool Exists(entt::entity entity);
+
 	//Attach a class (use the overload plz)
 	template<typename T>
 	static T& AttachComponent(entt::entity entity);
@@ -41,8 +44,12 @@ public:
 	template<typename T>
 	static T& GetComponent(entt::entity entity);
 
-private:
+	//check if entity has component, returns nullptr if failed
+	template<typename T>
+	static bool HasComponent(entt::entity entity);
+
 	static entt::registry* m_registry;
+private:
 	static btDiscreteDynamicsWorld* m_world;
 };
 
@@ -72,4 +79,10 @@ template<typename T>
 inline T& ECS::GetComponent(entt::entity entity)
 {
 	return m_registry->get<T>(entity);
+}
+
+template<typename T>
+inline bool ECS::HasComponent(entt::entity entity)
+{
+	return m_registry->has<T>(entity);
 }

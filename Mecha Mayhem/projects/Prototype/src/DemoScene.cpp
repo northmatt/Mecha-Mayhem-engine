@@ -35,13 +35,13 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 	camCam.SetFovDegrees(60.f).ResizeWindow(width, height);
 
 	bodyEnt = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt).Init(0.5f, 2, glm::vec3(0, 10, 0), 1, true).
+	ECS::AttachComponent<PhysBody>(bodyEnt).Init(bodyEnt, 0.5f, 2, glm::vec3(0, 10, 0), 1, true).
 		/*SetGravity(glm::vec3(0)).*/GetBody()->setAngularFactor(btVector3(0, 0, 0));
 	ECS::GetComponent<PhysBody>(bodyEnt).GetBody()->setFriction(0);
 	ECS::AttachComponent<Player>(bodyEnt).Init(CONUSER::ONE, 1);
 
 	bodyEnt2 = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt2).Init(0.5f, 2, glm::vec3(0, 10, 0), 1, true).
+	ECS::AttachComponent<PhysBody>(bodyEnt2).Init(bodyEnt2, 0.5f, 2, glm::vec3(0, 10, 0), 1, true).
 		/*SetGravity(glm::vec3(0)).*/GetBody()->setAngularFactor(btVector3(0, 0, 0));
 	ECS::GetComponent<PhysBody>(bodyEnt2).GetBody()->setFriction(0);
 	ECS::AttachComponent<Player>(bodyEnt2).Init(CONUSER::TWO, 1);
@@ -51,23 +51,13 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 		LoadMeshs("drone").LoadMeshs("othershield/anim", true).LoadMeshs("anotherOne");
 	ECS::GetComponent<Transform>(drone).ChildTo(bodyEnt).SetPosition(glm::vec3(0, 0, 1.f)).SetScale(0.3f);
 
-	auto Dio = ECS::CreateEntity();
-	ECS::AttachComponent<ObjLoader>(Dio).LoadMesh("models/Pistol.obj", true);
-
-	auto Dio2 = ECS::CreateEntity();
-	ECS::AttachComponent<ObjLoader>(Dio2).LoadMesh("models/Pistol.obj", true);
-
 	P = ECS::CreateEntity();
 	ECS::GetComponent<Transform>(P).SetPosition(glm::vec3(0, 0.75f, 0)).ChildTo(bodyEnt);
-	ECS::GetComponent<Transform>(Dio).SetPosition(glm::vec3(0.4f, 0.25f, -0.5f)).
-		ChildTo(bodyEnt).SetUsingParentScale(false).SetScale(0.05f);
 	ECS::GetComponent<Transform>(cameraEnt).SetPosition(glm::vec3(0, 0, camDistance)).
 		ChildTo(P).SetUsingParentScale(false);
 
 	P2 = ECS::CreateEntity();
 	ECS::GetComponent<Transform>(P2).SetPosition(glm::vec3(0, 0.75f, 0)).ChildTo(bodyEnt2);
-	ECS::GetComponent<Transform>(Dio2).SetPosition(glm::vec3(0.4f, 0.25f, -0.5f)).
-		ChildTo(bodyEnt2).SetUsingParentScale(false).SetScale(0.05f);
 	ECS::GetComponent<Transform>(cameraEnt2).SetPosition(glm::vec3(0, 0, camDistance)).
 		ChildTo(P2).SetUsingParentScale(false);
 
@@ -179,12 +169,11 @@ void DemoScene::Update()
 
 		glm::vec3 rayPos = ptrans.ComputeScalessGlobal().GetGlobalPosition();
 		glm::vec3 forwards = -ptrans.GetForwards();
-		btVector3 p = PhysBody::GetRaycast(rayPos, forwards * 2000.f);
-		if (p != btVector3())
+		RayResult p = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos), BLM::GLMtoBT(forwards * 2000.f));
+		if (p.hasHit())
 		{
 			if (Input::GetKey(KEY::RSHIFT) || ControllerInput::GetButton(BUTTON::X, CONUSER::TWO)) {
-
-				ShootLazer(glm::length(BLM::BTtoGLM(p) - rayPos), ptrans.GetGlobalRotation(), rayPos, false);
+				ShootLazer(p.m_collisionObject->getUserIndex(), glm::length(BLM::BTtoGLM(p.m_hitPointWorld) - rayPos), ptrans.GetGlobalRotation(), rayPos, false);
 			}
 		}
 	}
@@ -198,14 +187,14 @@ void DemoScene::Update()
 
 		glm::vec3 rayPos = ptrans.ComputeScalessGlobal().GetGlobalPosition();
 		glm::vec3 forwards = -ptrans.GetForwards();
-		btVector3 p = PhysBody::GetRaycast(rayPos, forwards * 2000.f);
-		if (p != btVector3())
+		RayResult p = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos), BLM::GLMtoBT(forwards * 2000.f));
+		if (p.hasHit())
 		{
 			//Rendering::LightPos = ECS::GetComponent<Transform>(epic).SetPosition(p).GetGlobalPosition();
 
-			if (Input::GetKey(KEY::RSHIFT) || ControllerInput::GetButton(BUTTON::X, CONUSER::ONE)) {
 
-				ShootLazer(glm::length(BLM::BTtoGLM(p) - rayPos), ptrans.GetGlobalRotation(), rayPos, true);
+			if (Input::GetKey(KEY::RSHIFT) || ControllerInput::GetButton(BUTTON::X, CONUSER::ONE)) {
+				ShootLazer(p.m_collisionObject->getUserIndex(), glm::length(BLM::BTtoGLM(p.m_hitPointWorld) - rayPos), ptrans.GetGlobalRotation(), rayPos, true);
 			}
 		}
 	}
@@ -220,22 +209,37 @@ void DemoScene::Exit()
 		std::cout << "file save failed\n";
 }
 
-void DemoScene::ShootLazer(float width, glm::quat rotation, glm::vec3 pos, bool isp1)
+void DemoScene::ShootLazer(entt::entity playerIdTest, float width, glm::quat rotation, glm::vec3 pos, bool isp1)
 {
 	if (isp1) {
 		if (Lazer == entt::null) {
+			//if (ECS::Exists(playerIdTest))
+			if (m_reg.valid(playerIdTest))
+				//if (ECS::HasComponent<Player>(playerIdTest)) {
+				if (m_reg.has<Player>(playerIdTest)) {
+					//if (ECS::GetComponent<Player>(playerIdTest).TakeDamage(1))
+					if (m_reg.get<Player>(playerIdTest).TakeDamage(1))
+						std::cout << "dead\n";
+					ouch.play();
+				}
 			Lazer = ECS::CreateEntity();
 			ECS::AttachComponent<ObjMorphLoader>(Lazer).LoadMeshs("effects/laser", true);
 			ECS::GetComponent<Transform>(Lazer).SetRotation(rotation).SetPosition(pos).SetScale(glm::vec3(1, 1, width));
-			ouch.play();
 		}
 	}
 	else {
 		if (Lazer2 == entt::null) {
+			if (m_reg.valid(playerIdTest))
+				if (m_reg.has<Player>(playerIdTest)) {
+					if (m_reg.get<Player>(playerIdTest).TakeDamage(1))
+						std::cout << "dead\n";
+					ouch.play();
+				}
+
 			Lazer2 = ECS::CreateEntity();
 			ECS::AttachComponent<ObjMorphLoader>(Lazer2).LoadMeshs("effects/laser", true);
 			ECS::GetComponent<Transform>(Lazer2).SetRotation(rotation).SetPosition(pos).SetScale(glm::vec3(1, 1, width));
-			ouch.play();
+			//ouch.play();
 		}
 	}
 }

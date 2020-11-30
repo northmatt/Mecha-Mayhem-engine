@@ -11,11 +11,15 @@ public:
 	virtual void Update() override;
 	virtual void Exit() override;
 	virtual Scene* Reattach() override {
+		if (m_camCount == 2)
+			Player::SetUIAspect(width / 2.f, height);
+		else
+			Player::SetUIAspect(width, height);
 		Player::SetCamDistance(camDistance);
 		return Scene::Reattach();
 	}
 
-	void ShootLazer(float width, glm::quat rotation, glm::vec3 pos, bool isp1);
+	void ShootLazer(entt::entity hitTarget, float width, glm::quat rotation, glm::vec3 pos, bool isp1);
 	void updateLazer();
 
 private:

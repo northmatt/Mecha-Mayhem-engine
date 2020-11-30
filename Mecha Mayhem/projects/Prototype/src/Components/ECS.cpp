@@ -40,3 +40,8 @@ void ECS::DestroyEntity(entt::entity entity)
     }
     m_registry->destroy(entity);
 }
+
+bool ECS::Exists(entt::entity entity)
+{
+    return m_registry->valid(entity);
+}

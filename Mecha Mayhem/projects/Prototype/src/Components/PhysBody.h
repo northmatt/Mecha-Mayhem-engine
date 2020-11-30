@@ -19,13 +19,13 @@ public:
 	bool Changed() { return m_changed; }
 
 	//makes a box
-	PhysBody& Init(float width, float depth, float height, glm::vec3 pos, float mass = 0, bool isDynamic = false);
+	PhysBody& Init(int id, float width, float depth, float height, glm::vec3 pos, float mass = 0, bool isDynamic = false);
 	
 	//makes a pill
-	PhysBody& Init(float radius, float height, glm::vec3 pos, float mass = 0, bool isDynamic = false);
+	PhysBody& Init(int id, float radius, float height, glm::vec3 pos, float mass = 0, bool isDynamic = false);
 
 	//makes a sphere
-	PhysBody& Init(float radius, glm::vec3 pos, float mass = 0, bool isDynamic = false);
+	PhysBody& Init(int id, float radius, glm::vec3 pos, float mass = 0, bool isDynamic = false);
 
 	btRigidBody* GetBody() { return m_body; }
 
