@@ -18,7 +18,8 @@ void Player::Init(int width, int height)
 	m_orthoCam.SetOrthoHeight(10).SetPosition(glm::vec3(0, 0, 0)).SetNear(-10).Setfar(10)
 		.SetIsOrtho(true).ResizeWindow(width, height);
 
-	ObjMorphLoader("char/idle", true).LoadMeshs("char/walk", true)
+	ObjMorphLoader("effects/dash", true).LoadMeshs("effects/laser", true)
+		.LoadMeshs("char/idle", true).LoadMeshs("char/walk", true)
 		.LoadMeshs("char/air", true).LoadMeshs("char/death", true);
 }
 
@@ -175,7 +176,9 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 			else m_jumpHeld = 0;
 
 			if (m_punched = ControllerInput::GetButtonDown(BUTTON::X, m_user)) {
-				//punch
+				//punch only when on ground
+				//if (m_offhand == OFFHAND::SWORD)	{swing anim}
+
 				vel.x = 0;
 				vel.z = 0;
 			}
@@ -297,6 +300,19 @@ void Player::UseWeapon(PhysBody& body)
 		break;
 	default:	break;
 	}
+}
+
+void Player::UseHeal()
+{
+	if (m_offhand == OFFHAND::HEALPACK) {
+		m_health += 3;
+		if (m_health > m_maxHealth)
+			m_health = m_maxHealth;
+	}
+
+	/*switch (m_offhand) {
+	case OFFHAND::EMPTY:	default:	break;
+	}*/
 }
 
 void Player::PickUpWeapon(WEAPON pickup)

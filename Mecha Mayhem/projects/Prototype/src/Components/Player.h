@@ -62,6 +62,7 @@ public:
 
 private:
 	void UseWeapon(PhysBody& body);
+	void UseHeal();
 	void PickUpWeapon(WEAPON pickup);
 	void PickUpOffhand(OFFHAND pickup);
 	
