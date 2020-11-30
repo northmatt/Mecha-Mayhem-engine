@@ -9,6 +9,7 @@ namespace Gameloop
 		srand(time(0));
 		// We'll borrow the logger from the toolkit, but we need to initialize it
 		Logger::Init();
+		SoundManager::init("./sounds/", 20);
 
 		GLFWwindow* window = BackEnd::Init("Mecha Mayhem", width, height);
 		if (!window)	return nullptr;
@@ -20,7 +21,6 @@ namespace Gameloop
 
 		Input::Init(window);
 		HitboxGen::Init();
-		SoundManager::init("./sounds/", 20);
 		Player::Init(width, height);
 
 		return window;
