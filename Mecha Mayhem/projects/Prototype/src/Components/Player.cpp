@@ -13,12 +13,14 @@ const glm::mat4 Player::m_modelOffset = glm::mat4(
 	0, -1, 0, 0
 );
 Sound2D Player::shootLaser = Sound2D();
+Sound2D Player::walk = Sound2D();
 
 void Player::Init(int width, int height)
 {
 	m_orthoCam.SetOrthoHeight(10).SetPosition(glm::vec3(0, 0, 0)).SetNear(-10).Setfar(10)
 		.SetIsOrtho(true).ResizeWindow(width, height);
 	shootLaser = Sound2D("laser.mp3", "shooting");
+	walk = Sound2D("MetalFloor/1StepNoise.mp3", "walking");
 
 	ObjMorphLoader("char/idle", true).LoadMeshs("char/walk", true)
 		.LoadMeshs("char/air", true).LoadMeshs("char/death", true);
@@ -166,6 +168,16 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 
 		vel.x += ControllerInput::GetLX(m_user);
 		vel.z -= ControllerInput::GetLY(m_user);
+
+		//if moving then play walk sound
+		m_walkSoundTimer += Time::dt;
+		//Basically using the timer to make the second footstep happen, since two feet
+		//Making sure the player is moving, and that it won't overlap more than necessary (Hence the isplaying())
+		if ((vel.x != 0.f || vel.z != 0.f) && (!(walk.isPlaying()) || (m_walkSoundTimer >= m_walkSoundDelay))) 
+		{
+			walk.play();
+			m_walkSoundTimer = 0.f;
+		}
 
 		if (m_grounded = vel.y < 0.1f && vel.y > -0.1f) {
 			//jump

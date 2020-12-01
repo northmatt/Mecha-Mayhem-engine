@@ -89,6 +89,7 @@ private:
 	static float m_camDistance;
 	static float m_dashDistance;
 	static Sound2D shootLaser;
+	static Sound2D walk;
 
 	CONUSER m_user = CONUSER::NONE;
 
@@ -114,6 +115,9 @@ private:
 	float m_jumpHeld = 0;
 	float m_speed = 15.f;
 	float m_weaponCooldown = 0.f;
+
+	float m_walkSoundDelay = 0.4f;
+	float m_walkSoundTimer = 0.f;
 
 	glm::quat m_startRot = glm::quat(1, 0, 0, 0);
 	glm::vec3 m_spawnPos = glm::vec3(0.f);
