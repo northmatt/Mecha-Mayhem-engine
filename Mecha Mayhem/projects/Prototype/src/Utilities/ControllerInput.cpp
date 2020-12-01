@@ -56,8 +56,8 @@ void ControllerInput::ControllerUpdate()
 			m_controllers[i].dPadButtons[3] = m_controllers[i].gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT;
 			m_controllers[i].bumpers[0] = m_controllers[i].gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER;
 			m_controllers[i].bumpers[1] = m_controllers[i].gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER;
-			m_controllers[i].lStick = m_controllers[i].gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB;
-			m_controllers[i].rStick = m_controllers[i].gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB;
+			m_controllers[i].sticks[0] = m_controllers[i].gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB;
+			m_controllers[i].sticks[1] = m_controllers[i].gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB;
 			m_controllers[i].startButton = m_controllers[i].gamepad.wButtons & XINPUT_GAMEPAD_START;
 			m_controllers[i].backButton = m_controllers[i].gamepad.wButtons * XINPUT_GAMEPAD_BACK;
 			m_controllers[i].triggers[0] = m_controllers[i].gamepad.bLeftTrigger;
@@ -84,15 +84,84 @@ bool ControllerInput::GetButtonDown(BUTTON input, CONUSER controllerIndex)
 	if (!m_controllers[int(controllerIndex)].connected) return false;
 	//look into if statements instead of big switch?
 	switch (input) {
-	case BUTTON::A:	if (!m_controllers[int(controllerIndex)].faceButtons[0]) return m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_A;
-				  else return false;
-	default:	return m_controllers[int(controllerIndex)].gamepad.wButtons & int(input);
+	case BUTTON::A:	if (m_controllers[int(controllerIndex)].faceButtons[0])		return false;
+				return m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_A;
+	case BUTTON::B:	if (m_controllers[int(controllerIndex)].faceButtons[1])	return false;
+				return m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_B;
+	case BUTTON::X:	if (m_controllers[int(controllerIndex)].faceButtons[2])	return false;
+				return m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_X;
+	case BUTTON::Y:	if (m_controllers[int(controllerIndex)].faceButtons[3])	return false;
+				return m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_Y;
+
+	case BUTTON::DUP:		if (m_controllers[int(controllerIndex)].dPadButtons[0])	return false;
+				return m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP;
+	case BUTTON::DRIGHT:	if (m_controllers[int(controllerIndex)].dPadButtons[1])	return false;
+				return m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT;
+	case BUTTON::DDOWN:		if (m_controllers[int(controllerIndex)].dPadButtons[2])	return false;
+				return m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN;
+	case BUTTON::DLEFT:		if (m_controllers[int(controllerIndex)].dPadButtons[3])	return false;
+				return m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT;
+
+	case BUTTON::START:		if (m_controllers[int(controllerIndex)].startButton)	return false;
+				return m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_START;
+	case BUTTON::SELECT:	if (m_controllers[int(controllerIndex)].backButton)	return false;
+				return m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_BACK;
+
+	case BUTTON::LB:	if (m_controllers[int(controllerIndex)].bumpers[0])	return false;
+				return m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER;
+	case BUTTON::LS:	if (m_controllers[int(controllerIndex)].sticks[0])		return false;
+				return m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB;
+
+	case BUTTON::RB:	if (m_controllers[int(controllerIndex)].bumpers[1])	return false;
+				return m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER;
+	case BUTTON::RS:	if (m_controllers[int(controllerIndex)].sticks[1])		return false;
+				return m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB;
+
+	default:	return false;
 	}
 }
 
 bool ControllerInput::GetButtonUp(BUTTON input, CONUSER controllerIndex)
 {
 	if (!m_controllers[int(controllerIndex)].connected) return false;
+	//look into if statements instead of big switch?
+	switch (input) {
+	case BUTTON::A:	if (!m_controllers[int(controllerIndex)].faceButtons[0])	return false;
+		return !(m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_A);
+	case BUTTON::B:	if (!m_controllers[int(controllerIndex)].faceButtons[1])	return false;
+		return !(m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_B);
+	case BUTTON::X:	if (!m_controllers[int(controllerIndex)].faceButtons[2])	return false;
+		return !(m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_X);
+	case BUTTON::Y:	if (!m_controllers[int(controllerIndex)].faceButtons[3])	return false;
+		return !(m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_Y);
+
+	case BUTTON::DUP:		if (!m_controllers[int(controllerIndex)].dPadButtons[0])	return false;
+		return !(m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP);
+	case BUTTON::DRIGHT:	if (!m_controllers[int(controllerIndex)].dPadButtons[1])	return false;
+		return !(m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT);
+	case BUTTON::DDOWN:		if (!m_controllers[int(controllerIndex)].dPadButtons[2])	return false;
+		return !(m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN);
+	case BUTTON::DLEFT:		if (!m_controllers[int(controllerIndex)].dPadButtons[3])	return false;
+		return !(m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT);
+
+	case BUTTON::START:		if (!m_controllers[int(controllerIndex)].startButton)	return false;
+		return !(m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_START);
+	case BUTTON::SELECT:	if (!m_controllers[int(controllerIndex)].backButton)	return false;
+		return !(m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_BACK);
+
+	case BUTTON::LB:	if (!m_controllers[int(controllerIndex)].bumpers[0])	return false;
+		return !(m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER);
+	case BUTTON::LS:	if (!m_controllers[int(controllerIndex)].sticks[0])		return false;
+		return !(m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB);
+
+	case BUTTON::RB:	if (!m_controllers[int(controllerIndex)].bumpers[1])	return false;
+		return !(m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER);
+	case BUTTON::RS:	if (!m_controllers[int(controllerIndex)].sticks[1])		return false;
+		return !(m_controllers[int(controllerIndex)].gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB);
+
+	default:	return false;
+	}
+
 	return false;
 }
 
@@ -220,6 +289,20 @@ int ControllerInput::GetLTDown(CONUSER controllerIndex)
 }
 
 int ControllerInput::GetRTDown(CONUSER controllerIndex)
+{
+	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	if (m_controllers[int(controllerIndex)].triggers[1])	return 0;
+	return GetRTRaw(controllerIndex);
+}
+
+int ControllerInput::GetLTUp(CONUSER controllerIndex)
+{
+	if (!m_controllers[int(controllerIndex)].connected)		return 0;
+	if (m_controllers[int(controllerIndex)].triggers[0])	return 0;
+	return GetLTRaw(controllerIndex);
+}
+
+int ControllerInput::GetRTUp(CONUSER controllerIndex)
 {
 	if (!m_controllers[int(controllerIndex)].connected) return 0;
 	if (m_controllers[int(controllerIndex)].triggers[1])	return 0;

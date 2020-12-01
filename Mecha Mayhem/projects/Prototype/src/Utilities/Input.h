@@ -89,9 +89,9 @@ public:
 	}
 	//returns if the key was just pressed down (on press but not hold)
 	static bool GetKeyDown(KEY key) {
-		if (!pressed[check(int(key))])
-			return glfwGetKey(window, int(key));
-		return false;
+		if (pressed[check(int(key))])
+			return false;
+		return glfwGetKey(window, int(key));
 	}
 	//returns if the key was just released (on release but not lack of input (use !GetKey))
 	static bool GetKeyUp(KEY key) {
