@@ -52,6 +52,9 @@ public:
 	/// </summary>
 	Camera& LookAt(const glm::vec3& point);
 
+	Camera& SetNear(float near);
+	Camera& Setfar(float far);
+
 	/// <summary>
 	/// Notifies this camera that the window has resized, and updates our projection matrix
 	/// </summary>

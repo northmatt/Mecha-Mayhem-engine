@@ -1,0 +1,22 @@
+floor 0
+box pos 0 0.75 -4 scl 8 1.5 0.4
+
+box pos 0 4.5 -12 scl 8 3 0.4
+box pos 2.5 1.5 -12 scl 3 3 0.4
+box pos -2.5 1.5 -12 scl 3 3 0.4
+
+box pos 0 0.75 -20 scl 8 1.5 0.4
+box pos 0 5 -20 scl 8 2 0.4
+box pos 2.5 2.75 -20 scl 3 2.5 0.4
+box pos -2.5 2.75 -20 scl 3 2.5 0.4
+
+box pos 3 3 -28 scl 2 6 16
+box pos 8 3 -16 scl 8 6 40
+box pos 18 3 -28 scl 12 6 64
+
+box pos -3 3 -28 scl 2 6 16
+box pos -8 3 -16 scl 8 6 40
+box pos -18 3 -28 scl 12 6 64
+
+box pos 0 3 8 scl 48 6 8
+box pos 0 3 -64 scl 48 6 8

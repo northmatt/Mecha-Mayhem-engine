@@ -14,7 +14,7 @@ void PhysBody::Unload()
     m_world = nullptr;
 }
 
-PhysBody& PhysBody::Init(float width, float height, float depth, glm::vec3 pos, float mass, bool isDynamic)
+PhysBody& PhysBody::Init(int id, float width, float height, float depth, glm::vec3 pos, float mass, bool isDynamic)
 {
     bool shapeExists = false;
     btVector3 dimensions(btScalar(width / 2), btScalar(height / 2), btScalar(depth / 2));
@@ -49,13 +49,14 @@ PhysBody& PhysBody::Init(float width, float height, float depth, glm::vec3 pos, 
     btDefaultMotionState* myMotionState = new btDefaultMotionState(trans);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, boxShape, localInertia);
     m_body = new btRigidBody(rbInfo);
+    m_body->setUserIndex(id);
 
     m_world->addRigidBody(m_body);
 
     return *this;
 }
 
-PhysBody& PhysBody::Init(float radius, float height, glm::vec3 pos, float mass, bool isDynamic)
+PhysBody& PhysBody::Init(int id, float radius, float height, glm::vec3 pos, float mass, bool isDynamic)
 {
     bool shapeExists = false;
 
@@ -88,13 +89,14 @@ PhysBody& PhysBody::Init(float radius, float height, glm::vec3 pos, float mass, 
     btDefaultMotionState* myMotionState = new btDefaultMotionState(trans);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, pillShape, localInertia);
     m_body = new btRigidBody(rbInfo);
+    m_body->setUserIndex(id);
 
     m_world->addRigidBody(m_body);
 
     return *this;
 }
 
-PhysBody& PhysBody::Init(float radius, glm::vec3 pos, float mass, bool isDynamic)
+PhysBody& PhysBody::Init(int id, float radius, glm::vec3 pos, float mass, bool isDynamic)
 {
     bool shapeExists = false;
 
@@ -127,6 +129,7 @@ PhysBody& PhysBody::Init(float radius, glm::vec3 pos, float mass, bool isDynamic
     btDefaultMotionState* myMotionState = new btDefaultMotionState(trans);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, sphereShape, localInertia);
     m_body = new btRigidBody(rbInfo);
+    m_body->setUserIndex(id);
 
     m_world->addRigidBody(m_body);
 
@@ -248,11 +251,15 @@ btVector3 PhysBody::GetRaycastWithDistanceLimit(glm::vec3 startPos, glm::vec3 lo
             if (closestResults.hasHit())
             {
                 //this puts the coordinate in which it hit
-                return from.lerp(to, closestResults.m_closestHitFraction > limit ? limit : closestResults.m_closestHitFraction);
+                btVector3 p = closestResults.m_hitPointWorld - from;
+                if (p.length() > limit)
+                    return from.lerp(from + to.normalize(), limit);
+                else
+                    return closestResults.m_hitPointWorld;
             }
             else
             {
-                return from.lerp(to, limit);
+                return from.lerp(from + to.normalize(), limit);
             }
         }
     }
@@ -274,7 +281,7 @@ btVector3 PhysBody::GetRaycast(glm::vec3 startPos, glm::vec3 look)
             if (closestResults.hasHit())
             {
                 //this puts the coordinate in which it hit
-                btVector3 p = from.lerp(to, closestResults.m_closestHitFraction);
+                btVector3 p = from.lerp(from + to, closestResults.m_closestHitFraction);
                 return p;
             }
         }
@@ -297,7 +304,7 @@ btVector3 PhysBody::GetRaycast(glm::vec3 look)
             if (closestResults.hasHit())
             {
                 //this puts the coordinate in which it hit
-                btVector3 p = from.lerp(to, closestResults.m_closestHitFraction);
+                btVector3 p = from.lerp(from + to, closestResults.m_closestHitFraction);
                 return p;
 
                 //debugging purposes

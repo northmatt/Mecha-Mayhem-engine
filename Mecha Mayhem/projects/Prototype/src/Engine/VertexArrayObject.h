@@ -132,16 +132,16 @@ public:
 	
 protected:
 	// Helper structure to store a buffer and the attributes
-	struct VertexBufferBinding
+	/*struct VertexBufferBinding
 	{
 		VertexBuffer::sptr Buffer;
 		std::vector<BufferAttribute> Attributes;
 	};
+	std::vector<VertexBufferBinding> _vertexBuffers;*/
 	
 	// The index buffer bound to this VAO
 	IndexBuffer::sptr _indexBuffer;
 	// The vertex buffers bound to this VAO
-	std::vector<VertexBufferBinding> _vertexBuffers;
 
 	GLsizei _vertexCount;
 	

@@ -1,11 +1,12 @@
 #pragma once
 #include "Engine/BackEnd.h"
 #include "Components/ECS.h"
+#include "Components/Player.h"
 #include "Utilities/HitboxReader.h"
 
 namespace Rendering
 {
-	void Update(entt::registry* reg, int numOfCams, float dt);
+	void Update(entt::registry* reg, int numOfCams);
 
 	extern glm::vec4 BackColour;
 	extern std::array<glm::vec3, MAX_LIGHTS> LightsPos;

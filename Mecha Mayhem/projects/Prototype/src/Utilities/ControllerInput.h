@@ -8,7 +8,8 @@ enum class CONUSER
 	ONE = 0,
 	TWO,
 	THREE,
-	FOUR
+	FOUR,
+	NONE	//for target dummies
 };
 
 enum class BUTTON
@@ -29,6 +30,7 @@ enum class BUTTON
 	LS,		//Left Stick press
 	RS		//Right Stick press
 	*/
+
 	A = XINPUT_GAMEPAD_A,
 	B = XINPUT_GAMEPAD_B,
 	X = XINPUT_GAMEPAD_X,
@@ -87,35 +89,12 @@ public:
 	//Right Stick Y pressed?
 	static int GetRYRaw(CONUSER controllerIndex);
 
+	//Left Trigger pressed?
+	static int GetLTDown(CONUSER controllerIndex);
+	//Right Trigger pressed?
+	static int GetRTDown(CONUSER controllerIndex);
+
 private:
-	//Face Button presses
-	static void AButtonPress(short ind);
-	static void BButtonPress(short ind);
-	static void XButtonPress(short ind);
-	static void YButtonPress(short ind);
-
-	//DPad Button Presses
-	static void UpDPadPress(short ind);
-	static void RightDPadPress(short ind);
-	static void DownDPadPress(short ind);
-	static void LeftDPadPress(short ind);
-
-	//Bumpers
-	static void LBButtonPress(short ind);
-	static void RBButtonPress(short ind);
-
-	//Analog Stick Presses
-	static void LStickPress(short ind);
-	static void RStickPress(short ind);
-
-	static void StartButtonPress(short ind);
-	static void BackButtonPress(short ind);
-
-	static void LTriggerMove(short ind);
-	static void RTriggerMove(short ind);
-
-	static void LStickMove(short ind);
-	static void RStickMove(short ind);
 
 	struct Controller
 	{
@@ -136,10 +115,9 @@ private:
 		bool bumpers[2] = {};	
 		bool triggers[2] = {};
 
-		//up/right/down/left/press
-		//clockwise
-		bool lStick[5] = {};
-		bool rStick[5] = {};
+		//press
+		bool lStick = false;
+		bool rStick = false;
 	};
 	
 	static Controller m_controllers[XUSER_MAX_COUNT];

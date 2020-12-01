@@ -1,24 +1,8 @@
 #pragma once
-#include <Logging.h>
-#include <iostream>
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-#include <filesystem>
-#include <json.hpp>
-#include <fstream>
-
-#include <GLM/glm.hpp>
-#include <GLM/gtc/type_ptr.hpp>
-
-#include "Engine/BackEnd.h"
-#include "Components/Camera.h"
-#include "Engine/Texture2D.h"
+#include "Sprite.h"
 
 class ObjLoader
 {
-	friend class ObjMorphLoader;
 public:
 	//contructor
 	ObjLoader() {}
@@ -39,13 +23,9 @@ public:
 		float ambientLightStrength = 0.05f, const glm::vec3& ambientColour = glm::vec3(0.f), float ambientStrength = 0.f
 	);
 
-
-	struct Texture
-	{
-		std::string fileName;
-		Texture2D::sptr texture;
-	};
-	static std::vector<Texture> m_textures;
+	void Enable() { m_enabled = true; }
+	void Disable() { m_enabled = false; }
+	bool GetEnabled() { return m_enabled; }
 
 private:
 
@@ -55,7 +35,6 @@ private:
 		bool mat;
 		bool text = false;
 		size_t texture = INT_MAX;
-		size_t verts = 0;
 		VertexArrayObject::sptr vao = VertexArrayObject::Create();
 	};
 
@@ -73,5 +52,6 @@ private:
 	static Shader::sptr m_matShader;
 	static Shader::sptr m_texShader;
 
+	bool m_enabled = true;
 	size_t m_index = INT_MAX;
 };

@@ -1,8 +1,8 @@
 #pragma once
 #include "Rendering.h"
 #include "BLM.h"
+#include "Time.h"
 #include "Input.h"
-#include "ControllerInput.h"
 #include <SoundSystem.h>
 
 class Scene
@@ -24,8 +24,6 @@ public:
 
 protected:
 	std::string m_name;
-	float m_dt = 0;
-	float m_lastClock = 0;
 	short m_camCount = 1;
 
 	entt::registry m_reg;
