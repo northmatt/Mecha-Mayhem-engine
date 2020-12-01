@@ -82,9 +82,10 @@ namespace Rendering {
     }
 
     glm::vec4 BackColour = { 0.2f, 0.2f, 0.2f, 1.f };
-    glm::vec3 LightColour = glm::vec3(3.f);
-    glm::vec3 LightPos = glm::vec3(0.f);
+    std::array<glm::vec3, MAX_LIGHTS> LightsColour = { glm::vec3(3.f), glm::vec3(.5f, 0.f, 0.f) };
+    std::array<glm::vec3, MAX_LIGHTS> LightsPos = { glm::vec3(0.f), glm::vec3(100.f, 0.f, 0.f) };
     glm::vec3 DefaultColour = glm::vec3(1.f);
+    size_t LightCount = 2;
 
     HitboxGen* hitboxes = nullptr;
     Effects* effects = nullptr;

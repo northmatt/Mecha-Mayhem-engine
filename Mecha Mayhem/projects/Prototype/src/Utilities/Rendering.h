@@ -10,8 +10,9 @@ namespace Rendering
 	void Update(entt::registry* reg, int numOfCams);
 
 	extern glm::vec4 BackColour;
-	extern glm::vec3 LightPos;
-	extern glm::vec3 LightColour;
+	extern std::array<glm::vec3, MAX_LIGHTS> LightsPos;
+	extern std::array<glm::vec3, MAX_LIGHTS> LightsColour;
+	extern size_t LightCount;
 	extern glm::vec3 DefaultColour;
 
 	extern HitboxGen* hitboxes;

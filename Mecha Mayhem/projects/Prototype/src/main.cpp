@@ -8,7 +8,7 @@ int main() {
 	if (!window)	return 1;
 
 	{
-		// Creating demo scene
+		// Creating demo scenes
 		std::vector<Scene*> scenes;
 		scenes.push_back(new Tutorial("Tutorial", glm::vec3(0, -100, 0)));
 		scenes.push_back(new DemoScene("Demo 2", glm::vec3(0, -100, 0)));

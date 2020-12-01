@@ -1,4 +1,5 @@
 #pragma once
+#define MAX_LIGHTS 10
 #include <glad/glad.h>
 #include <memory>
 
@@ -75,10 +76,10 @@ public:
 	int GetUniformLocation(const std::string& name);
 	
 	template <typename T>
-	void SetUniform(const std::string& name, const T& value) {
+	void SetUniform(const std::string& name, const T& value, const int& count = 1) {
 		int location = GetUniformLocation(name);
 		if (location != -1) {
-			SetUniform(location, &value, 1);
+			SetUniform(location, &value, count);
 		}
 	}
 	template <typename T>
