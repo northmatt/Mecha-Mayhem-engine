@@ -13,7 +13,6 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	width = windowWidth;
 	height = windowHeight;
 
-
 	/// Creating Entities
 	for (int x(0); x < 2; ++x)
 	{
@@ -56,7 +55,12 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	ECS::GetComponent<Transform>(Head2).SetPosition(glm::vec3(0, 0.75f, 0)).ChildTo(bodyEnt2);
 	ECS::GetComponent<Transform>(cameraEnt2).SetPosition(glm::vec3(0, 0, camDistance)).
 		ChildTo(Head2).SetUsingParentScale(false);
-	
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<PhysBody>(entity).Init(entity, 0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
+			SetPosition(btVector3(-7.5f, 5, -50)).SetRotation(startQuat).GetBody()->setAngularFactor(btVector3(0, 0, 0));
+		ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 1).SetSpawn(glm::vec3(-7.5f, 5, -50));
+	}
 	{
 		auto entity = ECS::CreateEntity();
 		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("maps/tutorialMap.obj", true);
@@ -111,6 +115,9 @@ void Tutorial::Update()
 		ECS::GetComponent<Transform>(Head2),
 		ECS::GetComponent<Transform>(cameraEnt2)
 	);
+
+	Rendering::LightsPos[2] = ECS::GetComponent<Transform>(bodyEnt1).ComputeGlobal().GetGlobalPosition();
+	Rendering::LightsPos[3] = ECS::GetComponent<Transform>(bodyEnt2).ComputeGlobal().GetGlobalPosition();
 
 	/*if (Input::GetKeyDown(KEY::FSLASH))	m_colliders.ToggleDraw();
 	m_colliders.Update(Time::dt);

@@ -111,6 +111,7 @@ void Player::Update(PhysBody& body)
 			m_deathPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
 		m_respawnTimer -= Time::dt;
 		if (m_respawnTimer <= 0) {
+			m_charModel.BlendTo(m_charModelIndex + "/idle");
 			m_respawnTimer = 0;
 
 			//reset stats

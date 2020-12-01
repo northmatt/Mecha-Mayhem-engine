@@ -167,6 +167,9 @@ void DemoScene::Update()
 		ECS::GetComponent<Transform>(cameraEnt2)
 	);
 
+	Rendering::LightsPos[2] = ECS::GetComponent<Transform>(bodyEnt).ComputeGlobal().GetGlobalPosition();
+	Rendering::LightsPos[3] = ECS::GetComponent<Transform>(bodyEnt2).ComputeGlobal().GetGlobalPosition();
+
 	/// End of loop
 	if (Input::GetKeyDown(KEY::FSLASH))	m_colliders.ToggleDraw();
 	m_colliders.Update(Time::dt);
