@@ -1,7 +1,7 @@
 #version 410
 #define MAX_LIGHTS 10
 layout(location = 0) in vec3 inPos;
-layout(location = 3) in vec3 inNormal;
+layout(location = 1) in vec3 inNormal;
 
 uniform vec3 colour;
 uniform vec3 camPos;

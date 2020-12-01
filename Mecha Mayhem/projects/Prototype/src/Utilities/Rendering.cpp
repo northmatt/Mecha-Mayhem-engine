@@ -46,7 +46,7 @@ namespace Rendering {
 
             if (hitboxes != nullptr) hitboxes->Render();
 
-            ObjLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, LightCount, 1, 4, 0.5f);
+            ObjLoader::PerformDraw(view, camCam, DefaultColour, LightsPos, LightsColour, LightCount, 1, 4, 0.5f);
 
             ObjMorphLoader::BeginDraw(morphView.size());
 
@@ -60,7 +60,7 @@ namespace Rendering {
                 morphView.get<ObjMorphLoader>(entity).Draw(trans.GetModel());
             }
 
-            ObjMorphLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.5f);
+            ObjMorphLoader::PerformDraw(view, camCam, DefaultColour, LightsPos, LightsColour, LightCount, 1, 4, 0.5f);
 
             ++count;
             //exit even if some cams haven't been checked, because only the amount specified should render
@@ -70,8 +70,8 @@ namespace Rendering {
     }
 
     glm::vec4 BackColour = { 0.2f, 0.2f, 0.2f, 1.f };
-    glm::vec3 LightColour[MAX_LIGHTS] = { glm::vec3(3.f) };
-    glm::vec3 LightPos[MAX_LIGHTS] = { glm::vec3(0.f) };
+    std::array<glm::vec3, MAX_LIGHTS> LightsColour = { glm::vec3(3.f), glm::vec3(.5f, 0.f, 0.f) };
+    std::array<glm::vec3, MAX_LIGHTS> LightsPos = { glm::vec3(0.f), glm::vec3(100.f, 0.f, 0.f) };
     glm::vec3 DefaultColour = glm::vec3(1.f);
     size_t LightCount = 2;
 

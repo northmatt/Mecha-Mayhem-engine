@@ -15,7 +15,7 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 	height = windowHeight;
 
 
-	/// Creating Entities
+	/// Creating Entitiesssss
 	for (int x(0); x < 2; ++x)
 	{
 		auto entity = ECS::CreateEntity();
@@ -259,9 +259,9 @@ void DemoScene::Update()
 
 	if (Input::GetKey(KEY::P)) {
 		if (Input::GetKey(KEY::LSHIFT))
-			Rendering::LightColour[0] = glm::vec3(3.f);
+			Rendering::LightsColour[0] = glm::vec3(3.f);
 		else
-			Rendering::LightColour[0] = glm::vec3((rand() % 30) / 10.f, (rand() % 30) / 10.f, (rand() % 30) / 10.f);
+			Rendering::LightsColour[0] = glm::vec3((rand() % 30) / 10.f, (rand() % 30) / 10.f, (rand() % 30) / 10.f);
 	}
 
 	/// End of loop
