@@ -12,6 +12,6 @@ public:
 private:
 	static float m_lastClock;
 };
-
+//Delta Time
 inline float Time::dt = 0;
 inline float Time::m_lastClock = 0;

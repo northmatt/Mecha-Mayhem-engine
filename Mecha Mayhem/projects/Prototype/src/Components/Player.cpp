@@ -17,6 +17,7 @@ const glm::mat4 Player::m_modelOffset = glm::mat4(
 Sound2D Player::m_shootLaser = {};
 Sound2D Player::m_hitSound = {};
 Sound2D Player::m_swapWeapon = {};
+Sound2D Player::walk = Sound2D();
 
 Sprite Player::m_healthBarOutline = {};
 Sprite Player::m_healthBarBack = {};
@@ -30,6 +31,7 @@ void Player::Init(int width, int height)
 	m_shootLaser = { "laser.mp3", "shooting" };
 	m_hitSound = { "oof.mp4.mp3", "sfx" };
 	m_swapWeapon = { "laser.mp3", "sfx" };
+	walk = Sound2D("MetalFloor/1StepNoise.mp3", "walking");
 
 	m_healthBarOutline = { "healthbar.png", 15.96f, 1.5f };
 	m_healthBarBack = { glm::vec4(0, 0, 0, 1.f), 14.95f, 0.9f };
@@ -169,6 +171,16 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 
 		vel.x += ControllerInput::GetLX(m_user);
 		vel.z -= ControllerInput::GetLY(m_user);
+
+		//if moving then play walk sound
+		m_walkSoundTimer += Time::dt;
+		//Basically using the timer to make the second footstep happen, since two feet
+		//Making sure the player is moving, and that it won't overlap more than necessary (Hence the isplaying())
+		if ((vel.x != 0.f || vel.z != 0.f) && (!(walk.isPlaying()) || (m_walkSoundTimer >= m_walkSoundDelay))) 
+		{
+			walk.play();
+			m_walkSoundTimer = 0.f;
+		}
 
 		if (m_grounded = vel.y < 0.1f && vel.y > -0.1f) {
 			//jump
