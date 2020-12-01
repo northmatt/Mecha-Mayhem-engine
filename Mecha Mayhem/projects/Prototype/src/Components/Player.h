@@ -97,7 +97,7 @@ private:
 	static Sound2D m_shootLaser;
 	static Sound2D m_hitSound;
 	static Sound2D m_swapWeapon;
-	static Sound2D walk;
+	static Sound2D m_walk[5];
 
 	static Sprite m_healthBarOutline;
 	static Sprite m_healthBarBack;
@@ -116,6 +116,7 @@ private:
 	bool m_drawSelf = true;
 	bool m_grounded = false;
 	bool m_punched = false;
+	bool m_stepped = false;
 
 	short m_maxHealth = 20;
 	short m_health = m_maxHealth;
@@ -137,9 +138,6 @@ private:
 	float m_jumpHeld = 0;
 	float m_speed = 15.f;
 	float m_weaponCooldown = 0.f;
-
-	float m_walkSoundDelay = 0.4f;
-	float m_walkSoundTimer = 0.f;
 
 	glm::quat m_startRot = glm::quat(1, 0, 0, 0);
 	glm::vec3 m_spawnPos = glm::vec3(0.f);

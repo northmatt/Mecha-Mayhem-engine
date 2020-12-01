@@ -61,7 +61,7 @@ void BackEnd::GlfwWindowFocusCallback(GLFWwindow* window, int result)
 GLFWwindow *BackEnd::window = nullptr;
 float BackEnd::_aspect = 1;
 float BackEnd::_aspect2 = 1;
-bool BackEnd::focus = true;
+bool BackEnd::focus = false;
 int BackEnd::_lastHeight = 1;
 int BackEnd::_lastWidth = 1;
 int BackEnd::monitorVec[4] = { 0 };
