@@ -13,7 +13,8 @@ public:
 	};
 	enum class OFFHAND {
 		EMPTY,
-		HEALPACK
+		HEALPACK1,
+		HEALPACK2
 	};
 
 	Player() { }
@@ -24,7 +25,11 @@ public:
 	//sets the UI aspect Ratio
 	static void SetUIAspect(int width, int height);
 
+	//camera follow distance
 	static void SetCamDistance(float dist) { m_camDistance = dist; }
+
+	//where to players go when they die?
+	static void SetSkyPos(glm::vec3 pos) { m_skyPos = pos; }
 
 	/*
 	loads with default stats
@@ -54,7 +59,6 @@ public:
 		if ((m_health -= dmg) <= 0) {
 			m_health = 0;
 			m_respawnTimer = m_respawnDelay;
-			m_charModel.BlendTo(m_charModelIndex + "/death", 0.25f);
 			return true;
 		}
 		return false;
@@ -63,6 +67,7 @@ public:
 
 private:
 	void UseWeapon(PhysBody& body);
+	void UseHeal();
 	void PickUpWeapon(WEAPON pickup);
 	void PickUpOffhand(OFFHAND pickup);
 	
@@ -84,6 +89,7 @@ private:
 	entt::entity Dash = entt::null;
 
 	static const glm::mat4 m_modelOffset;
+	static glm::vec3 m_skyPos;
 	static Camera m_orthoCam;
 	static constexpr float pi = glm::half_pi<float>() - 0.01f;
 	static float m_camDistance;
@@ -106,7 +112,7 @@ private:
 	short m_killCount = 0;
 
 	//float m_dashDelay = 30.f;
-	float m_dashDelay = 1.f;
+	float m_dashDelay = 0.25f;
 	float m_dashTimer = 0.f;
 
 	float m_respawnDelay = 5.f;
@@ -121,6 +127,7 @@ private:
 
 	glm::quat m_startRot = glm::quat(1, 0, 0, 0);
 	glm::vec3 m_spawnPos = glm::vec3(0.f);
+	glm::vec3 m_deathPos = glm::vec3(0.f);
 	glm::vec2 m_rot = glm::vec2(0.f);
 
 	WEAPON m_currWeapon = WEAPON::FIST;

@@ -6,6 +6,7 @@
 float Player::m_camDistance = 5.f;
 float Player::m_dashDistance = 7.5f;
 Camera Player::m_orthoCam = Camera();
+glm::vec3 Player::m_skyPos = glm::vec3(0, 50, 0);
 const glm::mat4 Player::m_modelOffset = glm::mat4(
 	0, 0, 0, 0,
 	0, 0, 0, 0,
@@ -22,7 +23,8 @@ void Player::Init(int width, int height)
 	shootLaser = Sound2D("laser.mp3", "shooting");
 	walk = Sound2D("MetalFloor/1StepNoise.mp3", "walking");
 
-	ObjMorphLoader("char/idle", true).LoadMeshs("char/walk", true)
+	ObjMorphLoader("effects/dash", true).LoadMeshs("effects/laser", true)
+		.LoadMeshs("char/idle", true).LoadMeshs("char/walk", true)
 		.LoadMeshs("char/air", true).LoadMeshs("char/death", true);
 }
 
@@ -106,6 +108,9 @@ void Player::Update(PhysBody& body)
 	updateDash();
 	//when dead
 	if (m_respawnTimer > 0) {
+		m_charModel.BlendTo(m_charModelIndex + "/death", 0.25f);
+		if (m_respawnTimer == m_respawnDelay)
+			m_deathPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
 		m_respawnTimer -= Time::dt;
 		if (m_respawnTimer <= 0) {
 			m_respawnTimer = 0;
@@ -118,6 +123,10 @@ void Player::Update(PhysBody& body)
 			m_offhand = OFFHAND::EMPTY;
 			body.SetPosition(m_spawnPos);
 			body.SetGravity(btVector3(0, -100, 0));
+		}
+		else {
+			float percent = m_respawnTimer / m_respawnDelay;
+			body.SetPosition((1 - percent) * m_skyPos + percent * m_deathPos);
 		}
 		return;
 	}
@@ -141,10 +150,11 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 	if (m_user == CONUSER::NONE)	return;
 	if (m_health == 0) {
 		body.SetGravity(btVector3(0, 0, 0));
-		body.SetPosition(m_spawnPos + glm::vec3(0, 50, 0));
+		body.SetVelocity(btVector3(0, 0, 0));
 		head.SetRotation(glm::quat(-0.71f, 0.71f, 0.f, 0.f));
 		return;
 	}
+
 	if (m_punched) {
 		m_charModel.BlendTo(m_charModelIndex + "/death");
 
@@ -189,14 +199,17 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 			else m_jumpHeld = 0;
 
 			if (m_punched = ControllerInput::GetButtonDown(BUTTON::X, m_user)) {
-				//punch
+				//punch only when on ground
+				//if (m_offhand == OFFHAND::SWORD)	{swing anim}
+
 				vel.x = 0;
 				vel.z = 0;
 			}
 			else {
 				//ground anims
 				if (vel.x != 0 || vel.z != 0)
-					m_charModel.BlendTo(m_charModelIndex + "/walk");
+					m_charModel.SetSpeed(std::max(fabsf(vel.x), fabsf(vel.z))).
+						BlendTo(m_charModelIndex + "/walk");
 				else
 					m_charModel.BlendTo(m_charModelIndex + "/idle");
 			}
@@ -212,8 +225,13 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 			m_charModel.BlendTo(m_charModelIndex + "/air");
 		}
 
-		//only do dash check if not moving
+		//only do other input check if not moving
 		if (!m_punched) {
+			if (ControllerInput::GetButtonDown(BUTTON::B, m_user)) {
+				UseHeal();
+				TakeDamage(100);
+			}
+
 			//dash if moving
 			if (vel.x != 0 || vel.z != 0) {
 				glm::vec3 normalized = glm::normalize(glm::vec3(vel.x, 0, vel.z));
@@ -224,27 +242,30 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 				vel = glm::vec4(vel, 1) * glm::rotate(glm::mat4(1.f), m_rot.y, glm::vec3(0, 1, 0));
 
 				if (m_dashTimer == 0) {
-					if (ControllerInput::GetLTDown(m_user)) {
+					//if (ControllerInput::GetLTDown(m_user)) {
+					if (ControllerInput::GetLTRaw(m_user)) {
 						m_dashTimer = m_dashDelay;
 						glm::vec3 ogPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
 						btVector3 pos = PhysBody::GetRaycastWithDistanceLimit(
 							ogPos, glm::vec3(vel.x, 0, vel.z) * m_dashDistance * 10.f, m_dashDistance);
-
-						ShootDash((pos - body.GetTransform().getOrigin()).length(), ogPos,
-							glm::rotation(glm::vec3(normalized.x, 0, -normalized.z), glm::vec3(0, 0, 1)));
+						glm::vec3 newPos = BLM::BTtoGLM(pos);
+						ShootDash(glm::length(newPos - ogPos), newPos,
+							glm::rotation(glm::normalize(glm::vec3(vel.x, 0, -vel.z)), glm::vec3(0, 0, 1)));
 						body.SetPosition(pos);
 					}
 				}
 			}
 			//dash without moving
 			else if (m_dashTimer == 0) {
-				if (ControllerInput::GetLTDown(m_user)) {
+				//if (ControllerInput::GetLTDown(m_user)) {
+				if (ControllerInput::GetLTRaw(m_user)) {
 					m_dashTimer = m_dashDelay;
 					glm::vec3 ogPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
-					btVector3 pos = PhysBody::GetRaycastWithDistanceLimit(ogPos, glm::vec4(0, 0, m_dashDistance * -10.f, 1)
+					btVector3 pos = PhysBody::GetRaycastWithDistanceLimit(ogPos,
+						glm::vec4(0, 0, m_dashDistance * -50.f, 1)
 						* glm::rotate(glm::mat4(1.f), m_rot.y, glm::vec3(0, 1, 0)), m_dashDistance);
-
-					ShootDash((pos - body.GetTransform().getOrigin()).length(), ogPos,
+					glm::vec3 newPos = BLM::BTtoGLM(pos);
+					ShootDash(glm::length(newPos - ogPos), newPos,
 						BLM::BTtoGLM(body.GetTransform().getRotation()));
 					body.SetPosition(pos);
 				}
@@ -272,7 +293,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 	//camera
 	{
 		glm::vec3 rayPos = head.ComputeScalessGlobal().GetGlobalPosition();
-		btVector3 test = PhysBody::GetRaycast(rayPos, head.GetForwards() * (m_camDistance * 10.f));
+		btVector3 test = PhysBody::GetRaycast(rayPos, head.GetForwards() * (m_camDistance * 50.f));
 		if (m_rot.x < pi * 0.25f) {
 			if (test != btVector3()) {
 				float distance = glm::length(rayPos - BLM::BTtoGLM(test));
@@ -312,6 +333,22 @@ void Player::UseWeapon(PhysBody& body)
 		m_weaponCooldown = 0.5f;
 		break;
 	default:	break;
+	}
+}
+
+void Player::UseHeal()
+{
+	if (m_offhand == OFFHAND::HEALPACK2) {
+		m_health += 3;
+		if (m_health > m_maxHealth)
+			m_health = m_maxHealth;
+		m_offhand = OFFHAND::HEALPACK1;
+	}
+	else if (m_offhand == OFFHAND::HEALPACK1) {
+		m_health += 3;
+		if (m_health > m_maxHealth)
+			m_health = m_maxHealth;
+		m_offhand = OFFHAND::EMPTY;
 	}
 }
 

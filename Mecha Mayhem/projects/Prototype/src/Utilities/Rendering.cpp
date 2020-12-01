@@ -9,8 +9,8 @@ namespace Rendering {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         auto objView = reg->view<ObjLoader, Transform>();
-        auto playerView = reg->view<Player, PhysBody, Transform>();
         auto morphView = reg->view<ObjMorphLoader, Transform>();
+        auto playerView = reg->view<Player, PhysBody, Transform>();
         auto cameraView = reg->view<Camera, Transform>();
 
         int height = BackEnd::GetHalfHeight();
@@ -36,7 +36,12 @@ namespace Rendering {
             camCam.SetPosition(camTrans.GetGlobalPosition()).
                 SetForward(camTrans.GetForwards());
 
-            ObjLoader::BeginDraw(objView.size());
+
+            //reserve some queue size
+            ObjLoader::BeginDraw(objView.size()); 
+            ObjMorphLoader::BeginDraw(morphView.size());
+            //number of ui elements
+            Sprite::BeginDraw(6);
 
             //draw all the objs
             objView.each(
@@ -45,21 +50,13 @@ namespace Rendering {
                 }
             );
 
-            if (hitboxes != nullptr) hitboxes->Render();
-
-            ObjLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.5f);
-
-            ObjMorphLoader::BeginDraw(morphView.size());
-
-            //draw all the objs
+            //draw all the morph objs
             morphView.each(
                 [&](ObjMorphLoader& obj, Transform& trans) {
                     if (count == 0)     obj.Update(Time::dt);
                     obj.Draw(trans.GetModel());
                 }
             );
-
-            Sprite::BeginDraw(numOfCams * 2);
 
             //draw all players
             playerView.each(
@@ -69,8 +66,12 @@ namespace Rendering {
                 }
             );
 
-            ObjMorphLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.5f);
+            //draw hitboxes
+            if (hitboxes != nullptr) hitboxes->Render();
 
+            //do all the draws
+            ObjLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.5f);
+            ObjMorphLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.5f);
             Sprite::PerformDraw();
 
             //exit even if some cams haven't been checked, because only the amount specified should render

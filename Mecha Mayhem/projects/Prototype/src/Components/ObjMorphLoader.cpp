@@ -39,6 +39,7 @@ ObjMorphLoader::~ObjMorphLoader()
 ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool usingMaterial)
 {
 	m_timer = m_t = m_p0 = 0;
+	m_speed = 1.f;
 	m_vao = nullptr;
 	m_bounce = false;
 	m_loop = false;
