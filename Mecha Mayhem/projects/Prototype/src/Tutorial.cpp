@@ -72,6 +72,7 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	/// End of creating entities
 	Rendering::DefaultColour = glm::vec4(1.f, 0.5f, 0.5f, 1.f);
 	Rendering::hitboxes = &m_colliders;
+	Rendering::effects = &m_effects;
 
 	Player::SetUIAspect(width, height);
 	Player::SetCamDistance(camDistance);
@@ -79,11 +80,8 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 
 void Tutorial::Update()
 {
-	auto& p1 = ECS::GetComponent<Player>(bodyEnt1);
-	auto& p2 = ECS::GetComponent<Player>(bodyEnt2);
-
-	if (Input::GetKeyDown(KEY::ESC)) {
-		if (Input::GetKey(KEY::LSHIFT)) {
+	if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER::ONE)) {
+		if (ControllerInput::GetButton(BUTTON::RB, CONUSER::ONE)) {
 			if (screen = !screen)	BackEnd::SetTabbed(width, height);
 			else					BackEnd::SetFullscreen();
 		}
@@ -102,20 +100,20 @@ void Tutorial::Update()
 		}
 	}
 
-	if (Input::GetKeyDown(KEY::FSLASH))	m_colliders.ToggleDraw();
-	m_colliders.Update(Time::dt);
-	if (Input::GetKeyDown(KEY::F10))	if (!m_colliders.SaveToFile(false))	std::cout << "file save failed\n";
-	if (Input::GetKeyDown(KEY::F1))		if (!m_colliders.LoadFromFile())	std::cout << "file load failed\n";
-
-	p1.GetInput(
+	ECS::GetComponent<Player>(bodyEnt1).GetInput(
 		ECS::GetComponent<PhysBody>(bodyEnt1),
 		ECS::GetComponent<Transform>(Head1),
 		ECS::GetComponent<Transform>(cameraEnt1)
 	);
 
-	p2.GetInput(
+	ECS::GetComponent<Player>(bodyEnt2).GetInput(
 		ECS::GetComponent<PhysBody>(bodyEnt2),
 		ECS::GetComponent<Transform>(Head2),
 		ECS::GetComponent<Transform>(cameraEnt2)
 	);
+
+	/*if (Input::GetKeyDown(KEY::FSLASH))	m_colliders.ToggleDraw();
+	m_colliders.Update(Time::dt);
+	if (Input::GetKeyDown(KEY::F10))	if (!m_colliders.SaveToFile(false))	std::cout << "file save failed\n";
+	if (Input::GetKeyDown(KEY::F1))		if (!m_colliders.LoadFromFile())	std::cout << "file load failed\n";*/
 }

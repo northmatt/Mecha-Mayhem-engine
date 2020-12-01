@@ -22,6 +22,11 @@ int main() {
 
 		while (!glfwWindowShouldClose(window)) {
 			glfwPollEvents();
+			//update the static dt
+			Time::Update(glfwGetTime());
+
+			if (BackEnd::LostFocus())	continue;
+
 			ControllerInput::ControllerRefresh();
 
 			if (Input::GetKey(KEY::LCTRL) && Input::GetKeyUp(KEY::ENTER)) {
@@ -29,9 +34,7 @@ int main() {
 				glfwSetWindowTitle(window, (activeScene = scenes[sceneswap = !sceneswap]->Reattach())->GetName().c_str());
 			}
 
-
 			activeScene->Update();
-
 
 			//do not touch plz
 			activeScene->BackEndUpdate();

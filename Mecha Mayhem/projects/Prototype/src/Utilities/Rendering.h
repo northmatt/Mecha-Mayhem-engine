@@ -3,6 +3,7 @@
 #include "Components/ECS.h"
 #include "Components/Player.h"
 #include "Utilities/HitboxReader.h"
+#include "Effects.h"
 
 namespace Rendering
 {
@@ -14,5 +15,6 @@ namespace Rendering
 	extern glm::vec3 DefaultColour;
 
 	extern HitboxGen* hitboxes;
+	extern Effects* effects;
 };
 

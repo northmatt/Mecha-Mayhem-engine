@@ -644,16 +644,6 @@ ObjMorphLoader& ObjMorphLoader::ToggleDirection()
 	return *this;
 }
 
-void ObjMorphLoader::BeginDraw(unsigned amt)
-{
-	m_texQueue.resize(0);
-	m_texQueue.reserve(amt);
-	m_matQueue.resize(0);
-	m_matQueue.reserve(amt);
-	m_defaultQueue.resize(0);
-	m_defaultQueue.reserve(amt);
-}
-
 void ObjMorphLoader::Update(float dt)
 {
 	if (!m_enabled)	return;
@@ -838,6 +828,16 @@ void ObjMorphLoader::Update(float dt)
 			m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].spec, spec2Buff);
 		}
 	}
+}
+
+void ObjMorphLoader::BeginDraw(unsigned amt)
+{
+	m_texQueue.resize(0);
+	m_texQueue.reserve(amt);
+	m_matQueue.resize(0);
+	m_matQueue.reserve(amt);
+	m_defaultQueue.resize(0);
+	m_defaultQueue.reserve(amt);
 }
 
 void ObjMorphLoader::Draw(const glm::mat4& model)

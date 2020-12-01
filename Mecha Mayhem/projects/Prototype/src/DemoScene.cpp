@@ -79,6 +79,7 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 	/// End of creating entities
 	Rendering::DefaultColour = glm::vec4(1.f, 0.5f, 0.5f, 1.f);
 	Rendering::hitboxes = &m_colliders;
+	Rendering::effects = &m_effects;
 
 	//cube
 	epic = ECS::CreateEntity();
@@ -154,53 +155,23 @@ void DemoScene::Update()
 			Rendering::LightColour = glm::vec3((rand() % 30) / 10.f, (rand() % 30) / 10.f, (rand() % 30) / 10.f);
 	}
 
+	ECS::GetComponent<Player>(bodyEnt).GetInput(
+		ECS::GetComponent<PhysBody>(bodyEnt),
+		ECS::GetComponent<Transform>(P),
+		ECS::GetComponent<Transform>(cameraEnt)
+	);
+
+	ECS::GetComponent<Player>(bodyEnt2).GetInput(
+		ECS::GetComponent<PhysBody>(bodyEnt2),
+		ECS::GetComponent<Transform>(P2),
+		ECS::GetComponent<Transform>(cameraEnt2)
+	);
+
 	/// End of loop
 	if (Input::GetKeyDown(KEY::FSLASH))	m_colliders.ToggleDraw();
 	m_colliders.Update(Time::dt);
 	if (Input::GetKeyDown(KEY::F10))	if (!m_colliders.SaveToFile(false))	std::cout << "file save failed\n";
 	if (Input::GetKeyDown(KEY::F1))		if (!m_colliders.LoadFromFile())	std::cout << "file load failed\n";
-
-	{
-		///
-		///RAYCAST TEST
-		///
-		auto& ptrans = ECS::GetComponent<Transform>(P2);
-		ECS::GetComponent<Player>(bodyEnt2).GetInput(ballPhys2, ptrans, ECS::GetComponent<Transform>(cameraEnt2));
-
-		glm::vec3 rayPos = ptrans.ComputeScalessGlobal().GetGlobalPosition();
-		glm::vec3 forwards = -ptrans.GetForwards();
-		RayResult p = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos), BLM::GLMtoBT(forwards * 2000.f));
-		if (p.hasHit())
-		{
-			if (Input::GetKey(KEY::RSHIFT) || ControllerInput::GetButton(BUTTON::X, CONUSER::TWO)) {
-				ShootLazer(p.m_collisionObject->getUserIndex(), glm::length(BLM::BTtoGLM(p.m_hitPointWorld) - rayPos), ptrans.GetGlobalRotation(), rayPos, false);
-			}
-		}
-	}
-
-	{
-		///
-		///RAYCAST TEST
-		///
-		auto& ptrans = ECS::GetComponent<Transform>(P);
-		ECS::GetComponent<Player>(bodyEnt).GetInput(ballPhys, ptrans, ECS::GetComponent<Transform>(cameraEnt));
-
-		glm::vec3 rayPos = ptrans.ComputeScalessGlobal().GetGlobalPosition();
-		glm::vec3 forwards = -ptrans.GetForwards();
-		RayResult p = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos), BLM::GLMtoBT(forwards * 2000.f));
-		if (p.hasHit())
-		{
-			//Rendering::LightPos = ECS::GetComponent<Transform>(epic).SetPosition(p).GetGlobalPosition();
-
-
-			if (Input::GetKey(KEY::RSHIFT) || ControllerInput::GetButton(BUTTON::X, CONUSER::ONE)) {
-				ShootLazer(p.m_collisionObject->getUserIndex(), glm::length(BLM::BTtoGLM(p.m_hitPointWorld) - rayPos), ptrans.GetGlobalRotation(), rayPos, true);
-			}
-		}
-	}
-
- 
-	updateLazer();
 }
 
 void DemoScene::Exit()
@@ -209,53 +180,3 @@ void DemoScene::Exit()
 		std::cout << "file save failed\n";
 }
 
-void DemoScene::ShootLazer(entt::entity playerIdTest, float width, glm::quat rotation, glm::vec3 pos, bool isp1)
-{
-	if (isp1) {
-		if (Lazer == entt::null) {
-			//if (ECS::Exists(playerIdTest))
-			if (m_reg.valid(playerIdTest))
-				//if (ECS::HasComponent<Player>(playerIdTest)) {
-				if (m_reg.has<Player>(playerIdTest)) {
-					//if (ECS::GetComponent<Player>(playerIdTest).TakeDamage(1))
-					if (m_reg.get<Player>(playerIdTest).TakeDamage(1))
-						std::cout << "dead\n";
-					ouch.play();
-				}
-			Lazer = ECS::CreateEntity();
-			ECS::AttachComponent<ObjMorphLoader>(Lazer).LoadMeshs("effects/laser", true);
-			ECS::GetComponent<Transform>(Lazer).SetRotation(rotation).SetPosition(pos).SetScale(glm::vec3(1, 1, width));
-		}
-	}
-	else {
-		if (Lazer2 == entt::null) {
-			if (m_reg.valid(playerIdTest))
-				if (m_reg.has<Player>(playerIdTest)) {
-					if (m_reg.get<Player>(playerIdTest).TakeDamage(1))
-						std::cout << "dead\n";
-					ouch.play();
-				}
-
-			Lazer2 = ECS::CreateEntity();
-			ECS::AttachComponent<ObjMorphLoader>(Lazer2).LoadMeshs("effects/laser", true);
-			ECS::GetComponent<Transform>(Lazer2).SetRotation(rotation).SetPosition(pos).SetScale(glm::vec3(1, 1, width));
-			//ouch.play();
-		}
-	}
-}
-
-void DemoScene::updateLazer()
-{
-	if (Lazer != entt::null) {
-		if (ECS::GetComponent<ObjMorphLoader>(Lazer).IsDone()) {
-			ECS::DestroyEntity(Lazer);
-			Lazer = entt::null;
-		}
-	}
-	if (Lazer2 != entt::null) {
-		if (ECS::GetComponent<ObjMorphLoader>(Lazer2).IsDone()) {
-			ECS::DestroyEntity(Lazer2);
-			Lazer2 = entt::null;
-		}
-	}
-}

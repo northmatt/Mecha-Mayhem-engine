@@ -61,9 +61,9 @@ public:
 	ObjMorphLoader& SetSpeed(float speed) { m_speed = speed; return *this; }
 	float GetSpeed() { return m_speed; }
 
-	static void BeginDraw(unsigned amt = 0);
-
 	void Update(float dt);
+
+	static void BeginDraw(unsigned amt = 0);
 
 	void Draw(const glm::mat4& model);
 

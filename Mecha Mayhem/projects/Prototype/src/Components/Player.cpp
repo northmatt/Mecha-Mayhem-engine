@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "Utilities/Time.h"
 #include "Utilities/BLM.h"
+#include "Utilities/Rendering.h"
 #include "ECS.h"
 
 float Player::m_camDistance = 5.f;
@@ -13,16 +14,30 @@ const glm::mat4 Player::m_modelOffset = glm::mat4(
 	0, 0, 0, 0,
 	0, -1, 0, 0
 );
-Sound2D Player::shootLaser = Sound2D();
+Sound2D Player::m_shootLaser = {};
+Sound2D Player::m_hitSound = {};
+Sound2D Player::m_swapWeapon = {};
+
+Sprite Player::m_healthBarOutline = {};
+Sprite Player::m_healthBarBack = {};
+Sprite Player::m_dashBarOutline = {};
+Sprite Player::m_dashBarBack = {};
 
 void Player::Init(int width, int height)
 {
 	m_orthoCam.SetOrthoHeight(10).SetPosition(glm::vec3(0, 0, 0)).SetNear(-10).Setfar(10)
 		.SetIsOrtho(true).ResizeWindow(width, height);
-	shootLaser = Sound2D("laser.mp3", "shooting");
+	m_shootLaser = { "laser.mp3", "shooting" };
+	m_hitSound = { "oof.mp4.mp3", "sfx" };
+	m_swapWeapon = { "laser.mp3", "sfx" };
 
-	ObjMorphLoader("effects/dash", true).LoadMeshs("effects/laser", true)
-		.LoadMeshs("char/idle", true).LoadMeshs("char/walk", true)
+	m_healthBarOutline = { "healthbar.png", 15.96f, 1.5f };
+	m_healthBarBack = { glm::vec4(0, 0, 0, 1.f), 14.95f, 0.9f };
+
+	m_dashBarOutline = { "energybar.png", 10.38, 1.5f };
+	m_dashBarBack = { glm::vec4(0, 0, 0, 1.f), 9.15f, 0.5f };
+
+	ObjMorphLoader("char/idle", true).LoadMeshs("char/walk", true)
 		.LoadMeshs("char/air", true).LoadMeshs("char/death", true);
 }
 
@@ -55,44 +70,23 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams)
 
 		m_healthBar.SetWidth(14.95f * healthPercent);
 		m_dashBar.SetWidth(9.15f * (1 - dashPercent));
-		m_healthBar.Draw(m_orthoCam.GetViewProjection(), glm::mat4(
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			7.475f - healthPercent * 7.475f, -8.5f, -7, 1
-		));
-		m_healthBarBack.Draw(m_orthoCam.GetViewProjection(), glm::mat4(
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, -8.5f, -6.5f, 1
-		));
-		m_dashBar.Draw(m_orthoCam.GetViewProjection(), glm::mat4(
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			dashPercent * 4.575f, -7.25f, -7, 1
-		));
-		m_dashBarBack.Draw(m_orthoCam.GetViewProjection(), glm::mat4(
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, -7.25f, -6.5f, 1
-		));
+
+		glm::mat4 VP = m_orthoCam.GetViewProjection();
+
+		m_healthBar.Draw(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			7.475f - healthPercent * 7.475f, -8.5f, -9.9f, 1		));
+		m_healthBarBack.Draw(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -8.5f, -9.8f, 1		));
+		m_dashBar.Draw(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			dashPercent * 4.575f, -7.25f, -9.9f, 1		));
+		m_dashBarBack.Draw(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -7.25f, -9.8f, 1		));
 
 		//drawn last cause layering
-		m_healthBarOutline.Draw(m_orthoCam.GetViewProjection(), glm::mat4(
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, -8.5f, -7.5f, 1
-		));
-		m_dashBarOutline.Draw(m_orthoCam.GetViewProjection(), glm::mat4(
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, -7.25f, -7.5f, 1
-		));
+		m_healthBarOutline.Draw(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -8.5f, -10.f, 1		));
+		m_dashBarOutline.Draw(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -7.25f, -10.f, 1		));
 
 		//is false when cam is too close
 		if (!m_drawSelf)	return;
@@ -103,7 +97,6 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams)
 void Player::Update(PhysBody& body)
 {
 	m_charModel.Update(Time::dt);
-	updateDash();
 	//when dead
 	if (m_respawnTimer > 0) {
 		m_charModel.BlendTo(m_charModelIndex + "/death", 0.25f);
@@ -237,8 +230,8 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 						btVector3 pos = PhysBody::GetRaycastWithDistanceLimit(
 							ogPos, glm::vec3(vel.x, 0, vel.z) * m_dashDistance * 10.f, m_dashDistance);
 						glm::vec3 newPos = BLM::BTtoGLM(pos);
-						ShootDash(glm::length(newPos - ogPos), newPos,
-							glm::rotation(glm::normalize(glm::vec3(vel.x, 0, -vel.z)), glm::vec3(0, 0, 1)));
+						Rendering::effects->ShootDash(glm::rotation(glm::normalize(glm::vec3(vel.x, 0, -vel.z)), glm::vec3(0, 0, 1)),
+							newPos, glm::length(newPos - ogPos));
 						body.SetPosition(pos);
 					}
 				}
@@ -253,8 +246,8 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 						glm::vec4(0, 0, m_dashDistance * -50.f, 1)
 						* glm::rotate(glm::mat4(1.f), m_rot.y, glm::vec3(0, 1, 0)), m_dashDistance);
 					glm::vec3 newPos = BLM::BTtoGLM(pos);
-					ShootDash(glm::length(newPos - ogPos), newPos,
-						BLM::BTtoGLM(body.GetTransform().getRotation()));
+					Rendering::effects->ShootDash(BLM::BTtoGLM(body.GetTransform().getRotation()),
+						newPos, glm::length(newPos - ogPos));
 					body.SetPosition(pos);
 				}
 			}
@@ -265,15 +258,18 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 	//gun
 	{
 		if (ControllerInput::GetButtonDown(BUTTON::Y, m_user) && m_secWeapon != WEAPON::FIST) {
-			WEAPON temp = m_currWeapon;
+			m_swapWeapon.play();
+			WEAPON tempWeap = m_currWeapon;
 			m_currWeapon = m_secWeapon;
-			m_secWeapon = temp;
+			m_secWeapon = tempWeap;
+
+			short tempAmmo = m_currWeaponAmmo;
+			m_currWeaponAmmo = m_secWeaponAmmo;
+			m_secWeaponAmmo = tempAmmo;
 		}
 		if (m_weaponCooldown == 0) {
 			if (ControllerInput::GetRTRaw(m_user)) {
-				UseWeapon(body);
-				shootLaser.play();
-				m_weaponCooldown = 0.5f;
+				UseWeapon(body, head);
 			}
 		}
 	}
@@ -309,7 +305,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 	}
 }
 
-void Player::UseWeapon(PhysBody& body)
+void Player::UseWeapon(PhysBody& body, Transform& head)
 {
 	switch (m_currWeapon) {
 	case WEAPON::FIST:
@@ -318,7 +314,34 @@ void Player::UseWeapon(PhysBody& body)
 		break;
 	case WEAPON::GUN:
 		//shoot
-		m_weaponCooldown = 0.5f;
+		{
+			short damage = 1;
+			m_weaponCooldown = 0.5f;
+			m_shootLaser.play();
+
+			glm::vec3 rayPos = head.ComputeScalessGlobal().GetGlobalPosition();
+			glm::vec3 forwards = -head.GetForwards();
+			RayResult p = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos), BLM::GLMtoBT(forwards * 2000.f));
+			if (p.hasHit())
+			{
+				entt::entity playerIdTest = p.m_collisionObject->getUserIndex();
+				if (ECS::Exists(playerIdTest)) {
+					if (ECS::HasComponent<Player>(playerIdTest)) {
+						if (ECS::GetComponent<Player>(playerIdTest).TakeDamage(damage))
+							++m_killCount;
+						m_hitSound.play();
+					}
+				}
+				p.m_collisionObject->getUserIndex();
+				Rendering::effects->ShootLaser(head.GetGlobalRotation(), rayPos,
+					glm::length(BLM::BTtoGLM(p.m_hitPointWorld) - rayPos));
+			}
+			else {
+				Rendering::effects->ShootLaser(head.GetGlobalRotation(), rayPos, 2000.f);
+			}
+
+			//deal with ammo here
+		}
 		break;
 	default:	break;
 	}
@@ -326,48 +349,42 @@ void Player::UseWeapon(PhysBody& body)
 
 void Player::UseHeal()
 {
+	if (m_offhand == OFFHAND::HEALPACK1) {
+		m_health += 3;
+		if (m_health > m_maxHealth)
+			m_health = m_maxHealth;
+		m_offhand = OFFHAND::EMPTY;
+	}
 	if (m_offhand == OFFHAND::HEALPACK2) {
 		m_health += 3;
 		if (m_health > m_maxHealth)
 			m_health = m_maxHealth;
 		m_offhand = OFFHAND::HEALPACK1;
 	}
-	else if (m_offhand == OFFHAND::HEALPACK1) {
-		m_health += 3;
-		if (m_health > m_maxHealth)
-			m_health = m_maxHealth;
-		m_offhand = OFFHAND::EMPTY;
+}
+
+bool Player::PickUpWeapon(WEAPON pickup)
+{
+	if (m_currWeapon == WEAPON::FIST) {
+		m_currWeapon = pickup;
+		//based on weapon, add ammo
+		m_currWeaponAmmo = 100;
+		return true;
 	}
+	if (m_secWeapon == WEAPON::FIST) {
+		m_secWeapon = pickup;
+		//based on weapon, add ammo
+		m_secWeaponAmmo = 100;
+		return true;
+	}
+	return false;
 }
 
-void Player::PickUpWeapon(WEAPON pickup)
+bool Player::PickUpOffhand(OFFHAND pickup)
 {
-	if (m_currWeapon != WEAPON::FIST)
-		if (m_secWeapon != WEAPON::FIST)
-			m_secWeapon = pickup;
-}
-
-void Player::PickUpOffhand(OFFHAND pickup)
-{
-	if (m_offhand != OFFHAND::EMPTY)
+	if (m_offhand == OFFHAND::EMPTY) {
 		m_offhand = pickup;
-}
-
-void Player::ShootDash(float width, glm::vec3 pos, glm::quat rotation)
-{
-	if (Dash == entt::null) {
-		Dash = ECS::CreateEntity();
-		ECS::AttachComponent<ObjMorphLoader>(Dash).LoadMeshs("effects/dash", true);
-		ECS::GetComponent<Transform>(Dash).SetRotation(rotation).SetPosition(pos).SetScale(glm::vec3(1, 1, width));
+		return true;
 	}
-}
-
-void Player::updateDash()
-{
-	if (Dash != entt::null) {
-		if (ECS::GetComponent<ObjMorphLoader>(Dash).IsDone()) {
-			ECS::DestroyEntity(Dash);
-			Dash = entt::null;
-		}
-	}
+	return false;
 }

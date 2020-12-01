@@ -19,9 +19,6 @@ public:
 		return Scene::Reattach();
 	}
 
-	void ShootLazer(entt::entity hitTarget, float width, glm::quat rotation, glm::vec3 pos, bool isp1);
-	void updateLazer();
-
 private:
 
 	int width = 0;

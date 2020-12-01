@@ -66,8 +66,9 @@ namespace Rendering {
                 }
             );
 
-            //draw hitboxes
+            //draw scene specific stuff
             if (hitboxes != nullptr) hitboxes->Render();
+            if (effects != nullptr) effects->Render();
 
             //do all the draws
             ObjLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.5f);
@@ -86,4 +87,5 @@ namespace Rendering {
     glm::vec3 DefaultColour = glm::vec3(1.f);
 
     HitboxGen* hitboxes = nullptr;
+    Effects* effects = nullptr;
 }

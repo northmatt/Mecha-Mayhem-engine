@@ -53,13 +53,19 @@ void BackEnd::GlfwWindowResizedCallback(GLFWwindow* window, int width, int heigh
 
 }
 
+void BackEnd::GlfwWindowFocusCallback(GLFWwindow* window, int result)
+{
+	focus = !result;
+}
+
 GLFWwindow *BackEnd::window = nullptr;
 float BackEnd::_aspect = 1;
 float BackEnd::_aspect2 = 1;
+bool BackEnd::focus = true;
 int BackEnd::_lastHeight = 1;
 int BackEnd::_lastWidth = 1;
-GLFWmonitor* BackEnd::monitor = nullptr;
 int BackEnd::monitorVec[4] = { 0 };
+GLFWmonitor* BackEnd::monitor = nullptr;
 
 GLFWwindow* BackEnd::Init(std::string name, int width, int height)
 {
@@ -80,6 +86,8 @@ GLFWwindow* BackEnd::Init(std::string name, int width, int height)
 
 	// Set our window resized callback
 	glfwSetWindowSizeCallback(window, GlfwWindowResizedCallback);
+
+	glfwSetWindowFocusCallback(window, GlfwWindowFocusCallback);
 
 	if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) == 0) {
 		LOG_ERROR("Failed to initialize Glad");

@@ -101,7 +101,8 @@ public:
 	/// Gets the combined view-projection matrix for this camera without any translations applied (ex: for skyboxes), calculating if needed
 	/// </summary>
 	const glm::mat4& GetViewProjNoTranslation() const;
-	Camera& SetView(glm::mat4 mat) { _view = mat; _isDirty = true; }
+
+	Camera& SetView(glm::mat4 mat) { _view = mat; _isDirty = true; return *this; }
 
 protected:
 	bool _isOrtho;
