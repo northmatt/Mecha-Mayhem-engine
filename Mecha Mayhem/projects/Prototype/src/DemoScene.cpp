@@ -14,6 +14,7 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 	width = windowWidth;
 	height = windowHeight;
 
+	m_camCount = 4;
 
 	/// Creating Entities
 	cameraEnt4 = ECS::CreateEntity();
@@ -194,10 +195,10 @@ void DemoScene::Update()
 		ECS::GetComponent<Transform>(cameraEnt3)
 	);
 
-	ECS::GetComponent<Player>(bodyEnt3).GetInput(
-		ECS::GetComponent<PhysBody>(bodyEnt3),
-		ECS::GetComponent<Transform>(Head3),
-		ECS::GetComponent<Transform>(cameraEnt3)
+	ECS::GetComponent<Player>(bodyEnt4).GetInput(
+		ECS::GetComponent<PhysBody>(bodyEnt4),
+		ECS::GetComponent<Transform>(Head4),
+		ECS::GetComponent<Transform>(cameraEnt4)
 	);
 
 	/// End of loop

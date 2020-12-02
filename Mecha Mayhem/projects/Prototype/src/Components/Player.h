@@ -58,7 +58,7 @@ public:
 	bool TakeDamage(short dmg) {
 		if (m_health == 0)	return false;
 
-		if ((m_health -= dmg) <= 0) {
+		if (m_health -= dmg <= 0) {
 			m_health = 0;
 			m_respawnTimer = m_respawnDelay;
 			return true;
@@ -68,7 +68,7 @@ public:
 
 
 private:
-	void UseWeapon(PhysBody& body, Transform& head);
+	void UseWeapon(PhysBody& body, Transform& head, float offset);
 	void UseHeal();
 
 	//returns true if successful
@@ -89,6 +89,7 @@ private:
 	}
 
 	static const glm::mat4 m_modelOffset;
+	static const glm::vec3 m_gunPos;
 	static glm::vec3 m_skyPos;
 	static Camera m_orthoCam;
 	static constexpr float pi = glm::half_pi<float>() - 0.01f;
@@ -106,6 +107,8 @@ private:
 	static Sprite m_dashBarOutline;
 	static Sprite m_dashBar;
 	static Sprite m_dashBarBack;
+	
+	static Sprite m_reticle;
 
 	CONUSER m_user = CONUSER::NONE;
 

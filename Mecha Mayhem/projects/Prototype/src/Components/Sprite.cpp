@@ -73,7 +73,7 @@ void Sprite::BeginDraw(unsigned amt)
 
 void Sprite::Draw(const glm::mat4& VP, const glm::mat4& model)
 {
-	glm::mat4 MVP = VP * glm::scale(model, glm::vec3(m_width * m_scale, m_height * m_scale, 0));
+	glm::mat4 MVP = VP * glm::scale(model, glm::vec3(m_width * m_scale, m_height * m_scale, 1));
 	
 	m_Queue.push_back({ m_index, MVP });
 }

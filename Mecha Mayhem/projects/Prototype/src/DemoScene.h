@@ -24,7 +24,7 @@ private:
 	int width = 0;
 	int height = 0;
 
-	float camDistance = 5.f;
+	float camDistance = 2.5f;
 	glm::quat startQuat = glm::quat(-1, 0, 0, 0);
 
 

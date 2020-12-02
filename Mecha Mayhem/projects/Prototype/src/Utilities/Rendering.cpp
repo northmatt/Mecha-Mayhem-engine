@@ -10,11 +10,13 @@ namespace Rendering {
 
         auto objView = reg->view<ObjLoader, Transform>();
         auto morphView = reg->view<ObjMorphLoader, Transform>();
+        auto spriteView = reg->view<Sprite, Transform>();
         auto playerView = reg->view<Player, PhysBody, Transform>();
         auto cameraView = reg->view<Camera, Transform>();
 
         int height = BackEnd::GetHalfHeight();
         int width = BackEnd::GetHalfWidth();
+
         short count = 0;
         for (auto cam : cameraView)
         {
@@ -36,12 +38,12 @@ namespace Rendering {
             camCam.SetPosition(camTrans.GetGlobalPosition()).
                 SetForward(camTrans.GetForwards());
 
-
             //reserve some queue size
-            ObjLoader::BeginDraw(objView.size()); 
+            ObjLoader::BeginDraw(objView.size());
             ObjMorphLoader::BeginDraw(morphView.size());
             //number of ui elements
-            Sprite::BeginDraw(6);
+            Sprite::BeginDraw(spriteView.size() + 6);
+
 
             //draw all the objs
             objView.each(
@@ -53,8 +55,15 @@ namespace Rendering {
             //draw all the morph objs
             morphView.each(
                 [&](ObjMorphLoader& obj, Transform& trans) {
-                    if (count == 0)     obj.Update(Time::dt);
+                    if (count == 0) obj.Update(Time::dt);
                     obj.Draw(trans.GetModel());
+                }
+            );
+
+            glm::mat4 VP = camCam.GetProjection() * view;
+            spriteView.each(
+                [&](Sprite& spr, Transform& trans) {
+                    spr.Draw(VP, trans.GetModel());
                 }
             );
 
@@ -62,7 +71,7 @@ namespace Rendering {
             int temp = 2;
             playerView.each(
                 [&](Player& p, PhysBody& body, Transform& trans) {
-                    if (count == 0)     p.Update(body);
+                    if (count == 0) p.Update(body);
                     p.Draw(trans.GetModel(), count, numOfCams);
                     Rendering::LightsPos[temp++] = trans.GetGlobalPosition();
                 }

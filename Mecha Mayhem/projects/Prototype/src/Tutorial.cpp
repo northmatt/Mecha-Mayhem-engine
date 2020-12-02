@@ -13,6 +13,8 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	width = windowWidth;
 	height = windowHeight;
 
+	m_camCount = 4;
+
 	/// Creating Entities
 	cameraEnt4 = ECS::CreateEntity();
 	ECS::AttachComponent<Camera>(cameraEnt4).SetFovDegrees(60.f).ResizeWindow(width, height);
