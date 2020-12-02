@@ -53,13 +53,23 @@ void BackEnd::GlfwWindowResizedCallback(GLFWwindow* window, int width, int heigh
 
 }
 
+void BackEnd::GlfwWindowFocusCallback(GLFWwindow* window, int result)
+{
+	focus = !result;
+	if (fullscreen && !focus) {
+		glfwFocusWindow(window);
+	}
+}
+
 GLFWwindow *BackEnd::window = nullptr;
 float BackEnd::_aspect = 1;
 float BackEnd::_aspect2 = 1;
+bool BackEnd::focus = false;
+bool BackEnd::fullscreen = false;
 int BackEnd::_lastHeight = 1;
 int BackEnd::_lastWidth = 1;
-GLFWmonitor* BackEnd::monitor = nullptr;
 int BackEnd::monitorVec[4] = { 0 };
+GLFWmonitor* BackEnd::monitor = nullptr;
 
 GLFWwindow* BackEnd::Init(std::string name, int width, int height)
 {
@@ -80,6 +90,9 @@ GLFWwindow* BackEnd::Init(std::string name, int width, int height)
 
 	// Set our window resized callback
 	glfwSetWindowSizeCallback(window, GlfwWindowResizedCallback);
+	glfwSetWindowFocusCallback(window, GlfwWindowFocusCallback);
+
+	SetTabbed(width, height);
 
 	if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) == 0) {
 		LOG_ERROR("Failed to initialize Glad");
@@ -118,7 +131,7 @@ void BackEnd::SetAspect(int width, int height)
 
 void BackEnd::SetFullscreen()
 {
-
+	fullscreen = true;
 	glfwGetMonitorWorkarea(monitor, &monitorVec[0], &monitorVec[1], &monitorVec[2], &monitorVec[3]);
 
 	// We want GL commands to be executed for our window, so we make our window's context the current one
@@ -126,9 +139,12 @@ void BackEnd::SetFullscreen()
 
 	//go fullscreen on selected monitor
 	glfwSetWindowMonitor(window, monitor, 0, 0, monitorVec[2], monitorVec[3], 60);
+	GlfwWindowFocusCallback(window, true);
 }
 
 void BackEnd::SetTabbed(int width, int height)
 {
+	fullscreen = false;
 	glfwSetWindowMonitor(window, nullptr, 50, 50, width, height, 60);
+	GlfwWindowFocusCallback(window, true);
 }

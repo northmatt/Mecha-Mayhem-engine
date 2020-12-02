@@ -61,14 +61,14 @@ public:
 	ObjMorphLoader& SetSpeed(float speed) { m_speed = speed; return *this; }
 	float GetSpeed() { return m_speed; }
 
-	static void BeginDraw(unsigned amt = 0);
-
 	void Update(float dt);
+
+	static void BeginDraw(unsigned amt = 0);
 
 	void Draw(const glm::mat4& model);
 
 	static void PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour,
-		const glm::vec3& lightPos, const glm::vec3& lightColour = glm::vec3(1.f),
+		const std::array<glm::vec3, MAX_LIGHTS>& lightPos, const std::array<glm::vec3, MAX_LIGHTS>& lightColour, const int& lightCount,
 		float specularStrength = 1.f, float shininess = 4,
 		float ambientLightStrength = 0.05f, const glm::vec3& ambientColour = glm::vec3(0.f), float ambientStrength = 0.f
 	);

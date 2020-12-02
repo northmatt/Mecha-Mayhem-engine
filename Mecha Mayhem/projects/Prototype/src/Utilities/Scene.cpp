@@ -53,6 +53,8 @@ Scene* Scene::Reattach()
         Rendering::hitboxes = &m_colliders;
     }
 
+    Rendering::effects = &m_effects;
+
     return this;
 }
 
@@ -69,6 +71,8 @@ void Scene::BackEndUpdate()
             }
         );
     }
+
+    m_effects.Update();
 
     //always render
     if (m_camCount < 1)

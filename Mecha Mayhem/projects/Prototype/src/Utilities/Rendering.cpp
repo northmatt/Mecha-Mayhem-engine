@@ -59,19 +59,26 @@ namespace Rendering {
             );
 
             //draw all players
+            int temp = 2;
             playerView.each(
                 [&](Player& p, PhysBody& body, Transform& trans) {
                     if (count == 0)     p.Update(body);
                     p.Draw(trans.GetModel(), count, numOfCams);
+                    Rendering::LightsPos[temp++] = trans.GetGlobalPosition();
                 }
             );
 
-            //draw hitboxes
+            //draw scene specific stuff
             if (hitboxes != nullptr) hitboxes->Render();
+            if (effects != nullptr) effects->Render();
 
             //do all the draws
-            ObjLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.5f);
-            ObjMorphLoader::PerformDraw(view, camCam, DefaultColour, LightPos, LightColour, 1, 4, 0.5f);
+            ObjLoader::PerformDraw(view, camCam,
+                DefaultColour, LightsPos, LightsColour, LightCount,
+                1, 4, 0.5f);
+            ObjMorphLoader::PerformDraw(view, camCam,
+                DefaultColour, LightsPos, LightsColour, LightCount,
+                1, 4, 0.5f);
             Sprite::PerformDraw();
 
             //exit even if some cams haven't been checked, because only the amount specified should render
@@ -81,9 +88,20 @@ namespace Rendering {
     }
 
     glm::vec4 BackColour = { 0.2f, 0.2f, 0.2f, 1.f };
-    glm::vec3 LightColour = glm::vec3(3.f);
-    glm::vec3 LightPos = glm::vec3(0.f);
+    std::array<glm::vec3, MAX_LIGHTS> LightsColour = {
+        glm::vec3(1.f),
+        glm::vec3(0.5f, 0.f, 0.f),
+        glm::vec3(0.5f), glm::vec3(0.5f), glm::vec3(0.5f), glm::vec3(0.5f),
+        glm::vec3(0.5f), glm::vec3(0.5f), glm::vec3(0.5f), glm::vec3(0.5f)
+    };
+    std::array<glm::vec3, MAX_LIGHTS> LightsPos = {
+        glm::vec3(0.f, 50.f, 0.f), glm::vec3(0.f, 0.f, 0.f),
+        glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f),
+        glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f)
+    };
     glm::vec3 DefaultColour = glm::vec3(1.f);
+    size_t LightCount = 5;
 
     HitboxGen* hitboxes = nullptr;
+    Effects* effects = nullptr;
 }

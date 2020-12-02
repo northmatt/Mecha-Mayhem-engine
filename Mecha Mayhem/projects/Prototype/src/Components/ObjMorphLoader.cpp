@@ -193,7 +193,7 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 						desc.MagnificationFilter = MagFilter::Nearest;
 						desc.Format = InternalFormat::RGBA8;
 						Texture2D::sptr texture = Texture2D::Create(desc);
-						texture->Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.f));
+						texture->Clear(glm::vec4(0.1f, 0.1f, 0.1f, 1.f));
 						data.texture = Sprite::m_textures.size();
 						Sprite::m_textures.push_back({ textureName, texture });
 					}
@@ -644,16 +644,6 @@ ObjMorphLoader& ObjMorphLoader::ToggleDirection()
 	return *this;
 }
 
-void ObjMorphLoader::BeginDraw(unsigned amt)
-{
-	m_texQueue.resize(0);
-	m_texQueue.reserve(amt);
-	m_matQueue.resize(0);
-	m_matQueue.reserve(amt);
-	m_defaultQueue.resize(0);
-	m_defaultQueue.reserve(amt);
-}
-
 void ObjMorphLoader::Update(float dt)
 {
 	if (!m_enabled)	return;
@@ -840,6 +830,16 @@ void ObjMorphLoader::Update(float dt)
 	}
 }
 
+void ObjMorphLoader::BeginDraw(unsigned amt)
+{
+	m_texQueue.resize(0);
+	m_texQueue.reserve(amt);
+	m_matQueue.resize(0);
+	m_matQueue.reserve(amt);
+	m_defaultQueue.resize(0);
+	m_defaultQueue.reserve(amt);
+}
+
 void ObjMorphLoader::Draw(const glm::mat4& model)
 {
 	if (!m_enabled)	return;
@@ -853,7 +853,7 @@ void ObjMorphLoader::Draw(const glm::mat4& model)
 }
 
 void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour,
-	const glm::vec3& lightPos, const glm::vec3& lightColour, float specularStrength, float shininess,
+	const std::array<glm::vec3, MAX_LIGHTS>& lightPos, const std::array<glm::vec3, MAX_LIGHTS>& lightColour, const int& lightCount, float specularStrength, float shininess,
 	float ambientLightStrength, const glm::vec3& ambientColour, float ambientStrength)
 {
 	glm::mat4 VP = camera.GetProjection() * view;
@@ -867,8 +867,9 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 		m_shader->SetUniform("specularStrength", specularStrength);
 		m_shader->SetUniform("shininess", shininess);
 
-		m_shader->SetUniform("lightPos", lightPos);
-		m_shader->SetUniform("lightColour", lightColour);
+		m_shader->SetUniform("lightsPos", *lightPos.data(), MAX_LIGHTS);
+		m_shader->SetUniform("lightsColour", *lightColour.data(), MAX_LIGHTS);
+		m_shader->SetUniform("lightCount", lightCount);
 
 		m_shader->SetUniform("ambientLightStrength", ambientLightStrength);
 		m_shader->SetUniform("ambientColour", ambientColour);
@@ -887,8 +888,9 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 		m_texShader->Bind();
 		m_texShader->SetUniform("camPos", camera.GetPosition());
 
-		m_texShader->SetUniform("lightPos", lightPos);
-		m_texShader->SetUniform("lightColour", lightColour);
+		m_texShader->SetUniform("lightsPos", *lightPos.data(), MAX_LIGHTS);
+		m_texShader->SetUniform("lightsColour", *lightColour.data(), MAX_LIGHTS);
+		m_texShader->SetUniform("lightCount", lightCount);
 
 		m_texShader->SetUniform("ambientLightStrength", ambientLightStrength);
 		m_texShader->SetUniform("ambientColour", ambientColour);
@@ -912,8 +914,9 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 		m_matShader->Bind();
 		m_matShader->SetUniform("camPos", camera.GetPosition());
 
-		m_matShader->SetUniform("lightPos", lightPos);
-		m_matShader->SetUniform("lightColour", lightColour);
+		m_matShader->SetUniform("lightsPos", *lightPos.data(), MAX_LIGHTS);
+		m_matShader->SetUniform("lightsColour", *lightColour.data(), MAX_LIGHTS);
+		m_matShader->SetUniform("lightCount", lightCount);
 
 		m_matShader->SetUniform("ambientLightStrength", ambientLightStrength);
 		m_matShader->SetUniform("ambientColour", ambientColour);

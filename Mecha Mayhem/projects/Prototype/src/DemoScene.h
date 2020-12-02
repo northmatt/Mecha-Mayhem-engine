@@ -19,9 +19,6 @@ public:
 		return Scene::Reattach();
 	}
 
-	void ShootLazer(entt::entity hitTarget, float width, glm::quat rotation, glm::vec3 pos, bool isp1);
-	void updateLazer();
-
 private:
 
 	int width = 0;
@@ -30,23 +27,23 @@ private:
 	float camDistance = 5.f;
 	glm::quat startQuat = glm::quat(-1, 0, 0, 0);
 
-	bool screen = true;
-	bool swap = false;
 
-	entt::entity Lazer = entt::null;
-	entt::entity Lazer2 = entt::null;
+	entt::entity bodyEnt1 = entt::null;
+	entt::entity Head1 = entt::null;
+	entt::entity cameraEnt1 = entt::null;
 
-	entt::entity cameraEnt = 0;
-	entt::entity cameraEnt2 = 0;
-	entt::entity bodyEnt = 0;
-	entt::entity bodyEnt2 = 0;
-	entt::entity P = 0;
-	entt::entity P2 = 0;
+	entt::entity bodyEnt2 = entt::null;
+	entt::entity Head2 = entt::null;
+	entt::entity cameraEnt2 = entt::null;
+
+	entt::entity bodyEnt3 = entt::null;
+	entt::entity Head3 = entt::null;
+	entt::entity cameraEnt3 = entt::null;
+
+	entt::entity bodyEnt4 = entt::null;
+	entt::entity Head4 = entt::null;
+	entt::entity cameraEnt4 = entt::null;
 
 	entt::entity drone = 0;
-
-	entt::entity epic = 0;
-
-	Sound2D ouch{ "oof.mp4.mp3", "sfx" };
 };
 

@@ -10,7 +10,11 @@ public:
 	static btVector3 GLMtoBT(const glm::vec3& vec);
 	static glm::quat BTtoGLM(const btQuaternion& quat);
 	static btQuaternion GLMtoBT(const glm::quat& quat);
+
+	static const btVector3 BTzero;
 };
+
+inline const btVector3 BLM::BTzero = btVector3(0, 0, 0);
 
 inline glm::vec3 BLM::BTtoGLM(const btVector3& vec)
 {

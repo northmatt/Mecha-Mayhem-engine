@@ -8,7 +8,7 @@ int main() {
 	if (!window)	return 1;
 
 	{
-		// Creating demo scene
+		// Creating demo scenes
 		std::vector<Scene*> scenes;
 		scenes.push_back(new Tutorial("Tutorial", glm::vec3(0, -100, 0)));
 		scenes.push_back(new DemoScene("Demo 2", glm::vec3(0, -100, 0)));
@@ -22,6 +22,11 @@ int main() {
 
 		while (!glfwWindowShouldClose(window)) {
 			glfwPollEvents();
+			//update the static dt
+			Time::Update(glfwGetTime());
+
+			if (BackEnd::LostFocus())	continue;
+
 			ControllerInput::ControllerRefresh();
 
 			if (Input::GetKey(KEY::LCTRL) && Input::GetKeyUp(KEY::ENTER)) {
@@ -29,9 +34,7 @@ int main() {
 				glfwSetWindowTitle(window, (activeScene = scenes[sceneswap = !sceneswap]->Reattach())->GetName().c_str());
 			}
 
-
 			activeScene->Update();
-
 
 			//do not touch plz
 			activeScene->BackEndUpdate();
