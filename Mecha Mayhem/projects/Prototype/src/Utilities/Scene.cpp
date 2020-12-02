@@ -60,16 +60,18 @@ Scene* Scene::Reattach()
 
 void Scene::BackEndUpdate()
 {
-    if (m_world != nullptr) {
+    if (!m_paused) {
+        if (m_world != nullptr) {
 
-        m_world->stepSimulation(Time::dt, 10);
+            m_world->stepSimulation(Time::dt, 10);
 
-        m_reg.view<PhysBody, Transform>().each(
-            [](PhysBody& phys, Transform& trans) {
-                if (phys.IsDynamic() || phys.Changed())
-                    trans.SetTransform(phys.GetTransform());
-            }
-        );
+            m_reg.view<PhysBody, Transform>().each(
+                [](PhysBody& phys, Transform& trans) {
+                    if (phys.IsDynamic() || phys.Changed())
+                        trans.SetTransform(phys.GetTransform());
+                }
+            );
+        }
     }
 
     m_effects.Update();
@@ -81,4 +83,15 @@ void Scene::BackEndUpdate()
         m_camCount = 4;
 
     Rendering::Update(&m_reg, m_camCount);
+}
+
+int Scene::ChangeScene(int sceneCount)
+{
+    if (m_nextScene >= sceneCount)
+        return -1;
+
+    int nextScene = m_nextScene;
+    m_nextScene = -1;
+
+    return nextScene;
 }

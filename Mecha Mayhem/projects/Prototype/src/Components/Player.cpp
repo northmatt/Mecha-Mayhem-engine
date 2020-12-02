@@ -1,6 +1,5 @@
 #include "Player.h"
 #include "Utilities/Time.h"
-#include "Utilities/BLM.h"
 #include "Utilities/Rendering.h"
 #include "ECS.h"
 
@@ -35,7 +34,7 @@ Sprite Player::m_reticle = {};
 
 void Player::Init(int width, int height)
 {
-	m_orthoCam.SetOrthoHeight(10).SetPosition(glm::vec3(0, 0, 0)).SetNear(-10).Setfar(10)
+	m_orthoCam.SetOrthoHeight(10).SetPosition(BLM::GLMzero).SetNear(-10).Setfar(10)
 		.SetIsOrtho(true).ResizeWindow(width, height);
 	m_shootLaser = { "laser.mp3", "shooting" };
 	m_shootLaser.setGroupVolume(0.5f);
@@ -258,7 +257,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 				vel.x = normalized.x * m_speed * percent;
 				vel.z = normalized.z * m_speed * percent;
 
-				vel = glm::vec4(vel, 1) * glm::rotate(glm::mat4(1.f), m_rot.y, glm::vec3(0, 1, 0));
+				vel = glm::vec4(vel, 1) * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup);
 
 				if (m_dashTimer == 0) {
 					//if (ControllerInput::GetLTDown(m_user)) {
@@ -283,7 +282,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 					glm::vec3 ogPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
 					btVector3 pos = PhysBody::GetRaycastWithDistanceLimit(ogPos,
 						glm::vec4(0, 0, m_dashDistance * -50.f, 1)
-						* glm::rotate(glm::mat4(1.f), m_rot.y, glm::vec3(0, 1, 0)), m_dashDistance);
+						* glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup), m_dashDistance);
 					glm::vec3 newPos = BLM::BTtoGLM(pos);
 					Rendering::effects->ShootDash(BLM::BTtoGLM(body.GetTransform().getRotation()),
 						newPos, glm::length(newPos - ogPos));
@@ -298,7 +297,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 
 	//camera
 	{
-		glm::vec3 rayPos = head.ComputeScalessGlobal().GetGlobalPosition();
+		glm::vec3 rayPos = head.GetGlobalPosition();
 		btVector3 test = PhysBody::GetRaycast(rayPos, head.GetForwards() * (m_camDistance * 50.f));
 		if (m_rot.x < pi * 0.25f) {
 			if (test != btVector3()) {
@@ -312,7 +311,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 					personalCam.SetPosition(glm::vec3(-0.4f, 0, distance));
 					rayOff = 0.0175f * (distance / m_camDistance);
 				}
-				m_drawSelf = distance > 0.75f;
+				m_drawSelf = (distance > 0.75f);
 			}
 			else {
 				personalCam.SetPosition(glm::vec3(-0.4f, 0, m_camDistance));
@@ -367,9 +366,9 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 			m_weaponCooldown = 0.f;
 			m_shootLaser.play();
 
-			glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0, 1, 0));
+			glm::quat offsetQuat = glm::angleAxis(offset, BLM::GLMup);
 
-			glm::vec3 rayPos = head.ComputeScalessGlobal().GetGlobalPosition();
+			glm::vec3 rayPos = head.GetGlobalPosition();
 			glm::vec3 forwards = glm::rotate(offsetQuat, -head.GetForwards());
 			RayResult p = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos),
 				BLM::GLMtoBT(forwards * 2000.f));
@@ -391,6 +390,10 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 			}
 
 			//deal with ammo here
+			if (--m_currWeaponAmmo <= 0) {
+				m_currWeapon = m_secWeapon;
+				m_secWeapon = WEAPON::FIST;
+			}
 		}
 		break;
 	default:	break;

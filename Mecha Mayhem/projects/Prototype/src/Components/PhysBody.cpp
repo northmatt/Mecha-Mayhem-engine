@@ -1,5 +1,4 @@
 #include "PhysBody.h"
-#include "Utilities/BLM.h"
 
 btAlignedObjectArray<btCollisionShape*> PhysBody::m_collisionShapes = {};
 btDiscreteDynamicsWorld* PhysBody::m_world = nullptr;
@@ -14,7 +13,7 @@ void PhysBody::Unload()
     m_world = nullptr;
 }
 
-PhysBody& PhysBody::Init(int id, float width, float height, float depth, glm::vec3 pos, float mass, bool isDynamic)
+PhysBody& PhysBody::Init(entt::entity id, float width, float height, float depth, const glm::vec3& pos, float mass, bool isDynamic)
 {
     bool shapeExists = false;
     btVector3 dimensions(btScalar(width / 2), btScalar(height / 2), btScalar(depth / 2));
@@ -56,7 +55,7 @@ PhysBody& PhysBody::Init(int id, float width, float height, float depth, glm::ve
     return *this;
 }
 
-PhysBody& PhysBody::Init(int id, float radius, float height, glm::vec3 pos, float mass, bool isDynamic)
+PhysBody& PhysBody::Init(entt::entity id, float radius, float height, const glm::vec3& pos, float mass, bool isDynamic)
 {
     bool shapeExists = false;
 
@@ -96,7 +95,7 @@ PhysBody& PhysBody::Init(int id, float radius, float height, glm::vec3 pos, floa
     return *this;
 }
 
-PhysBody& PhysBody::Init(int id, float radius, glm::vec3 pos, float mass, bool isDynamic)
+PhysBody& PhysBody::Init(entt::entity id, float radius, const glm::vec3& pos, float mass, bool isDynamic)
 {
     bool shapeExists = false;
 
@@ -136,6 +135,15 @@ PhysBody& PhysBody::Init(int id, float radius, glm::vec3 pos, float mass, bool i
     return *this;
 }
 
+
+PhysBody& PhysBody::CreatePlayer(entt::entity id, const glm::quat& startRot, const glm::vec3& pos)
+{
+    Init(id, 0.5f, 2, pos, 1, true).SetRotation(startRot);
+    m_body->setAngularFactor(BLM::BTzero);
+    m_body->setFriction(0);
+
+    return *this;
+}
 
 PhysBody& PhysBody::SetGravity(glm::vec3 grav)
 {

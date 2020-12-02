@@ -35,6 +35,8 @@ namespace Gameloop
 		SoundManager::update();
 		//Controller Checks n stuff
 		ControllerInput::ControllerUpdate();
+		//update the static dt
+		Time::Update(glfwGetTime());
 	}
 
 	//stop everything (use at the end to avoid issues)

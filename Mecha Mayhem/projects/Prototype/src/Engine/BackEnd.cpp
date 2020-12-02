@@ -55,8 +55,8 @@ void BackEnd::GlfwWindowResizedCallback(GLFWwindow* window, int width, int heigh
 
 void BackEnd::GlfwWindowFocusCallback(GLFWwindow* window, int result)
 {
-	focus = !result;
-	if (fullscreen && !focus) {
+	focus = (result == GLFW_TRUE);
+	if (fullscreen && focus) {
 		glfwFocusWindow(window);
 	}
 }

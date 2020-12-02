@@ -1,5 +1,6 @@
 #pragma once
 #include "Utilities/Scene.h"
+#include "Utilities/Catmull.h"
 
 class DemoScene : public Scene
 {
@@ -20,6 +21,16 @@ public:
 	}
 
 private:
+	CatmullFollower dronePath{ 1, {
+		glm::vec3(-0.5f, 0, -0.5f),
+		glm::vec3(0, 0, 0),
+		glm::vec3(-0.5f, 0, 0.5f),
+		glm::vec3(0, 0, 0),
+		glm::vec3(0.5f, 0, 0.5f),
+		glm::vec3(0, 0, 0),
+		glm::vec3(0.5f, 0, -0.5f),
+		glm::vec3(0, 0, 0)
+	}, 8 };
 
 	int width = 0;
 	int height = 0;
@@ -44,6 +55,6 @@ private:
 	entt::entity Head4 = entt::null;
 	entt::entity cameraEnt4 = entt::null;
 
-	entt::entity drone = 0;
+	entt::entity drone = entt::null;
 };
 

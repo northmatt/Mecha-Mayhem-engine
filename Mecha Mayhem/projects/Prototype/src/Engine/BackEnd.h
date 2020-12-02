@@ -34,7 +34,7 @@ public:
 	static int GetHalfWidth() { return _lastWidth; }
 	static int GetHalfHeight() { return _lastHeight; }
 
-	static bool LostFocus() { return focus; }
+	static bool HasFocus() { return focus; }
 private:
 	static void GlfwWindowResizedCallback(GLFWwindow* window, int width, int height);
 	static void GlfwWindowFocusCallback(GLFWwindow* window, int result);

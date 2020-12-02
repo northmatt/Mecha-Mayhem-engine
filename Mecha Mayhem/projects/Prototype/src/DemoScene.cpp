@@ -29,56 +29,49 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 	cameraEnt1 = ECS::CreateEntity();
 	ECS::AttachComponent<Camera>(cameraEnt1).SetFovDegrees(60.f).ResizeWindow(width, height);
 
+
 	bodyEnt1 = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt1).Init(bodyEnt1, 0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
-		/*SetGravity(glm::vec3(0)).*/
-		SetRotation(startQuat).GetBody()->setAngularFactor(BLM::BTzero);
-	ECS::GetComponent<PhysBody>(bodyEnt1).GetBody()->setFriction(0);
+	ECS::AttachComponent<PhysBody>(bodyEnt1).CreatePlayer(bodyEnt1, startQuat, glm::vec3(0, 1.5f, 0));
 	ECS::AttachComponent<Player>(bodyEnt1).Init(CONUSER::ONE, 1).SetRotation(glm::radians(180.f), 0);
 
 	Head1 = ECS::CreateEntity();
-	ECS::GetComponent<Transform>(Head1).SetPosition(glm::vec3(0, 0.75f, 0)).ChildTo(bodyEnt1);
+	ECS::GetComponent<Transform>(Head1).SetPosition(glm::vec3(0, 0.75f, 0)).
+		ChildTo(bodyEnt1).SetUsingParentScale(false);
 	ECS::GetComponent<Transform>(cameraEnt1).SetPosition(glm::vec3(0, 0, camDistance)).
 		ChildTo(Head1).SetUsingParentScale(false);
 
 
 
 	bodyEnt2 = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt2).Init(bodyEnt2, 0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
-		/*SetGravity(glm::vec3(0)).*/
-		SetRotation(startQuat).GetBody()->setAngularFactor(BLM::BTzero);
-	ECS::GetComponent<PhysBody>(bodyEnt2).GetBody()->setFriction(0);
+	ECS::AttachComponent<PhysBody>(bodyEnt2).CreatePlayer(bodyEnt2, startQuat, glm::vec3(0, 1.5f, 0));
 	ECS::AttachComponent<Player>(bodyEnt2).Init(CONUSER::TWO, 1).SetRotation(glm::radians(180.f), 0);
 
 	Head2 = ECS::CreateEntity();
-	ECS::GetComponent<Transform>(Head2).SetPosition(glm::vec3(0, 0.75f, 0)).ChildTo(bodyEnt2);
+	ECS::GetComponent<Transform>(Head2).SetPosition(glm::vec3(0, 0.75f, 0)).
+		ChildTo(bodyEnt2).SetUsingParentScale(false);
 	ECS::GetComponent<Transform>(cameraEnt2).SetPosition(glm::vec3(0, 0, camDistance)).
 		ChildTo(Head2).SetUsingParentScale(false);
 
 
 	bodyEnt3 = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt3).Init(bodyEnt3, 0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
-		/*SetGravity(glm::vec3(0)).*/
-		SetRotation(startQuat).GetBody()->setAngularFactor(BLM::BTzero);
-	ECS::GetComponent<PhysBody>(bodyEnt3).GetBody()->setFriction(0);
+	ECS::AttachComponent<PhysBody>(bodyEnt3).CreatePlayer(bodyEnt3, startQuat, glm::vec3(0, 1.5f, 0));
 	ECS::AttachComponent<Player>(bodyEnt3).Init(CONUSER::THREE, 1).SetRotation(glm::radians(180.f), 0);
 
 	Head3 = ECS::CreateEntity();
-	ECS::GetComponent<Transform>(Head3).SetPosition(glm::vec3(0, 0.75f, 0)).ChildTo(bodyEnt3);
+	ECS::GetComponent<Transform>(Head3).SetPosition(glm::vec3(0, 0.75f, 0)).
+		ChildTo(bodyEnt3).SetUsingParentScale(false);
 	ECS::GetComponent<Transform>(cameraEnt3).SetPosition(glm::vec3(0, 0, camDistance)).
 		ChildTo(Head3).SetUsingParentScale(false);
 
 
 
 	bodyEnt4 = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt4).Init(bodyEnt4, 0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
-		/*SetGravity(glm::vec3(0)).*/
-		SetRotation(startQuat).GetBody()->setAngularFactor(BLM::BTzero);
-	ECS::GetComponent<PhysBody>(bodyEnt4).GetBody()->setFriction(0);
+	ECS::AttachComponent<PhysBody>(bodyEnt4).CreatePlayer(bodyEnt4, startQuat, glm::vec3(0, 1.5f, 0));
 	ECS::AttachComponent<Player>(bodyEnt4).Init(CONUSER::FOUR, 1).SetRotation(glm::radians(180.f), 0);
 
 	Head4 = ECS::CreateEntity();
-	ECS::GetComponent<Transform>(Head4).SetPosition(glm::vec3(0, 0.75f, 0)).ChildTo(bodyEnt4);
+	ECS::GetComponent<Transform>(Head4).SetPosition(glm::vec3(0, 0.75f, 0)).
+		ChildTo(bodyEnt4).SetUsingParentScale(false);
 	ECS::GetComponent<Transform>(cameraEnt4).SetPosition(glm::vec3(0, 0, camDistance)).
 		ChildTo(Head4).SetUsingParentScale(false);
 
@@ -116,18 +109,16 @@ void DemoScene::Update()
 {
 	/// start of loop
 
-	if (Input::GetKey(KEY::APOSTROPHE)) {
-		ECS::GetComponent<Transform>(drone).SetRotation(glm::rotate(ECS::GetComponent<Transform>(drone).
-			GetLocalRotation(), glm::radians(45 * Time::dt), glm::vec3(0, 1, 0))).SetPosition(
-				glm::vec3(0, 0, 1.f) * glm::inverse(ECS::GetComponent<Transform>(drone).GetLocalRotation())
-			);
+	if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER::ONE)) {
+		m_nextScene = 1;
 	}
-	if (Input::GetKey(KEY::SEMICOLON)) {
-		ECS::GetComponent<Transform>(drone).SetRotation(glm::rotate(ECS::GetComponent<Transform>(drone).
-			GetLocalRotation(), glm::radians(45 * Time::dt), glm::vec3(0, -1, 0))).SetPosition(
-				glm::vec3(0, 0, 1.f) * glm::inverse(ECS::GetComponent<Transform>(drone).GetLocalRotation())
-			);
-	}
+
+	ECS::GetComponent<Transform>(drone).SetPosition(dronePath.Update(Time::dt).GetPosition()).
+		SetRotation(dronePath.GetLookingForwards(Time::dt));
+
+	if (Input::GetKey(KEY::SEVEN))
+		dronePath.SetSpeed(dronePath.GetSpeed() + Time::dt);
+	else	dronePath.SetSpeed(1);
 
 	if (Input::GetKeyDown(KEY::ONE)) {
 		ECS::GetComponent<ObjMorphLoader>(drone).LoadMeshs("sword");
@@ -169,13 +160,6 @@ void DemoScene::Update()
 		}
 	}
 
-	if (Input::GetKey(KEY::P)) {
-		if (Input::GetKey(KEY::LSHIFT))
-			Rendering::LightsColour[0] = glm::vec3(3.f);
-		else
-			Rendering::LightsColour[0] = glm::vec3((rand() % 30) / 10.f, (rand() % 30) / 10.f, (rand() % 30) / 10.f);
-	}
-
 
 	ECS::GetComponent<Player>(bodyEnt1).GetInput(
 		ECS::GetComponent<PhysBody>(bodyEnt1),
@@ -202,15 +186,15 @@ void DemoScene::Update()
 	);
 
 	/// End of loop
-	if (Input::GetKeyDown(KEY::FSLASH))	m_colliders.ToggleDraw();
+	/*if (Input::GetKeyDown(KEY::FSLASH))	m_colliders.ToggleDraw();
 	m_colliders.Update(Time::dt);
 	if (Input::GetKeyDown(KEY::F10))	if (!m_colliders.SaveToFile(false))	std::cout << "file save failed\n";
-	if (Input::GetKeyDown(KEY::F1))		if (!m_colliders.LoadFromFile())	std::cout << "file load failed\n";
+	if (Input::GetKeyDown(KEY::F1))		if (!m_colliders.LoadFromFile())	std::cout << "file load failed\n";*/
 }
 
 void DemoScene::Exit()
 {
-	if (!m_colliders.SaveToFile())
-		std::cout << "file save failed\n";
+	/*if (!m_colliders.SaveToFile())
+		std::cout << "file save failed\n";*/
 }
 

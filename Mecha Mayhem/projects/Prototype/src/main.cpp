@@ -11,27 +11,27 @@ int main() {
 		// Creating demo scenes
 		std::vector<Scene*> scenes;
 		scenes.push_back(new Tutorial("Tutorial", glm::vec3(0, -100, 0)));
+		scenes.push_back(new Tutorial("Tutorial 2", glm::vec3(0, -100, 0)));
 		scenes.push_back(new DemoScene("Demo 2", glm::vec3(0, -100, 0)));
  		 
 		scenes[0]->Init(width, height);
 		scenes[1]->Init(width, height);
+		scenes[2]->Init(width, height);
 
-		bool sceneswap = false;
-		Scene* activeScene = scenes[sceneswap]->Reattach();
+		int currScene = 0, count = scenes.size();
+		Scene* activeScene = scenes[0]->Reattach();
 		glfwSetWindowTitle(window, activeScene->GetName().c_str());
 
 		while (!glfwWindowShouldClose(window)) {
 			glfwPollEvents();
-			//update the static dt
-			Time::Update(glfwGetTime());
 
-			if (BackEnd::LostFocus())	continue;
+			if (!BackEnd::HasFocus())	continue;
 
 			ControllerInput::ControllerRefresh();
 
-			if (Input::GetKey(KEY::LCTRL) && Input::GetKeyUp(KEY::ENTER)) {
+			if ((currScene = activeScene->ChangeScene(count)) > -1) {
 				activeScene->Exit();
-				glfwSetWindowTitle(window, (activeScene = scenes[sceneswap = !sceneswap]->Reattach())->GetName().c_str());
+				glfwSetWindowTitle(window, (activeScene = scenes[currScene]->Reattach())->GetName().c_str());
 			}
 
 			activeScene->Update();

@@ -159,6 +159,9 @@ glm::vec3 Transform::GetLocalPosition()
 
 glm::vec3 Transform::GetGlobalPosition()
 {
+	if (m_hasParent)	m_dirty = true;
+	if (m_dirty)		ComputeGlobal();
+
 	return glm::vec3(m_global[3]);
 }
 
@@ -219,6 +222,9 @@ glm::quat Transform::GetLocalRotation()
 
 glm::quat Transform::GetGlobalRotation()
 {
+	if (m_hasParent)	m_dirty = true;
+	if (m_dirty)		ComputeGlobal();
+
 	return glm::mat3(m_global);
 }
 
@@ -229,10 +235,24 @@ glm::mat3 Transform::GetLocalRotationM3()
 
 glm::mat3 Transform::GetGlobalRotationM3()
 {
+	if (m_hasParent)	m_dirty = true;
+	if (m_dirty)		ComputeGlobal();
+
 	return glm::mat3(m_global);
 }
 
 glm::vec3 Transform::GetForwards()
 {
+	if (m_hasParent)	m_dirty = true;
+	if (m_dirty)		ComputeGlobal();
+
 	return glm::vec3(m_global[2][0], m_global[2][1], m_global[2][2]);
+}
+
+Transform& Transform::LookAt(const glm::vec3 pos)
+{
+	m_rotation = glm::quatLookAt(glm::normalize(pos - GetGlobalPosition()), BLM::GLMup);
+	m_dirty = true;
+
+	return *this;
 }
