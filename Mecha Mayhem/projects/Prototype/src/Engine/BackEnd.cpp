@@ -56,8 +56,9 @@ void BackEnd::GlfwWindowResizedCallback(GLFWwindow* window, int width, int heigh
 void BackEnd::GlfwWindowFocusCallback(GLFWwindow* window, int result)
 {
 	focus = !result;
-	if (fullscreen)
-		focus = true;
+	if (fullscreen && !focus) {
+		glfwFocusWindow(window);
+	}
 }
 
 GLFWwindow *BackEnd::window = nullptr;
@@ -138,10 +139,12 @@ void BackEnd::SetFullscreen()
 
 	//go fullscreen on selected monitor
 	glfwSetWindowMonitor(window, monitor, 0, 0, monitorVec[2], monitorVec[3], 60);
+	GlfwWindowFocusCallback(window, true);
 }
 
 void BackEnd::SetTabbed(int width, int height)
 {
 	fullscreen = false;
 	glfwSetWindowMonitor(window, nullptr, 50, 50, width, height, 60);
+	GlfwWindowFocusCallback(window, true);
 }

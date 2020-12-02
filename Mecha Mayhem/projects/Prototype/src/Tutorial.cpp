@@ -14,30 +14,32 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	height = windowHeight;
 
 	/// Creating Entities
-	for (int x(0); x < 2; ++x)
-	{
-		auto entity = ECS::CreateEntity();
-		auto& camCam2 = ECS::AttachComponent<Camera>(entity);
-		camCam2.SetFovDegrees(60.f).ResizeWindow(width, height);
-		glm::vec3 axis = glm::vec3(rand() % 2, rand() % 2, rand() % 2 + 1);
-		ECS::GetComponent<Transform>(entity).
-			SetPosition(glm::vec3(rand() % 21 - 10, 0, rand() % 21 - 10)).
-			SetRotation(glm::rotate(glm::quat(1, 0, 0, 0), float(rand() % 360), axis));
-	}
+	cameraEnt4 = ECS::CreateEntity();
+	ECS::AttachComponent<Camera>(cameraEnt4).SetFovDegrees(60.f).ResizeWindow(width, height);
+
+	cameraEnt3 = ECS::CreateEntity();
+	ECS::AttachComponent<Camera>(cameraEnt3).SetFovDegrees(60.f).ResizeWindow(width, height);
+
 	cameraEnt2 = ECS::CreateEntity();
-	auto& camCam2 = ECS::AttachComponent<Camera>(cameraEnt2);
-	camCam2.SetFovDegrees(60.f).ResizeWindow(width, height);
+	ECS::AttachComponent<Camera>(cameraEnt2).SetFovDegrees(60.f).ResizeWindow(width, height);
 
 	cameraEnt1 = ECS::CreateEntity();
-	auto& camCam = ECS::AttachComponent<Camera>(cameraEnt1);
-	camCam.SetFovDegrees(60.f).ResizeWindow(width, height);
+	ECS::AttachComponent<Camera>(cameraEnt1).SetFovDegrees(60.f).ResizeWindow(width, height);
+
 
 	bodyEnt1 = ECS::CreateEntity();
 	ECS::AttachComponent<PhysBody>(bodyEnt1).Init(bodyEnt1, 0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
 		/*SetGravity(glm::vec3(0)).*/
 		SetRotation(startQuat).GetBody()->setAngularFactor(BLM::BTzero);
 	ECS::GetComponent<PhysBody>(bodyEnt1).GetBody()->setFriction(0);
-	auto& pppp = ECS::AttachComponent<Player>(bodyEnt1).Init(CONUSER::ONE, 1).SetRotation(glm::radians(180.f), 0);
+	ECS::AttachComponent<Player>(bodyEnt1).Init(CONUSER::ONE, 1).SetRotation(glm::radians(180.f), 0);
+
+	Head1 = ECS::CreateEntity();
+	ECS::GetComponent<Transform>(Head1).SetPosition(glm::vec3(0, 0.75f, 0)).ChildTo(bodyEnt1);
+	ECS::GetComponent<Transform>(cameraEnt1).SetPosition(glm::vec3(0, 0, camDistance)).
+		ChildTo(Head1).SetUsingParentScale(false);
+
+
 
 	bodyEnt2 = ECS::CreateEntity();
 	ECS::AttachComponent<PhysBody>(bodyEnt2).Init(bodyEnt2, 0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
@@ -46,15 +48,39 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	ECS::GetComponent<PhysBody>(bodyEnt2).GetBody()->setFriction(0);
 	ECS::AttachComponent<Player>(bodyEnt2).Init(CONUSER::TWO, 1).SetRotation(glm::radians(180.f), 0);
 
-	Head1 = ECS::CreateEntity();
-	ECS::GetComponent<Transform>(Head1).SetPosition(glm::vec3(0, 0.75f, 0)).ChildTo(bodyEnt1);
-	ECS::GetComponent<Transform>(cameraEnt1).SetPosition(glm::vec3(0, 0, camDistance)).
-		ChildTo(Head1).SetUsingParentScale(false);
-
 	Head2 = ECS::CreateEntity();
 	ECS::GetComponent<Transform>(Head2).SetPosition(glm::vec3(0, 0.75f, 0)).ChildTo(bodyEnt2);
 	ECS::GetComponent<Transform>(cameraEnt2).SetPosition(glm::vec3(0, 0, camDistance)).
 		ChildTo(Head2).SetUsingParentScale(false);
+
+
+	bodyEnt3 = ECS::CreateEntity();
+	ECS::AttachComponent<PhysBody>(bodyEnt3).Init(bodyEnt3, 0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
+		/*SetGravity(glm::vec3(0)).*/
+		SetRotation(startQuat).GetBody()->setAngularFactor(BLM::BTzero);
+	ECS::GetComponent<PhysBody>(bodyEnt3).GetBody()->setFriction(0);
+	ECS::AttachComponent<Player>(bodyEnt3).Init(CONUSER::THREE, 1).SetRotation(glm::radians(180.f), 0);
+
+	Head3 = ECS::CreateEntity();
+	ECS::GetComponent<Transform>(Head3).SetPosition(glm::vec3(0, 0.75f, 0)).ChildTo(bodyEnt3);
+	ECS::GetComponent<Transform>(cameraEnt3).SetPosition(glm::vec3(0, 0, camDistance)).
+		ChildTo(Head3).SetUsingParentScale(false);
+
+
+
+	bodyEnt4 = ECS::CreateEntity();
+	ECS::AttachComponent<PhysBody>(bodyEnt4).Init(bodyEnt4, 0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
+		/*SetGravity(glm::vec3(0)).*/
+		SetRotation(startQuat).GetBody()->setAngularFactor(BLM::BTzero);
+	ECS::GetComponent<PhysBody>(bodyEnt4).GetBody()->setFriction(0);
+	ECS::AttachComponent<Player>(bodyEnt4).Init(CONUSER::FOUR, 1).SetRotation(glm::radians(180.f), 0);
+
+	Head4 = ECS::CreateEntity();
+	ECS::GetComponent<Transform>(Head4).SetPosition(glm::vec3(0, 0.75f, 0)).ChildTo(bodyEnt4);
+	ECS::GetComponent<Transform>(cameraEnt4).SetPosition(glm::vec3(0, 0, camDistance)).
+		ChildTo(Head4).SetUsingParentScale(false);
+	
+	
 	{
 		auto entity = ECS::CreateEntity();
 		ECS::AttachComponent<PhysBody>(entity).Init(entity, 0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
@@ -114,6 +140,18 @@ void Tutorial::Update()
 		ECS::GetComponent<PhysBody>(bodyEnt2),
 		ECS::GetComponent<Transform>(Head2),
 		ECS::GetComponent<Transform>(cameraEnt2)
+	);
+
+	ECS::GetComponent<Player>(bodyEnt3).GetInput(
+		ECS::GetComponent<PhysBody>(bodyEnt3),
+		ECS::GetComponent<Transform>(Head3),
+		ECS::GetComponent<Transform>(cameraEnt3)
+	);
+
+	ECS::GetComponent<Player>(bodyEnt4).GetInput(
+		ECS::GetComponent<PhysBody>(bodyEnt4),
+		ECS::GetComponent<Transform>(Head4),
+		ECS::GetComponent<Transform>(cameraEnt4)
 	);
 
 	/*if (Input::GetKeyDown(KEY::FSLASH))	m_colliders.ToggleDraw();

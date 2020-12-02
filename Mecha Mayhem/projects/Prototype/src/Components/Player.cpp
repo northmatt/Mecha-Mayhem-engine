@@ -18,6 +18,7 @@ Sound2D Player::m_shootLaser = {};
 Sound2D Player::m_hitSound = {};
 Sound2D Player::m_swapWeapon = {};
 Sound2D Player::m_walk[5] = {};
+Sound2D Player::m_wiff = {};
 
 Sprite Player::m_healthBarOutline = {};
 Sprite Player::m_healthBar = {};
@@ -40,6 +41,7 @@ void Player::Init(int width, int height)
 	m_walk[3] = { "MetalFloor/4StepNoise.mp3", "walking" };
 	m_walk[4] = { "MetalFloor/5StepNoise.mp3", "walking" };
 	m_walk[0].setGroupVolume(0.1f);
+	m_wiff = { "PunchWiff.mp3", "sfx" };
 
 	m_healthBarOutline = { "healthbar.png", 15.96f, 1.5f };
 	m_healthBar = { glm::vec4(0, 0, 1, 1.f), 14.95f, 0.9f };
@@ -198,6 +200,8 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 				//punch only when on ground
 				//if (m_offhand == OFFHAND::SWORD)	{swing anim}
 
+				m_wiff.play();
+
 				vel.x = 0;
 				vel.z = 0;
 			}
@@ -333,6 +337,7 @@ void Player::UseWeapon(PhysBody& body, Transform& head)
 	switch (m_currWeapon) {
 	case WEAPON::FIST:
 		m_punched = true;
+		m_wiff.play();
 		body.SetVelocity(BLM::BTzero);
 		break;
 	case WEAPON::GUN:

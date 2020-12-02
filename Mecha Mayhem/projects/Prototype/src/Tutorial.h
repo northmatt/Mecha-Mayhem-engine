@@ -20,9 +20,6 @@ public:
 
 private:
 
-	entt::entity Lazer = entt::null;
-	entt::entity Lazer2 = entt::null;
-
 	int width = 0;
 	int height = 0;
 
@@ -36,5 +33,13 @@ private:
 	entt::entity bodyEnt2 = entt::null;
 	entt::entity Head2 = entt::null;
 	entt::entity cameraEnt2 = entt::null;
+
+	entt::entity bodyEnt3 = entt::null;
+	entt::entity Head3 = entt::null;
+	entt::entity cameraEnt3 = entt::null;
+
+	entt::entity bodyEnt4 = entt::null;
+	entt::entity Head4 = entt::null;
+	entt::entity cameraEnt4 = entt::null;
 };
 

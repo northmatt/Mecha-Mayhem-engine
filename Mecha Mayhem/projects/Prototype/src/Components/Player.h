@@ -98,6 +98,7 @@ private:
 	static Sound2D m_hitSound;
 	static Sound2D m_swapWeapon;
 	static Sound2D m_walk[5];
+	static Sound2D m_wiff;
 
 	static Sprite m_healthBarOutline;
 	static Sprite m_healthBar;
