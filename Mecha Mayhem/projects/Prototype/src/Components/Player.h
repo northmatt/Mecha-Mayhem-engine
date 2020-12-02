@@ -13,7 +13,8 @@ public:
 	};
 	enum class OFFHAND {
 		EMPTY,
-		HEALPACK
+		HEALPACK1,
+		HEALPACK2
 	};
 
 	Player() { }
@@ -24,7 +25,11 @@ public:
 	//sets the UI aspect Ratio
 	static void SetUIAspect(int width, int height);
 
+	//camera follow distance
 	static void SetCamDistance(float dist) { m_camDistance = dist; }
+
+	//where to players go when they die?
+	static void SetSkyPos(glm::vec3 pos) { m_skyPos = pos; }
 
 	/*
 	loads with default stats
@@ -36,6 +41,8 @@ public:
 
 	//in radians
 	Player& SetRotation(float y, float x) { m_rot = glm::vec2(x, y); return *this; }
+
+	Player& SetSpawn(const glm::vec3 pos) { m_spawnPos = pos; return *this; }
 
 	//sends the animations to the morph animator, so call before perform draw in morph
 	//if camNum matches the player's number, draw the UI
@@ -51,10 +58,9 @@ public:
 	bool TakeDamage(short dmg) {
 		if (m_health == 0)	return false;
 
-		if ((m_health -= dmg) <= 0) {
+		if (m_health -= dmg <= 0) {
 			m_health = 0;
 			m_respawnTimer = m_respawnDelay;
-			m_charModel.BlendTo(m_charModelIndex + "/death", 0.25f);
 			return true;
 		}
 		return false;
@@ -62,14 +68,14 @@ public:
 
 
 private:
-	void UseWeapon(PhysBody& body);
+	void UseWeapon(PhysBody& body, Transform& head, float offset);
 	void UseHeal();
-	void PickUpWeapon(WEAPON pickup);
-	void PickUpOffhand(OFFHAND pickup);
-	
-	void ShootDash(float width, glm::vec3 pos, glm::quat rotation);
 
-	void updateDash();
+	//returns true if successful
+	bool PickUpWeapon(WEAPON pickup);
+
+	//returns true if successful
+	bool PickUpOffhand(OFFHAND pickup);
 
 	//digit 1 is first digit
 	int GetDigit(int number, int digit) {
@@ -82,31 +88,51 @@ private:
 		return num - (num / 10) * 10;
 	}
 
-	entt::entity Dash = entt::null;
-
 	static const glm::mat4 m_modelOffset;
+	static const glm::vec3 m_gunPos;
+	static glm::vec3 m_skyPos;
 	static Camera m_orthoCam;
 	static constexpr float pi = glm::half_pi<float>() - 0.01f;
 	static float m_camDistance;
 	static float m_dashDistance;
-	static Sound2D shootLaser;
+	static Sound2D m_shootLaser;
+	static Sound2D m_hitSound;
+	static Sound2D m_swapWeapon;
+	static Sound2D m_walk[5];
+	static Sound2D m_wiff;
+
+	static Sprite m_healthBarOutline;
+	static Sprite m_healthBar;
+	static Sprite m_healthBarBack;
+	static Sprite m_dashBarOutline;
+	static Sprite m_dashBar;
+	static Sprite m_dashBarBack;
+	
+	static Sprite m_reticle;
 
 	CONUSER m_user = CONUSER::NONE;
 
-	ObjMorphLoader m_charModel = ObjMorphLoader("char/idle", true);
+	ObjMorphLoader m_charModel = { "char/idle", true };
 
 	std::string m_charModelIndex = "char";
 
 	bool m_drawSelf = true;
 	bool m_grounded = false;
 	bool m_punched = false;
+	bool m_stepped = false;
 
 	short m_maxHealth = 20;
 	short m_health = m_maxHealth;
 	short m_killCount = 0;
 
-	//float m_dashDelay = 30.f;
-	float m_dashDelay = 1.f;
+	short m_currWeaponAmmo = 0;
+	short m_secWeaponAmmo = 100;
+	WEAPON m_currWeapon = WEAPON::FIST;
+	WEAPON m_secWeapon = WEAPON::GUN;
+
+	OFFHAND m_offhand = OFFHAND::EMPTY;
+
+	float m_dashDelay = 0.f;
 	float m_dashTimer = 0.f;
 
 	float m_respawnDelay = 5.f;
@@ -118,20 +144,7 @@ private:
 
 	glm::quat m_startRot = glm::quat(1, 0, 0, 0);
 	glm::vec3 m_spawnPos = glm::vec3(0.f);
+	glm::vec3 m_deathPos = glm::vec3(0.f);
 	glm::vec2 m_rot = glm::vec2(0.f);
-
-	WEAPON m_currWeapon = WEAPON::FIST;
-	WEAPON m_secWeapon = WEAPON::FIST;
-	OFFHAND m_offhand = OFFHAND::EMPTY;
-
-	Sprite m_healthBarOutline{ "healthbar.png", 15.96f, 1.5f };
-	Sprite m_healthBar{ glm::vec4(0, 0, 1, 1.f), 14.95f, 0.9f };
-	Sprite m_healthBarBack{ glm::vec4(0, 0, 0, 1.f), 14.95f, 0.9f };
-
-	Sprite m_dashBarOutline{ "energybar.png", 10.38, 1.5f };
-	Sprite m_dashBar{ glm::vec4(1, 1, 1, 1.f), 9.15f, 0.5f };
-	Sprite m_dashBarBack{ glm::vec4(0, 0, 0, 1.f), 9.15f, 0.5f };
-	//Sprite m_healthBar{ "Diorama Texture.png", 15, 1 };
-	//Sprite m_dashBar{ "Diorama Texture.png", 10, 0.75f };
 };
 

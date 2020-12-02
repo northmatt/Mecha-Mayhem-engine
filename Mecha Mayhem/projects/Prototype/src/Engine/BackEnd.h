@@ -27,19 +27,24 @@ public:
 	static void SetAspect(int width, int height);
 	static float GetAspect() { return _aspect; }
 
+	static bool GetFullscreen() { return fullscreen; }
 	static void SetFullscreen();
 	static void SetTabbed(int width, int height);
 
 	static int GetHalfWidth() { return _lastWidth; }
 	static int GetHalfHeight() { return _lastHeight; }
 
+	static bool HasFocus() { return focus; }
 private:
 	static void GlfwWindowResizedCallback(GLFWwindow* window, int width, int height);
+	static void GlfwWindowFocusCallback(GLFWwindow* window, int result);
 	static GLFWwindow* window;
 	static float _aspect;
 	static float _aspect2;
+	static bool focus;
+	static bool fullscreen;
 	static int _lastHeight;
 	static int _lastWidth;
-	static GLFWmonitor* monitor;
 	static int monitorVec[4];
+	static GLFWmonitor* monitor;
 };

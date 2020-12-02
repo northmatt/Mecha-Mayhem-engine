@@ -56,9 +56,7 @@ public:
 	static void ControllerUpdate();
 
 	static bool GetButton(BUTTON input, CONUSER controllerIndex);
-	//dont work rn, want bit stuff
 	static bool GetButtonDown(BUTTON input, CONUSER controllerIndex);
-	//dont work rn, want bit stuff
 	static bool GetButtonUp(BUTTON input, CONUSER controllerIndex);
 
 	//Left Trigger
@@ -93,8 +91,16 @@ public:
 	static int GetLTDown(CONUSER controllerIndex);
 	//Right Trigger pressed?
 	static int GetRTDown(CONUSER controllerIndex);
+	//Left Trigger let go?
+	static int GetLTUp(CONUSER controllerIndex);
+	//Right Trigger let go?
+	static int GetRTUp(CONUSER controllerIndex);
 
 private:
+	static bool TestCON(CONUSER user) {
+		if (user == CONUSER::NONE)	return true;
+		return !m_controllers[int(user)].connected;
+	}
 
 	struct Controller
 	{
@@ -115,9 +121,8 @@ private:
 		bool bumpers[2] = {};	
 		bool triggers[2] = {};
 
-		//press
-		bool lStick = false;
-		bool rStick = false;
+		//press left/right
+		bool sticks[2] = {};
 	};
 	
 	static Controller m_controllers[XUSER_MAX_COUNT];

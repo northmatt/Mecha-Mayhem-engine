@@ -1,6 +1,5 @@
 #pragma once
 #include "Rendering.h"
-#include "BLM.h"
 #include "Time.h"
 #include "Input.h"
 #include <SoundSystem.h>
@@ -20,15 +19,19 @@ public:
 
 	virtual void Update() {}
 	virtual void Exit() { SoundManager::stopEverything(); }
-	void BackEndUpdate();
+	virtual void BackEndUpdate() final;
+	virtual int ChangeScene(int sceneCount) final;
 
 protected:
 	std::string m_name;
 	short m_camCount = 1;
+	int m_nextScene = -1;
+	bool m_paused = false;
 
 	entt::registry m_reg;
 	btDiscreteDynamicsWorld *m_world = nullptr;
 	HitboxGen m_colliders;
+	Effects m_effects;
 
 	btDbvtBroadphase *_broadphase = new btDbvtBroadphase();
 	btCollisionConfiguration *_collisionConfiguration = new btDefaultCollisionConfiguration();

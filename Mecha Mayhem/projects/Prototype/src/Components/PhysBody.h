@@ -1,5 +1,6 @@
 #pragma once
-#include "Components/Transform.h"
+#include "Transform.h"
+#include "ECS.h"
 
 typedef btCollisionWorld::ClosestRayResultCallback RayResult;
 
@@ -19,13 +20,15 @@ public:
 	bool Changed() { return m_changed; }
 
 	//makes a box
-	PhysBody& Init(int id, float width, float depth, float height, glm::vec3 pos, float mass = 0, bool isDynamic = false);
+	PhysBody& Init(entt::entity id, float width, float depth, float height, const glm::vec3& pos, float mass = 0, bool isDynamic = false);
 	
 	//makes a pill
-	PhysBody& Init(int id, float radius, float height, glm::vec3 pos, float mass = 0, bool isDynamic = false);
+	PhysBody& Init(entt::entity id, float radius, float height, const glm::vec3& pos, float mass = 0, bool isDynamic = false);
 
 	//makes a sphere
-	PhysBody& Init(int id, float radius, glm::vec3 pos, float mass = 0, bool isDynamic = false);
+	PhysBody& Init(entt::entity id, float radius, const glm::vec3& pos, float mass = 0, bool isDynamic = false);
+
+	PhysBody& CreatePlayer(entt::entity id, const glm::quat& startRot, const glm::vec3& pos);
 
 	btRigidBody* GetBody() { return m_body; }
 

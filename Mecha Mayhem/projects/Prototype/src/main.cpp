@@ -1,6 +1,7 @@
 #include "Utilities/Gameloop.h"
 #include "DemoScene.h"
 #include "Tutorial.h"
+#include "MainMenu.h"
 
 int main() {
 	int width = 1280, height = 720;
@@ -10,28 +11,31 @@ int main() {
 	{
 		// Creating demo scenes
 		std::vector<Scene*> scenes;
-		scenes.push_back(new Tutorial("Tutorial", glm::vec3(0, -100, 0)));
-		scenes.push_back(new DemoScene("Demo 2", glm::vec3(0, -100, 0)));
-		 
+		scenes.push_back(new MainMenu("Mecha Mayhem"));
+		scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0)));
+		scenes.push_back(new DemoScene("MM Demo", glm::vec3(0, -100, 0)));
+ 		 
 		scenes[0]->Init(width, height);
 		scenes[1]->Init(width, height);
+		scenes[2]->Init(width, height);
 
-		bool sceneswap = false;
-		Scene* activeScene = scenes[sceneswap]->Reattach();
+		int currScene = 0, count = scenes.size();
+		Scene* activeScene = scenes[0]->Reattach();
 		glfwSetWindowTitle(window, activeScene->GetName().c_str());
 
 		while (!glfwWindowShouldClose(window)) {
 			glfwPollEvents();
+
+			if (!BackEnd::HasFocus())	continue;
+
 			ControllerInput::ControllerRefresh();
-
-			if (Input::GetKey(KEY::LCTRL) && Input::GetKeyUp(KEY::ENTER)) {
-				activeScene->Exit();
-				glfwSetWindowTitle(window, (activeScene = scenes[sceneswap = !sceneswap]->Reattach())->GetName().c_str());
-			}
-
 
 			activeScene->Update();
 
+			if ((currScene = activeScene->ChangeScene(count)) > -1) {
+				activeScene->Exit();
+				glfwSetWindowTitle(window, (activeScene = scenes[currScene]->Reattach())->GetName().c_str());
+			}
 
 			//do not touch plz
 			activeScene->BackEndUpdate();

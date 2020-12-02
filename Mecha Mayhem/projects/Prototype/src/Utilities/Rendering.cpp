@@ -9,12 +9,14 @@ namespace Rendering {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         auto objView = reg->view<ObjLoader, Transform>();
-        auto playerView = reg->view<Player, PhysBody, Transform>();
         auto morphView = reg->view<ObjMorphLoader, Transform>();
+        auto spriteView = reg->view<Sprite, Transform>();
+        auto playerView = reg->view<Player, PhysBody, Transform>();
         auto cameraView = reg->view<Camera, Transform>();
 
         int height = BackEnd::GetHalfHeight();
         int width = BackEnd::GetHalfWidth();
+
         short count = 0;
         for (auto cam : cameraView)
         {
@@ -36,7 +38,12 @@ namespace Rendering {
             camCam.SetPosition(camTrans.GetGlobalPosition()).
                 SetForward(camTrans.GetForwards());
 
+            //reserve some queue size
             ObjLoader::BeginDraw(objView.size());
+            ObjMorphLoader::BeginDraw(morphView.size());
+            //number of ui elements
+            Sprite::BeginDraw(spriteView.size() + 6);
+
 
             //draw all the objs
             objView.each(
@@ -45,32 +52,42 @@ namespace Rendering {
                 }
             );
 
-            if (hitboxes != nullptr) hitboxes->Render();
-
-            ObjLoader::PerformDraw(view, camCam, DefaultColour, LightsPos, LightsColour, LightCount, 1, 4, 0.5f);
-
-            ObjMorphLoader::BeginDraw(morphView.size());
-
-            //draw all the objs
+            //draw all the morph objs
             morphView.each(
                 [&](ObjMorphLoader& obj, Transform& trans) {
-                    if (count == 0)     obj.Update(Time::dt);
+                    if (count == 0) obj.Update(Time::dt);
                     obj.Draw(trans.GetModel());
                 }
             );
 
-            Sprite::BeginDraw(numOfCams * 2);
-
-            //draw all players
-            playerView.each(
-                [&](Player& p, PhysBody& body, Transform& trans) {
-                    if (count == 0)     p.Update(body);
-                    p.Draw(trans.GetModel(), count, numOfCams);
+            glm::mat4 VP = camCam.GetProjection() * view;
+            spriteView.each(
+                [&](Sprite& spr, Transform& trans) {
+                    spr.Draw(VP, trans.GetModel());
                 }
             );
 
-            ObjMorphLoader::PerformDraw(view, camCam, DefaultColour, LightsPos, LightsColour, LightCount, 1, 4, 0.5f);
+            //draw all players
+            int temp = 2;
+            playerView.each(
+                [&](Player& p, PhysBody& body, Transform& trans) {
+                    if (count == 0) p.Update(body);
+                    p.Draw(trans.GetModel(), count, numOfCams);
+                    Rendering::LightsPos[temp++] = trans.GetGlobalPosition();
+                }
+            );
 
+            //draw scene specific stuff
+            if (hitboxes != nullptr) hitboxes->Render();
+            if (effects != nullptr) effects->Render();
+
+            //do all the draws
+            ObjLoader::PerformDraw(view, camCam,
+                DefaultColour, LightsPos, LightsColour, LightCount,
+                1, 4, 0.5f);
+            ObjMorphLoader::PerformDraw(view, camCam,
+                DefaultColour, LightsPos, LightsColour, LightCount,
+                1, 4, 0.5f);
             Sprite::PerformDraw();
 
             //exit even if some cams haven't been checked, because only the amount specified should render
@@ -80,10 +97,20 @@ namespace Rendering {
     }
 
     glm::vec4 BackColour = { 0.2f, 0.2f, 0.2f, 1.f };
-    std::array<glm::vec3, MAX_LIGHTS> LightsColour = { glm::vec3(3.f), glm::vec3(.5f, 0.f, 0.f) };
-    std::array<glm::vec3, MAX_LIGHTS> LightsPos = { glm::vec3(0.f), glm::vec3(100.f, 0.f, 0.f) };
+    std::array<glm::vec3, MAX_LIGHTS> LightsColour = {
+        glm::vec3(1.f),
+        glm::vec3(0.5f, 0.f, 0.f),
+        glm::vec3(0.5f), glm::vec3(0.5f), glm::vec3(0.5f), glm::vec3(0.5f),
+        glm::vec3(0.5f), glm::vec3(0.5f), glm::vec3(0.5f), glm::vec3(0.5f)
+    };
+    std::array<glm::vec3, MAX_LIGHTS> LightsPos = {
+        glm::vec3(0.f, 50.f, 0.f), glm::vec3(0.f, 0.f, 0.f),
+        glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f),
+        glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f)
+    };
     glm::vec3 DefaultColour = glm::vec3(1.f);
-    size_t LightCount = 2;
+    size_t LightCount = 5;
 
     HitboxGen* hitboxes = nullptr;
+    Effects* effects = nullptr;
 }

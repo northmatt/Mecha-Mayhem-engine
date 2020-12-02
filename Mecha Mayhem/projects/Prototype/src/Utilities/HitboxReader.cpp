@@ -1,6 +1,5 @@
 #include "HitboxReader.h"
 #include "Input.h"
-#include "BLM.h"
 
 ObjLoader HitboxGen::m_cube;
 ObjLoader HitboxGen::m_cubeCurrent;

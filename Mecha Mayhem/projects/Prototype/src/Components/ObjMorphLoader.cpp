@@ -39,6 +39,7 @@ ObjMorphLoader::~ObjMorphLoader()
 ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool usingMaterial)
 {
 	m_timer = m_t = m_p0 = 0;
+	m_speed = 1.f;
 	m_vao = nullptr;
 	m_bounce = false;
 	m_loop = false;
@@ -192,7 +193,7 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 						desc.MagnificationFilter = MagFilter::Nearest;
 						desc.Format = InternalFormat::RGBA8;
 						Texture2D::sptr texture = Texture2D::Create(desc);
-						texture->Clear(glm::vec4(0.5f, 0.5f, 0.5f, 1.f));
+						texture->Clear(glm::vec4(0.1f, 0.1f, 0.1f, 1.f));
 						data.texture = Sprite::m_textures.size();
 						Sprite::m_textures.push_back({ textureName, texture });
 					}
@@ -643,16 +644,6 @@ ObjMorphLoader& ObjMorphLoader::ToggleDirection()
 	return *this;
 }
 
-void ObjMorphLoader::BeginDraw(unsigned amt)
-{
-	m_texQueue.resize(0);
-	m_texQueue.reserve(amt);
-	m_matQueue.resize(0);
-	m_matQueue.reserve(amt);
-	m_defaultQueue.resize(0);
-	m_defaultQueue.reserve(amt);
-}
-
 void ObjMorphLoader::Update(float dt)
 {
 	if (!m_enabled)	return;
@@ -837,6 +828,16 @@ void ObjMorphLoader::Update(float dt)
 			m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].spec, spec2Buff);
 		}
 	}
+}
+
+void ObjMorphLoader::BeginDraw(unsigned amt)
+{
+	m_texQueue.resize(0);
+	m_texQueue.reserve(amt);
+	m_matQueue.resize(0);
+	m_matQueue.reserve(amt);
+	m_defaultQueue.resize(0);
+	m_defaultQueue.reserve(amt);
 }
 
 void ObjMorphLoader::Draw(const glm::mat4& model)
