@@ -17,6 +17,8 @@ public:
 		else
 			Player::SetUIAspect(width, height);
 		Player::SetCamDistance(camDistance);
+		Player::SetSkyPos(glm::vec3(0, 50, 0));
+
 		return Scene::Reattach();
 	}
 
