@@ -100,6 +100,8 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 
 	Player::SetUIAspect(width, height);
 	Player::SetCamDistance(camDistance);
+
+	Player::SetSkyPos(glm::vec3(0, 50, -45));
 }
 
 void Tutorial::Update()

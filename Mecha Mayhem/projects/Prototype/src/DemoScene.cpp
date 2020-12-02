@@ -103,6 +103,7 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 
 	Player::SetUIAspect(width, height);
 	Player::SetCamDistance(camDistance);
+	Player::SetSkyPos(glm::vec3(0, 50, 0));
 }
 
 void DemoScene::Update()

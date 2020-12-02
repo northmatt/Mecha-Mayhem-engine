@@ -3,10 +3,6 @@
 #include "Utilities/Rendering.h"
 #include "ECS.h"
 
-
-#include "Utilities/Input.h"
-
-
 float Player::m_camDistance = 5.f;
 float Player::m_dashDistance = 7.5f;
 Camera Player::m_orthoCam = Camera();
@@ -45,7 +41,7 @@ void Player::Init(int width, int height)
 	m_walk[2] = { "MetalFloor/3StepNoise.mp3", "walking" };
 	m_walk[3] = { "MetalFloor/4StepNoise.mp3", "walking" };
 	m_walk[4] = { "MetalFloor/5StepNoise.mp3", "walking" };
-	m_walk[0].setGroupVolume(0.1f);
+	m_walk[0].setGroupVolume(0.25f);
 	m_wiff = { "PunchWiff.mp3", "sfx" };
 
 	m_healthBarOutline = { "healthbar.png", 15.96f, 1.5f };
@@ -139,6 +135,8 @@ void Player::Update(PhysBody& body)
 			m_currWeapon = WEAPON::FIST;
 			m_secWeapon = WEAPON::GUN;
 			m_offhand = OFFHAND::EMPTY;
+			m_currWeaponAmmo = 0.f;
+			m_secWeaponAmmo = 100.f;
 			body.SetPosition(m_spawnPos);
 			body.SetGravity(btVector3(0, -100, 0));
 			body.SetAwake();
