@@ -52,6 +52,8 @@ CatmullFollower::CatmullFollower(float speed, std::vector<glm::vec3> points, int
 
 CatmullFollower& CatmullFollower::Update(float dt)
 {
+	if (m_samples == 0)	return *this;
+
 	m_distance += m_speed * dt;
 	while (m_distance >= m_totalDistance) {
 		m_distance -= m_totalDistance;
@@ -64,6 +66,8 @@ CatmullFollower& CatmullFollower::Update(float dt)
 
 glm::vec3 CatmullFollower::GetPosition()
 {
+	if (m_samples == 0)	return m_position;
+
 	if (m_dirty) {
 		m_dirty = false;
 		return m_position = GetPoint();
@@ -73,6 +77,8 @@ glm::vec3 CatmullFollower::GetPosition()
 
 glm::quat CatmullFollower::GetLookingForwards(float ahead)
 {
+	if (m_samples == 0)	return BLM::GLMQuat;
+
 	return glm::quatLookAt(glm::normalize(GetPoint(ahead) - GetPosition()), BLM::GLMup);
 }
 

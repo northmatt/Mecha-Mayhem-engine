@@ -63,6 +63,8 @@ Sprite& Sprite::Init(const glm::vec4& colour, float width, float height)
 	texture->Clear(colour);
 	m_index = m_textures.size();
 	m_textures.push_back({ tempName, texture });
+
+	return *this;
 }
 
 void Sprite::BeginDraw(unsigned amt)
@@ -80,18 +82,20 @@ void Sprite::Draw(const glm::mat4& VP, const glm::mat4& model)
 
 void Sprite::PerformDraw()
 {
-	m_shader->Bind();
-	m_shader->SetUniform("s_texture", 0);
+	if (m_Queue.size() != 0) {
+		m_shader->Bind();
+		m_shader->SetUniform("s_texture", 0);
 
-	for (int i(0); i < m_Queue.size(); ++i) {
-		m_shader->SetUniformMatrix("MVP", m_Queue[i].MVP);
-		m_textures[m_Queue[i].index].texture->Bind(0);
+		for (int i(0); i < m_Queue.size(); ++i) {
+			m_shader->SetUniformMatrix("MVP", m_Queue[i].MVP);
+			m_textures[m_Queue[i].index].texture->Bind(0);
 
-		m_square->Render();
+			m_square->Render();
+		}
+
+		Shader::UnBind();
+		VertexArrayObject::UnBind();
 	}
-	
-	Shader::UnBind();
-	VertexArrayObject::UnBind();
 }
 
 void Sprite::Init()
