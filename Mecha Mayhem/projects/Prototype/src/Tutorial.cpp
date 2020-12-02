@@ -35,14 +35,14 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	bodyEnt1 = ECS::CreateEntity();
 	ECS::AttachComponent<PhysBody>(bodyEnt1).Init(bodyEnt1, 0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
 		/*SetGravity(glm::vec3(0)).*/
-		SetRotation(startQuat).GetBody()->setAngularFactor(btVector3(0, 0, 0));
+		SetRotation(startQuat).GetBody()->setAngularFactor(BLM::BTzero);
 	ECS::GetComponent<PhysBody>(bodyEnt1).GetBody()->setFriction(0);
 	auto& pppp = ECS::AttachComponent<Player>(bodyEnt1).Init(CONUSER::ONE, 1).SetRotation(glm::radians(180.f), 0);
 
 	bodyEnt2 = ECS::CreateEntity();
 	ECS::AttachComponent<PhysBody>(bodyEnt2).Init(bodyEnt2, 0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
 		/*SetGravity(glm::vec3(0)).*/
-		SetRotation(startQuat).GetBody()->setAngularFactor(btVector3(0, 0, 0));
+		SetRotation(startQuat).GetBody()->setAngularFactor(BLM::BTzero);
 	ECS::GetComponent<PhysBody>(bodyEnt2).GetBody()->setFriction(0);
 	ECS::AttachComponent<Player>(bodyEnt2).Init(CONUSER::TWO, 1).SetRotation(glm::radians(180.f), 0);
 
@@ -58,7 +58,7 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	{
 		auto entity = ECS::CreateEntity();
 		ECS::AttachComponent<PhysBody>(entity).Init(entity, 0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
-			SetPosition(btVector3(-7.5f, 5, -50)).SetRotation(startQuat).GetBody()->setAngularFactor(btVector3(0, 0, 0));
+			SetPosition(btVector3(-7.5f, 5, -50)).SetRotation(startQuat).GetBody()->setAngularFactor(BLM::BTzero);
 		ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 1).SetSpawn(glm::vec3(-7.5f, 5, -50));
 	}
 	{
@@ -84,10 +84,10 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 
 void Tutorial::Update()
 {
-	if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER::ONE)) {
+	if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER::ONE)) {
 		if (ControllerInput::GetButton(BUTTON::RB, CONUSER::ONE)) {
-			if (screen = !screen)	BackEnd::SetTabbed(width, height);
-			else					BackEnd::SetFullscreen();
+			if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
+			else							BackEnd::SetFullscreen();
 		}
 		else {
 			if (++m_camCount > 4)	m_camCount = 1;
@@ -115,9 +115,6 @@ void Tutorial::Update()
 		ECS::GetComponent<Transform>(Head2),
 		ECS::GetComponent<Transform>(cameraEnt2)
 	);
-
-	Rendering::LightsPos[2] = ECS::GetComponent<Transform>(bodyEnt1).ComputeGlobal().GetGlobalPosition();
-	Rendering::LightsPos[3] = ECS::GetComponent<Transform>(bodyEnt2).ComputeGlobal().GetGlobalPosition();
 
 	/*if (Input::GetKeyDown(KEY::FSLASH))	m_colliders.ToggleDraw();
 	m_colliders.Update(Time::dt);

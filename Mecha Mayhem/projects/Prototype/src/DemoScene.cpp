@@ -36,13 +36,13 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 
 	bodyEnt = ECS::CreateEntity();
 	ECS::AttachComponent<PhysBody>(bodyEnt).Init(bodyEnt, 0.5f, 2, glm::vec3(0, 10, 0), 1, true).
-		/*SetGravity(glm::vec3(0)).*/GetBody()->setAngularFactor(btVector3(0, 0, 0));
+		/*SetGravity(glm::vec3(0)).*/GetBody()->setAngularFactor(BLM::BTzero);
 	ECS::GetComponent<PhysBody>(bodyEnt).GetBody()->setFriction(0);
 	ECS::AttachComponent<Player>(bodyEnt).Init(CONUSER::ONE, 1);
 
 	bodyEnt2 = ECS::CreateEntity();
 	ECS::AttachComponent<PhysBody>(bodyEnt2).Init(bodyEnt2, 0.5f, 2, glm::vec3(0, 10, 0), 1, true).
-		/*SetGravity(glm::vec3(0)).*/GetBody()->setAngularFactor(btVector3(0, 0, 0));
+		/*SetGravity(glm::vec3(0)).*/GetBody()->setAngularFactor(BLM::BTzero);
 	ECS::GetComponent<PhysBody>(bodyEnt2).GetBody()->setFriction(0);
 	ECS::AttachComponent<Player>(bodyEnt2).Init(CONUSER::TWO, 1);
 
@@ -130,8 +130,8 @@ void DemoScene::Update()
 
 	if (Input::GetKeyDown(KEY::ESC)) {
 		if (Input::GetKey(KEY::LSHIFT)) {
-			if (screen = !screen)	BackEnd::SetTabbed(width, height);
-			else					BackEnd::SetFullscreen();
+			if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
+			else							BackEnd::SetFullscreen();
 		}
 		else {
 			if (++m_camCount > 4)	m_camCount = 1;
@@ -166,9 +166,6 @@ void DemoScene::Update()
 		ECS::GetComponent<Transform>(P2),
 		ECS::GetComponent<Transform>(cameraEnt2)
 	);
-
-	Rendering::LightsPos[2] = ECS::GetComponent<Transform>(bodyEnt).ComputeGlobal().GetGlobalPosition();
-	Rendering::LightsPos[3] = ECS::GetComponent<Transform>(bodyEnt2).ComputeGlobal().GetGlobalPosition();
 
 	/// End of loop
 	if (Input::GetKeyDown(KEY::FSLASH))	m_colliders.ToggleDraw();

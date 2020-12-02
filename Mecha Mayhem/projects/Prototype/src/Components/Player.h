@@ -100,12 +100,11 @@ private:
 	static Sound2D m_walk[5];
 
 	static Sprite m_healthBarOutline;
+	static Sprite m_healthBar;
 	static Sprite m_healthBarBack;
 	static Sprite m_dashBarOutline;
+	static Sprite m_dashBar;
 	static Sprite m_dashBarBack;
-
-	Sprite m_healthBar = { glm::vec4(0, 0, 1, 1.f), 14.95f, 0.9f };
-	Sprite m_dashBar = { glm::vec4(1, 1, 1, 1.f), 9.15f, 0.5f };
 
 	CONUSER m_user = CONUSER::NONE;
 
@@ -129,7 +128,7 @@ private:
 
 	OFFHAND m_offhand = OFFHAND::EMPTY;
 
-	float m_dashDelay = 1.f;
+	float m_dashDelay = 0.f;
 	float m_dashTimer = 0.f;
 
 	float m_respawnDelay = 5.f;

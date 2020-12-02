@@ -92,7 +92,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 						desc.MagnificationFilter = MagFilter::Nearest;
 						desc.Format = InternalFormat::RGBA8;
 						Texture2D::sptr texture = Texture2D::Create(desc);
-						texture->Clear(glm::vec4(0.5f, 0.5f, 0.5f, 0.75f));
+						texture->Clear(glm::vec4(0.1f, 0.1f, 0.1f, 1.f));
 						m_models[ind].texture = Sprite::m_textures.size();
 						Sprite::m_textures.push_back({ textureName, texture });
 					}

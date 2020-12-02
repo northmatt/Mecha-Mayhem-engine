@@ -20,8 +20,10 @@ Sound2D Player::m_swapWeapon = {};
 Sound2D Player::m_walk[5] = {};
 
 Sprite Player::m_healthBarOutline = {};
+Sprite Player::m_healthBar = {};
 Sprite Player::m_healthBarBack = {};
 Sprite Player::m_dashBarOutline = {};
+Sprite Player::m_dashBar = {};
 Sprite Player::m_dashBarBack = {};
 
 void Player::Init(int width, int height)
@@ -29,6 +31,7 @@ void Player::Init(int width, int height)
 	m_orthoCam.SetOrthoHeight(10).SetPosition(glm::vec3(0, 0, 0)).SetNear(-10).Setfar(10)
 		.SetIsOrtho(true).ResizeWindow(width, height);
 	m_shootLaser = { "laser.mp3", "shooting" };
+	m_shootLaser.setGroupVolume(0.5f);
 	m_hitSound = { "oof.mp4.mp3", "sfx" };
 	m_swapWeapon = { "laser.mp3", "sfx" };
 	m_walk[0] = { "MetalFloor/1StepNoise.mp3", "walking" };
@@ -36,12 +39,14 @@ void Player::Init(int width, int height)
 	m_walk[2] = { "MetalFloor/3StepNoise.mp3", "walking" };
 	m_walk[3] = { "MetalFloor/4StepNoise.mp3", "walking" };
 	m_walk[4] = { "MetalFloor/5StepNoise.mp3", "walking" };
-	m_walk->setGroupVolume(0.25f);
+	m_walk[0].setGroupVolume(0.1f);
 
 	m_healthBarOutline = { "healthbar.png", 15.96f, 1.5f };
+	m_healthBar = { glm::vec4(0, 0, 1, 1.f), 14.95f, 0.9f };
 	m_healthBarBack = { glm::vec4(0, 0, 0, 1.f), 14.95f, 0.9f };
 
 	m_dashBarOutline = { "energybar.png", 10.38, 1.5f };
+	m_dashBar = { glm::vec4(1, 1, 1, 1.f), 9.15f, 0.5f };
 	m_dashBarBack = { glm::vec4(0, 0, 0, 1.f), 9.15f, 0.5f };
 
 	ObjMorphLoader("char/idle", true).LoadMeshs("char/walk", true)
@@ -81,7 +86,7 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams)
 		glm::mat4 VP = m_orthoCam.GetViewProjection();
 
 		m_healthBar.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			7.475f - healthPercent * 7.475f, -8.5f, -9.9f, 1		));
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			(1 - healthPercent) * 7.475f, -8.5f, -9.9f, 1		));
 		m_healthBarBack.Draw(VP, glm::mat4(
 			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -8.5f, -9.8f, 1		));
 		m_dashBar.Draw(VP, glm::mat4(
@@ -106,6 +111,7 @@ void Player::Update(PhysBody& body)
 	m_charModel.Update(Time::dt);
 	//when dead
 	if (m_respawnTimer > 0) {
+		body.SetGravity(BLM::BTzero);
 		m_charModel.BlendTo(m_charModelIndex + "/death", 0.25f);
 		if (m_respawnTimer == m_respawnDelay)
 			m_deathPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
@@ -119,9 +125,11 @@ void Player::Update(PhysBody& body)
 			m_dashTimer = 0.f;
 			m_weaponCooldown = 0.f;
 			m_currWeapon = WEAPON::FIST;
+			m_secWeapon = WEAPON::FIST;
 			m_offhand = OFFHAND::EMPTY;
 			body.SetPosition(m_spawnPos);
 			body.SetGravity(btVector3(0, -100, 0));
+			body.SetAwake();
 		}
 		else {
 			float percent = m_respawnTimer / m_respawnDelay;
@@ -148,8 +156,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 	//dont care if not a player or dead
 	if (m_user == CONUSER::NONE)	return;
 	if (m_health == 0) {
-		body.SetGravity(btVector3(0, 0, 0));
-		body.SetVelocity(btVector3(0, 0, 0));
+		body.SetVelocity(BLM::BTzero);
 		head.SetRotation(glm::quat(-0.71f, 0.71f, 0.f, 0.f));
 		return;
 	}
@@ -326,13 +333,13 @@ void Player::UseWeapon(PhysBody& body, Transform& head)
 	switch (m_currWeapon) {
 	case WEAPON::FIST:
 		m_punched = true;
-		body.SetVelocity(btVector3(0, 0, 0));
+		body.SetVelocity(BLM::BTzero);
 		break;
 	case WEAPON::GUN:
 		//shoot
 		{
 			short damage = 1;
-			m_weaponCooldown = 0.5f;
+			m_weaponCooldown = 0.f;
 			m_shootLaser.play();
 
 			glm::vec3 rayPos = head.ComputeScalessGlobal().GetGlobalPosition();
@@ -348,7 +355,6 @@ void Player::UseWeapon(PhysBody& body, Transform& head)
 						m_hitSound.play();
 					}
 				}
-				p.m_collisionObject->getUserIndex();
 				Rendering::effects->ShootLaser(head.GetGlobalRotation(), rayPos,
 					glm::length(BLM::BTtoGLM(p.m_hitPointWorld) - rayPos));
 			}

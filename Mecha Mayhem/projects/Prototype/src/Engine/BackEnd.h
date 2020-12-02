@@ -27,6 +27,7 @@ public:
 	static void SetAspect(int width, int height);
 	static float GetAspect() { return _aspect; }
 
+	static bool GetFullscreen() { return fullscreen; }
 	static void SetFullscreen();
 	static void SetTabbed(int width, int height);
 
@@ -41,6 +42,7 @@ private:
 	static float _aspect;
 	static float _aspect2;
 	static bool focus;
+	static bool fullscreen;
 	static int _lastHeight;
 	static int _lastWidth;
 	static int monitorVec[4];

@@ -29,9 +29,6 @@ private:
 	float camDistance = 2.5f;
 	glm::quat startQuat = glm::quat(0, 0, 1, 0);
 
-	bool screen = true;
-	bool swap = false;
-
 	entt::entity bodyEnt1 = entt::null;
 	entt::entity Head1 = entt::null;
 	entt::entity cameraEnt1 = entt::null;
