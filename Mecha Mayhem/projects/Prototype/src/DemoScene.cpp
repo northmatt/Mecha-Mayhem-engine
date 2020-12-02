@@ -110,7 +110,7 @@ void DemoScene::Update()
 	/// start of loop
 
 	if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER::ONE)) {
-		m_nextScene = 1;
+		m_nextScene = 0;
 	}
 
 	ECS::GetComponent<Transform>(drone).SetPosition(dronePath.Update(Time::dt).GetPosition()).

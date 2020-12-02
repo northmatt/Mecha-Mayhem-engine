@@ -1,6 +1,7 @@
 #include "Utilities/Gameloop.h"
 #include "DemoScene.h"
 #include "Tutorial.h"
+#include "MainMenu.h"
 
 int main() {
 	int width = 1280, height = 720;
@@ -10,9 +11,9 @@ int main() {
 	{
 		// Creating demo scenes
 		std::vector<Scene*> scenes;
-		scenes.push_back(new Tutorial("Tutorial", glm::vec3(0, -100, 0)));
-		scenes.push_back(new Tutorial("Tutorial 2", glm::vec3(0, -100, 0)));
-		scenes.push_back(new DemoScene("Demo 2", glm::vec3(0, -100, 0)));
+		scenes.push_back(new MainMenu("Mecha Mayhem"));
+		scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0)));
+		scenes.push_back(new DemoScene("MM Demo", glm::vec3(0, -100, 0)));
  		 
 		scenes[0]->Init(width, height);
 		scenes[1]->Init(width, height);
@@ -29,12 +30,12 @@ int main() {
 
 			ControllerInput::ControllerRefresh();
 
+			activeScene->Update();
+
 			if ((currScene = activeScene->ChangeScene(count)) > -1) {
 				activeScene->Exit();
 				glfwSetWindowTitle(window, (activeScene = scenes[currScene]->Reattach())->GetName().c_str());
 			}
-
-			activeScene->Update();
 
 			//do not touch plz
 			activeScene->BackEndUpdate();

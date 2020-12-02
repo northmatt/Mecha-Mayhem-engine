@@ -97,6 +97,10 @@ public:
 	static int GetRTUp(CONUSER controllerIndex);
 
 private:
+	static bool TestCON(CONUSER user) {
+		if (user == CONUSER::NONE)	return true;
+		return !m_controllers[int(user)].connected;
+	}
 
 	struct Controller
 	{

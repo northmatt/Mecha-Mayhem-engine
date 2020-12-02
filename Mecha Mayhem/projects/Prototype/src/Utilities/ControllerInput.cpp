@@ -73,7 +73,7 @@ void ControllerInput::ControllerUpdate()
 
 bool ControllerInput::GetButton(BUTTON input, CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return false;
+	if (TestCON(controllerIndex)) return false;
 
 	return m_controllers[int(controllerIndex)].gamepad.wButtons & SHORT(input);
 
@@ -81,7 +81,7 @@ bool ControllerInput::GetButton(BUTTON input, CONUSER controllerIndex)
 
 bool ControllerInput::GetButtonDown(BUTTON input, CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return false;
+	if (TestCON(controllerIndex)) return false;
 	//look into if statements instead of big switch?
 	switch (input) {
 	case BUTTON::A:	if (m_controllers[int(controllerIndex)].faceButtons[0])		return false;
@@ -123,7 +123,7 @@ bool ControllerInput::GetButtonDown(BUTTON input, CONUSER controllerIndex)
 
 bool ControllerInput::GetButtonUp(BUTTON input, CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return false;
+	if (TestCON(controllerIndex)) return false;
 	//look into if statements instead of big switch?
 	switch (input) {
 	case BUTTON::A:	if (!m_controllers[int(controllerIndex)].faceButtons[0])	return false;
@@ -167,7 +167,7 @@ bool ControllerInput::GetButtonUp(BUTTON input, CONUSER controllerIndex)
 
 float ControllerInput::GetLT(CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	if (TestCON(controllerIndex)) return 0;
 
 	if (m_controllers[int(controllerIndex)].gamepad.bLeftTrigger < XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
 		return 0;
@@ -177,7 +177,7 @@ float ControllerInput::GetLT(CONUSER controllerIndex)
 
 float ControllerInput::GetLX(CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	if (TestCON(controllerIndex)) return 0;
 
 	SHORT value = m_controllers[int(controllerIndex)].gamepad.sThumbLX;
 
@@ -190,7 +190,7 @@ float ControllerInput::GetLX(CONUSER controllerIndex)
 
 float ControllerInput::GetLY(CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	if (TestCON(controllerIndex)) return 0;
 	
 	SHORT value = m_controllers[int(controllerIndex)].gamepad.sThumbLY;
 
@@ -203,7 +203,7 @@ float ControllerInput::GetLY(CONUSER controllerIndex)
 
 float ControllerInput::GetRT(CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	if (TestCON(controllerIndex)) return 0;
 
 	if (m_controllers[int(controllerIndex)].gamepad.bRightTrigger < XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
 		return 0;
@@ -213,7 +213,7 @@ float ControllerInput::GetRT(CONUSER controllerIndex)
 
 float ControllerInput::GetRX(CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	if (TestCON(controllerIndex)) return 0;
 
 	SHORT value = m_controllers[int(controllerIndex)].gamepad.sThumbRX;
 
@@ -226,7 +226,7 @@ float ControllerInput::GetRX(CONUSER controllerIndex)
 
 float ControllerInput::GetRY(CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	if (TestCON(controllerIndex)) return 0;
 	
 	SHORT value = m_controllers[int(controllerIndex)].gamepad.sThumbRY;
 
@@ -241,70 +241,78 @@ float ControllerInput::GetRY(CONUSER controllerIndex)
 
 int ControllerInput::GetLTRaw(CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	if (TestCON(controllerIndex)) return 0;
 
 	return m_controllers[int(controllerIndex)].gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD ? 1 : 0;
 }
 
 int ControllerInput::GetLXRaw(CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	if (TestCON(controllerIndex)) return 0;
+
 	SHORT change = m_controllers[int(controllerIndex)].gamepad.sThumbLX;
 	return change > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE ? 1 : (change < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE ? -1 : 0);
 }
 
 int ControllerInput::GetLYRaw(CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	if (TestCON(controllerIndex)) return 0;
+
 	SHORT change = m_controllers[int(controllerIndex)].gamepad.sThumbLY;
 	return change > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE ? 1 : (change < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE ? -1 : 0);
 }
 
 int ControllerInput::GetRTRaw(CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	if (TestCON(controllerIndex)) return 0;
 
 	return m_controllers[int(controllerIndex)].gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD ? 1 : 0;
 }
 
 int ControllerInput::GetRXRaw(CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	if (TestCON(controllerIndex)) return 0;
+
 	SHORT change = m_controllers[int(controllerIndex)].gamepad.sThumbRX;
 	return change > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE ? 1 : (change < -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE ? -1 : 0);
 }
 
 int ControllerInput::GetRYRaw(CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	if (TestCON(controllerIndex)) return 0;
+
 	SHORT change = m_controllers[int(controllerIndex)].gamepad.sThumbRY;
 	return change > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE ? 1 : (change < -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE ? -1 : 0);
 }
 
 int ControllerInput::GetLTDown(CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected)		return 0;
+	if (TestCON(controllerIndex))		return 0;
+
 	if (m_controllers[int(controllerIndex)].triggers[0])	return 0;
 	return GetLTRaw(controllerIndex);
 }
 
 int ControllerInput::GetRTDown(CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	if (TestCON(controllerIndex)) return 0;
+
 	if (m_controllers[int(controllerIndex)].triggers[1])	return 0;
 	return GetRTRaw(controllerIndex);
 }
 
 int ControllerInput::GetLTUp(CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected)		return 0;
+	if (TestCON(controllerIndex))		return 0;
+
 	if (m_controllers[int(controllerIndex)].triggers[0])	return 0;
 	return GetLTRaw(controllerIndex);
 }
 
 int ControllerInput::GetRTUp(CONUSER controllerIndex)
 {
-	if (!m_controllers[int(controllerIndex)].connected) return 0;
+	if (TestCON(controllerIndex)) return 0;
+
 	if (m_controllers[int(controllerIndex)].triggers[1])	return 0;
 	return GetRTRaw(controllerIndex);
 }
