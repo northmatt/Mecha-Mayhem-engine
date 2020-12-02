@@ -1,10 +1,7 @@
 #pragma once
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/matrix.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 #include "bullet/btBulletDynamicsCommon.h"
+#include "Utilities/BLM.h"
 
 class Transform
 {
@@ -22,6 +19,7 @@ public:
 	bool GetUsingParentScale() { return m_usingParentScale; }
 
 	Transform& ComputeGlobal();
+	Transform& ComputeScalessGlobal();
 	glm::mat4 GetModel();
 	glm::mat4 GetScalessModel();
 
@@ -46,6 +44,7 @@ public:
 	glm::mat3 GetGlobalRotationM3();
 
 	glm::vec3 GetForwards();
+	Transform& LookAt(const glm::vec3 pos);
 
 private:
 	unsigned m_parent = 0;

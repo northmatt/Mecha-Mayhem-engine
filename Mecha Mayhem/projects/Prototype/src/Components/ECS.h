@@ -20,34 +20,41 @@ public:
 	/////	Entity management	/////
 
 	//Create an Entity and return the index, defaults with transform component
-	static unsigned CreateEntity(bool hasTransform = true);
+	static entt::entity CreateEntity(bool hasTransform = true);
 
 	//Delete an entity
-	static void DestroyEntity(unsigned entity);
+	static void DestroyEntity(entt::entity entity);
+
+	//check if the entity is in the registry
+	static bool Exists(entt::entity entity);
 
 	//Attach a class (use the overload plz)
 	template<typename T>
-	static T& AttachComponent(unsigned entity);
+	static T& AttachComponent(entt::entity entity);
 
 	//Attach a class with existing data (use this)
 	template<typename T>
-	static T& AttachComponent(unsigned entity, T object);
+	static T& AttachComponent(entt::entity entity, T object);
 
 	//Remove a class from an entity
 	template<typename T>
-	static void RemoveComponent(unsigned entity);
+	static void RemoveComponent(entt::entity entity);
 
 	//Get the class of an entity
 	template<typename T>
-	static T& GetComponent(unsigned entity);
+	static T& GetComponent(entt::entity entity);
 
-private:
+	//check if entity has component, returns nullptr if failed
+	template<typename T>
+	static bool HasComponent(entt::entity entity);
+
 	static entt::registry* m_registry;
+private:
 	static btDiscreteDynamicsWorld* m_world;
 };
 
 template<typename T>
-inline T& ECS::AttachComponent(unsigned entity)
+inline T& ECS::AttachComponent(entt::entity entity)
 {
 	m_registry->assign<T>(entity);
 
@@ -55,7 +62,7 @@ inline T& ECS::AttachComponent(unsigned entity)
 }
 
 template<typename T>
-inline T& ECS::AttachComponent(unsigned entity, T object)
+inline T& ECS::AttachComponent(entt::entity entity, T object)
 {
 	m_registry->assign<T>(entity);
 
@@ -63,13 +70,19 @@ inline T& ECS::AttachComponent(unsigned entity, T object)
 }
 
 template<typename T>
-inline void ECS::RemoveComponent(unsigned entity)
+inline void ECS::RemoveComponent(entt::entity entity)
 {
 	m_registry->remove<T>(entity);
 }
 
 template<typename T>
-inline T& ECS::GetComponent(unsigned entity)
+inline T& ECS::GetComponent(entt::entity entity)
 {
 	return m_registry->get<T>(entity);
+}
+
+template<typename T>
+inline bool ECS::HasComponent(entt::entity entity)
+{
+	return m_registry->has<T>(entity);
 }

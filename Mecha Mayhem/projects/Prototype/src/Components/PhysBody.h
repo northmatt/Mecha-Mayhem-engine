@@ -1,5 +1,8 @@
 #pragma once
-#include "Components/Transform.h"
+#include "Transform.h"
+#include "ECS.h"
+
+typedef btCollisionWorld::ClosestRayResultCallback RayResult;
 
 class PhysBody
 {
@@ -17,13 +20,15 @@ public:
 	bool Changed() { return m_changed; }
 
 	//makes a box
-	PhysBody& Init(float width, float depth, float height, glm::vec3 pos, float mass = 0, bool isDynamic = false);
+	PhysBody& Init(entt::entity id, float width, float depth, float height, const glm::vec3& pos, float mass = 0, bool isDynamic = false);
 	
 	//makes a pill
-	PhysBody& Init(float radius, float height, glm::vec3 pos, float mass = 0, bool isDynamic = false);
+	PhysBody& Init(entt::entity id, float radius, float height, const glm::vec3& pos, float mass = 0, bool isDynamic = false);
 
 	//makes a sphere
-	PhysBody& Init(float radius, glm::vec3 pos, float mass = 0, bool isDynamic = false);
+	PhysBody& Init(entt::entity id, float radius, const glm::vec3& pos, float mass = 0, bool isDynamic = false);
+
+	PhysBody& CreatePlayer(entt::entity id, const glm::quat& startRot, const glm::vec3& pos);
 
 	btRigidBody* GetBody() { return m_body; }
 
@@ -45,6 +50,11 @@ public:
 
 	//should only be used in Scene.cpp
 	btTransform GetTransform();
+
+	static RayResult GetRaycastResult(btVector3 from, btVector3 to);
+	static btVector3 GetRaycastWithDistanceLimit(glm::vec3 startPos, glm::vec3 look, float limit);
+	static btVector3 GetRaycast(glm::vec3 startPos, glm::vec3 look);
+	btVector3 GetRaycast(glm::vec3 look);
 
 private:
 	btRigidBody* m_body = nullptr;

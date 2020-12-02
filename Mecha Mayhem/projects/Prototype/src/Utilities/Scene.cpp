@@ -39,7 +39,7 @@ void Scene::Init(int windowWidth, int windowHeight)
     }
 
     // for multi cam setup, change the m_camCount variable, and also spawn in reverse order (aka player 1 last)
-    unsigned cameraEnt = ECS::CreateEntity();
+    auto cameraEnt = ECS::CreateEntity();
     auto& camCam = ECS::AttachComponent<Camera>(cameraEnt);
     camCam.SetFovDegrees(60.f).ResizeWindow(windowWidth, windowHeight);
 }
@@ -53,29 +53,28 @@ Scene* Scene::Reattach()
         Rendering::hitboxes = &m_colliders;
     }
 
+    Rendering::effects = &m_effects;
+
     return this;
 }
 
 void Scene::BackEndUpdate()
 {
-    m_dt = glfwGetTime() - m_lastClock;
-    m_lastClock = glfwGetTime();
+    if (!m_paused) {
+        if (m_world != nullptr) {
 
-    if (m_world != nullptr) {
+            m_world->stepSimulation(Time::dt, 10);
 
-        m_world->stepSimulation(m_dt, 10);
-
-        auto physView = m_reg.view<PhysBody, Transform>();
-
-        for (auto entity : physView) {
-
-            auto phys = m_reg.get<PhysBody>(entity);
-
-            if (phys.IsDynamic() || phys.Changed()) {
-                m_reg.get<Transform>(entity).SetTransform(phys.GetTransform());
-            }
+            m_reg.view<PhysBody, Transform>().each(
+                [](PhysBody& phys, Transform& trans) {
+                    if (phys.IsDynamic() || phys.Changed())
+                        trans.SetTransform(phys.GetTransform());
+                }
+            );
         }
     }
+
+    m_effects.Update();
 
     //always render
     if (m_camCount < 1)
@@ -84,4 +83,15 @@ void Scene::BackEndUpdate()
         m_camCount = 4;
 
     Rendering::Update(&m_reg, m_camCount);
+}
+
+int Scene::ChangeScene(int sceneCount)
+{
+    if (m_nextScene >= sceneCount)
+        return -1;
+
+    int nextScene = m_nextScene;
+    m_nextScene = -1;
+
+    return nextScene;
 }

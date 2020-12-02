@@ -1,0 +1,5 @@
+reverse start 1 timer 1
+anim 0 0.5
+anim 1 1
+anim 2 1.25
+anim 3 1.5

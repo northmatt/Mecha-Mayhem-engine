@@ -1,5 +1,6 @@
 #pragma once
 #include "Utilities/Scene.h"
+#include "Utilities/Catmull.h"
 
 class DemoScene : public Scene
 {
@@ -9,23 +10,51 @@ public:
 
 	virtual void Init(int windowWidth, int windowHeight) override;
 	virtual void Update() override;
+	virtual void Exit() override;
+	virtual Scene* Reattach() override {
+		if (m_camCount == 2)
+			Player::SetUIAspect(width / 2.f, height);
+		else
+			Player::SetUIAspect(width, height);
+		Player::SetCamDistance(camDistance);
+		return Scene::Reattach();
+	}
 
 private:
+	CatmullFollower dronePath{ 1, {
+		glm::vec3(-0.5f, 0, -0.5f),
+		glm::vec3(0, 0, 0),
+		glm::vec3(-0.5f, 0, 0.5f),
+		glm::vec3(0, 0, 0),
+		glm::vec3(0.5f, 0, 0.5f),
+		glm::vec3(0, 0, 0),
+		glm::vec3(0.5f, 0, -0.5f),
+		glm::vec3(0, 0, 0)
+	}, 8 };
 
 	int width = 0;
 	int height = 0;
 
-
-	float pi = glm::half_pi<float>() - 0.01f;
+	float camDistance = 2.5f;
 	glm::quat startQuat = glm::quat(-1, 0, 0, 0);
-	glm::vec2 rot = glm::vec2(0.f);
 
-	bool screen = true;
 
-	unsigned cameraEnt = 0;
-	unsigned cameraEnt2 = 0;
-	unsigned bodyEnt = 0;
-	unsigned Dio = 0;
-	unsigned P = 0;
+	entt::entity bodyEnt1 = entt::null;
+	entt::entity Head1 = entt::null;
+	entt::entity cameraEnt1 = entt::null;
+
+	entt::entity bodyEnt2 = entt::null;
+	entt::entity Head2 = entt::null;
+	entt::entity cameraEnt2 = entt::null;
+
+	entt::entity bodyEnt3 = entt::null;
+	entt::entity Head3 = entt::null;
+	entt::entity cameraEnt3 = entt::null;
+
+	entt::entity bodyEnt4 = entt::null;
+	entt::entity Head4 = entt::null;
+	entt::entity cameraEnt4 = entt::null;
+
+	entt::entity drone = entt::null;
 };
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <glfw/glfw3.h>
 
-//in numerical order
+//in numerical order https://www.glfw.org/docs/3.3/group__keys.html
 enum class KEY
 {
 	//32
@@ -26,6 +26,8 @@ enum class KEY
 	SEVEN,
 	EIGHT,
 	NINE,
+
+	SEMICOLON = GLFW_KEY_SEMICOLON,
 
 	//65
 	A = GLFW_KEY_A,
@@ -87,9 +89,9 @@ public:
 	}
 	//returns if the key was just pressed down (on press but not hold)
 	static bool GetKeyDown(KEY key) {
-		if (!pressed[check(int(key))])
-			return glfwGetKey(window, int(key));
-		return false;
+		if (pressed[check(int(key))])
+			return false;
+		return glfwGetKey(window, int(key));
 	}
 	//returns if the key was just released (on release but not lack of input (use !GetKey))
 	static bool GetKeyUp(KEY key) {

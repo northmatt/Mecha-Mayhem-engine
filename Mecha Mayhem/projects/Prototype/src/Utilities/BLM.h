@@ -1,4 +1,8 @@
 #pragma once
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/matrix.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <bullet/LinearMath/btTransform.h>
 #include <glm/common.hpp>
 
@@ -10,7 +14,17 @@ public:
 	static btVector3 GLMtoBT(const glm::vec3& vec);
 	static glm::quat BTtoGLM(const btQuaternion& quat);
 	static btQuaternion GLMtoBT(const glm::quat& quat);
+
+	static const btVector3 BTzero;
+	static const glm::vec3 GLMup;
+	static const glm::vec3 GLMzero;
+	static const glm::quat GLMQuat;
 };
+
+inline const btVector3 BLM::BTzero = btVector3(0, 0, 0);
+inline const glm::vec3 BLM::GLMup = glm::vec3(0, 1, 0);
+inline const glm::vec3 BLM::GLMzero = glm::vec3(0, 0, 0);
+inline const glm::quat BLM::GLMQuat = glm::quat(1.f, 0, 0, 0);
 
 inline glm::vec3 BLM::BTtoGLM(const btVector3& vec)
 {

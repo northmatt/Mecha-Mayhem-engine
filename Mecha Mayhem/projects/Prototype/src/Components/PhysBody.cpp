@@ -1,5 +1,4 @@
 #include "PhysBody.h"
-#include "Utilities/BLM.h"
 
 btAlignedObjectArray<btCollisionShape*> PhysBody::m_collisionShapes = {};
 btDiscreteDynamicsWorld* PhysBody::m_world = nullptr;
@@ -14,7 +13,7 @@ void PhysBody::Unload()
     m_world = nullptr;
 }
 
-PhysBody& PhysBody::Init(float width, float height, float depth, glm::vec3 pos, float mass, bool isDynamic)
+PhysBody& PhysBody::Init(entt::entity id, float width, float height, float depth, const glm::vec3& pos, float mass, bool isDynamic)
 {
     bool shapeExists = false;
     btVector3 dimensions(btScalar(width / 2), btScalar(height / 2), btScalar(depth / 2));
@@ -49,13 +48,14 @@ PhysBody& PhysBody::Init(float width, float height, float depth, glm::vec3 pos, 
     btDefaultMotionState* myMotionState = new btDefaultMotionState(trans);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, boxShape, localInertia);
     m_body = new btRigidBody(rbInfo);
+    m_body->setUserIndex(id);
 
     m_world->addRigidBody(m_body);
 
     return *this;
 }
 
-PhysBody& PhysBody::Init(float radius, float height, glm::vec3 pos, float mass, bool isDynamic)
+PhysBody& PhysBody::Init(entt::entity id, float radius, float height, const glm::vec3& pos, float mass, bool isDynamic)
 {
     bool shapeExists = false;
 
@@ -88,13 +88,14 @@ PhysBody& PhysBody::Init(float radius, float height, glm::vec3 pos, float mass, 
     btDefaultMotionState* myMotionState = new btDefaultMotionState(trans);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, pillShape, localInertia);
     m_body = new btRigidBody(rbInfo);
+    m_body->setUserIndex(id);
 
     m_world->addRigidBody(m_body);
 
     return *this;
 }
 
-PhysBody& PhysBody::Init(float radius, glm::vec3 pos, float mass, bool isDynamic)
+PhysBody& PhysBody::Init(entt::entity id, float radius, const glm::vec3& pos, float mass, bool isDynamic)
 {
     bool shapeExists = false;
 
@@ -127,12 +128,22 @@ PhysBody& PhysBody::Init(float radius, glm::vec3 pos, float mass, bool isDynamic
     btDefaultMotionState* myMotionState = new btDefaultMotionState(trans);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, sphereShape, localInertia);
     m_body = new btRigidBody(rbInfo);
+    m_body->setUserIndex(id);
 
     m_world->addRigidBody(m_body);
 
     return *this;
 }
 
+
+PhysBody& PhysBody::CreatePlayer(entt::entity id, const glm::quat& startRot, const glm::vec3& pos)
+{
+    Init(id, 0.5f, 2, pos, 1, true).SetRotation(startRot);
+    m_body->setAngularFactor(BLM::BTzero);
+    m_body->setFriction(0);
+
+    return *this;
+}
 
 PhysBody& PhysBody::SetGravity(glm::vec3 grav)
 {
@@ -220,3 +231,94 @@ btTransform PhysBody::GetTransform()
 
     return m_body->getWorldTransform();
 }
+
+RayResult PhysBody::GetRaycastResult(btVector3 from, btVector3 to)
+{
+    if (m_world) {
+        RayResult closestResults(from, to);
+
+        m_world->rayTest(from, to, closestResults);
+
+        return closestResults;
+    }
+}
+
+btVector3 PhysBody::GetRaycastWithDistanceLimit(glm::vec3 startPos, glm::vec3 look, float limit)
+{
+    if (m_world)
+    {
+        ///first hit
+        {
+            //player position converstion to bullet vector3
+            btVector3 from = BLM::GLMtoBT(startPos);
+            btVector3 to = BLM::GLMtoBT(look);
+
+            RayResult closestResults = GetRaycastResult(from, to);
+
+            //if it hits it runs this code
+            if (closestResults.hasHit())
+            {
+                //this puts the coordinate in which it hit
+                btVector3 p = closestResults.m_hitPointWorld - from;
+                if (p.length() > limit)
+                    return from.lerp(from + to.normalize(), limit);
+                else
+                    return closestResults.m_hitPointWorld;
+            }
+            else
+            {
+                return from.lerp(from + to.normalize(), limit);
+            }
+        }
+    }
+}
+
+btVector3 PhysBody::GetRaycast(glm::vec3 startPos, glm::vec3 look)
+{
+    if (m_world)
+    {
+        ///first hit
+        {
+            //player position converstion to bullet vector3
+            btVector3 from = BLM::GLMtoBT(startPos);
+            btVector3 to = BLM::GLMtoBT(look);
+
+            RayResult closestResults = GetRaycastResult(from, to);
+
+            //if it hits it runs this code
+            if (closestResults.hasHit())
+            {
+                //this puts the coordinate in which it hit
+                btVector3 p = from.lerp(from + to, closestResults.m_closestHitFraction);
+                return p;
+            }
+        }
+    }
+}
+
+btVector3 PhysBody::GetRaycast(glm::vec3 look)
+{
+    if (m_world)
+    {
+        ///first hit
+        {
+            //player position converstion to bullet vector3
+            btVector3 from = m_body->getWorldTransform().getOrigin();
+            btVector3 to = BLM::GLMtoBT(look);
+
+            RayResult closestResults = GetRaycastResult(from, to);
+
+            //if it hits it runs this code
+            if (closestResults.hasHit())
+            {
+                //this puts the coordinate in which it hit
+                btVector3 p = from.lerp(from + to, closestResults.m_closestHitFraction);
+                return p;
+
+                //debugging purposes
+              //      std::cout << p.x() << "," << p.y() << "," << p.z() << std::endl;
+            }
+        }
+    }
+}
+

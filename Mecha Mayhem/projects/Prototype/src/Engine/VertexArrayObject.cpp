@@ -38,10 +38,10 @@ void VertexArrayObject::AddVertexBuffer(const VertexBuffer::sptr& buffer, const 
 	} else {
 		LOG_ASSERT(buffer->GetElementCount() == _vertexCount, "All buffers bound to a VAO should be of the same size in our implementation!");
 	}
-	VertexBufferBinding binding;
+	/*VertexBufferBinding binding;
 	binding.Buffer = buffer;
 	binding.Attributes = attributes;
-	_vertexBuffers.push_back(binding);
+	_vertexBuffers.push_back(binding);*/
 
 	Bind();
 	buffer->Bind();
