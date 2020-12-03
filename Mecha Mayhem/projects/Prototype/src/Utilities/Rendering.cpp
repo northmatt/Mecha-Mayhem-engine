@@ -73,7 +73,8 @@ namespace Rendering {
                 [&](Player& p, PhysBody& body, Transform& trans) {
                     if (count == 0) p.Update(body);
                     p.Draw(trans.GetModel(), count, numOfCams);
-                    Rendering::LightsPos[temp++] = trans.GetGlobalPosition();
+                    if (p.IsPlayer())
+                        Rendering::LightsPos[temp++] = trans.GetGlobalPosition();
                 }
             );
 
@@ -109,7 +110,7 @@ namespace Rendering {
         glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f)
     };
     glm::vec3 DefaultColour = glm::vec3(1.f);
-    size_t LightCount = 5;
+    size_t LightCount = 6;
 
     HitboxGen* hitboxes = nullptr;
     Effects* effects = nullptr;

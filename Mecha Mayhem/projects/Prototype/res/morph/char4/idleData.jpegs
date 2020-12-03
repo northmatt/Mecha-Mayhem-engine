@@ -1,0 +1,5 @@
+loop start 0 time 0
+anim 0 0.25
+anim 1 0.25
+anim 2 0.25
+anim 3 0.25

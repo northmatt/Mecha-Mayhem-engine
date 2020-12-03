@@ -12,10 +12,21 @@ public:
 	virtual void Update() override;
 	virtual void Exit() override;
 
+	virtual Scene* Reattach() override {
+		m_bg.play();
+
+		return Scene::Reattach();
+	}
+
 private:
 	bool m_exit = false;
 
+	int width = 10;
+	int height = 10;
+
 	float zoomTime = 1;
+
+	Sound2D m_bg = { "MainMenu.mp3", "BG" };
 
 	CatmullFollower cameraPath{ 1, {
 		glm::vec3(-2.5f, 2.5f, 12.5f),
