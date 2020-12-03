@@ -149,7 +149,7 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 			m_p1 = (m_p0 + 1) % data.frameIndices.size();
 	}
 
-	std::vector<Materials> materials;
+	std::vector<Materials> materials = {};
 
 	if (usingMaterial) {
 		std::ifstream materialFile;
@@ -276,11 +276,11 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 		std::vector<glm::vec2> UV = { glm::vec2() };
 		std::vector<glm::vec3> normals = { glm::vec3() };
 
-		std::vector<size_t> bufferVertex;
-		std::vector<size_t> bufferUV;
-		std::vector<size_t> bufferNormals;
+		std::vector<size_t> bufferVertex = {};
+		std::vector<size_t> bufferUV = {};
+		std::vector<size_t> bufferNormals = {};
 
-		std::vector<size_t> bufferColours;	//index of material vector
+		std::vector<size_t> bufferColours = {};	//index of material vector
 
 		// stringStream was learnt throught the NotObjLoader, thank you Shawn once again
 		std::string line;

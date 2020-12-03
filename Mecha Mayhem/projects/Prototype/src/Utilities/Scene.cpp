@@ -14,6 +14,8 @@ Scene::Scene(const std::string& name, const glm::vec3& gravity, bool physics)
 Scene::~Scene()
 {
     Rendering::hitboxes = nullptr;
+    Rendering::effects = nullptr;
+    if (m_world != nullptr)
     delete m_world;
 }
 

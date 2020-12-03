@@ -74,28 +74,40 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	ECS::GetComponent<Transform>(cameraEnt4).SetPosition(glm::vec3(0, 0, camDistance)).
 		ChildTo(Head4).SetUsingParentScale(false);
 	
-	//players
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<PhysBody>(entity).CreatePlayer(entity, startQuat, glm::vec3(0, 1, -12))
+			.GetBody()->setMassProps(0, btVector3(0, -1, 0));
+		ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(2, 1, -59)).SetMaxHealth(5);
+	}
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<PhysBody>(entity).CreatePlayer(entity, startQuat, glm::vec3(0, 2.5f, -20))
+			.GetBody()->setMassProps(0, btVector3(0, -1, 0));
+		ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(-2, 1, -59)).SetMaxHealth(10);
+	}
+	//dummies
 	for (int i(0); i < 3; ++i) {
 		{
 			auto entity = ECS::CreateEntity();
-			ECS::AttachComponent<PhysBody>(entity).Init(entity, 0.5f, 2, glm::vec3(-7.5f, 5, i * 7.5f - 55), 1, true)
-				.SetRotation(startQuat).GetBody()->setAngularFactor(BLM::BTzero);
-			ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(-7.5f, 5, i * 7.5f - 55));
+			ECS::AttachComponent<PhysBody>(entity).CreatePlayer(entity, startQuat, glm::vec3(-7.5f, 1, i * 7.5f - 55))
+				.GetBody()->setMassProps(0, btVector3(0, -1, 0));
+			ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(-7.5f, 1, i * 7.5f - 55));
 		}
 		{
 			auto entity = ECS::CreateEntity();
-			ECS::AttachComponent<PhysBody>(entity).Init(entity, 0.5f, 2, glm::vec3(7.5f, 5, i * 7.5f - 55), 1, true)
-				.SetRotation(startQuat).GetBody()->setAngularFactor(BLM::BTzero);
-			ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(7.5f, 5, i * 7.5f - 55));
+			ECS::AttachComponent<PhysBody>(entity).CreatePlayer(entity, startQuat, glm::vec3(7.5f, 1, i * 7.5f - 55))
+				.GetBody()->setMassProps(0, btVector3(0, -1, 0));
+			ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(7.5f, 1, i * 7.5f - 55));
 		}
 		{
 			auto entity = ECS::CreateEntity();
-			ECS::AttachComponent<Spawner>(entity).Init(1, 5);
+			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
 			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(5.f, 0, i * 7.5f - 55));
 		}
 		{
 			auto entity = ECS::CreateEntity();
-			ECS::AttachComponent<Spawner>(entity).Init(1, 5);
+			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
 			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(-5.f, 0, i * 7.5f - 55));
 		}
 	}
@@ -105,6 +117,33 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 		auto entity = ECS::CreateEntity();
 		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("maps/tutorialMap.obj", true);
 		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, 0, 0));
+	}
+
+	//details
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/light.obj", true);
+		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, 5, 4));
+	}
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/LightDrone.obj", true);
+		lightDrone = entity;
+	}
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/CameraDrone.obj", true);
+		cameraDrone = entity;
+	}
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/SpeakerDrone.obj", true);
+		speakerDrone = entity;
+	}
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<ObjMorphLoader>(entity).LoadMeshs("drone/shield", true);
+		shieldDrone = entity;
 	}
 
 	/// End of creating entities
@@ -168,6 +207,14 @@ void Tutorial::Update()
 		ECS::GetComponent<Transform>(Head4),
 		ECS::GetComponent<Transform>(cameraEnt4)
 	);
+
+
+
+	ECS::GetComponent<Transform>(lightDrone).SetPosition(dronePath.Update(Time::dt).GetPosition()).SetRotation(dronePath.GetLookingForwards(0.5f));
+	ECS::GetComponent<Transform>(cameraDrone).SetPosition(dronePath2.Update(Time::dt).GetPosition()).SetRotation(dronePath2.GetLookingForwards(0.5f));
+	ECS::GetComponent<Transform>(speakerDrone).SetPosition(dronePath3.Update(Time::dt).GetPosition()).SetRotation(dronePath3.GetLookingForwards(0.5f));
+	ECS::GetComponent<Transform>(shieldDrone).SetPosition(dronePath4.Update(Time::dt).GetPosition()).SetRotation(dronePath4.GetLookingForwards(0.5f));
+
 
 	/*if (Input::GetKeyDown(KEY::FSLASH))	m_colliders.ToggleDraw();
 	m_colliders.Update(Time::dt);

@@ -37,6 +37,8 @@ namespace Gameloop
 		ControllerInput::ControllerUpdate();
 		//update the static dt
 		Time::Update(glfwGetTime());
+
+		Player::Update();
 	}
 
 	//stop everything (use at the end to avoid issues)

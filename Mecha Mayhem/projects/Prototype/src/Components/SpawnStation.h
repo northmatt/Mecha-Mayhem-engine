@@ -10,22 +10,15 @@ public:
 		m_spawnerModel = { "spawner/spawner", true };
 		m_radius = radius;
 		m_timer = m_delay = delay;
-		m_currWeapon = Player::WEAPON(rand() % 6 + 1);
 		m_spawnerModel.SetDirection(false);
 	}
 
 	void Render(glm::mat4 model) {
 		
 		if (m_timer == 0) {
-			switch (m_currWeapon) {
-			case Player::WEAPON::CANON:			Player::m_canon.Draw(model * m_gunOffset);		break;
-			case Player::WEAPON::PISTOL:		Player::m_pistol.Draw(model * m_gunOffset);		break;
-			case Player::WEAPON::RIFLE:			Player::m_rifle.Draw(model * m_gunOffset);		break;
-			case Player::WEAPON::SWORD:			Player::m_sword.Draw(model * m_gunOffset);		break;
-			case Player::WEAPON::MACHINEGUN:	Player::m_machineGun.Draw(model * m_gunOffset);	break;
-			case Player::WEAPON::SHOTGUN:		Player::m_shotgun.Draw(model * m_gunOffset);	break;
-			default:							Player::m_pistol.Draw(model * m_gunOffset);		break;
-			}
+			if (m_currWeapon == Player::WEAPON::FIST)
+				Player::GetOffhandModel(Player::OFFHAND::HEALPACK2).Draw(model * m_gunOffset);
+			else			Player::GetWeaponModel(m_currWeapon).Draw(model * m_gunOffset);
 		}
 
 		m_spawnerModel.Draw(model);
@@ -33,12 +26,21 @@ public:
 
 	//return true if colelcted
 	void Update(entt::registry* reg, glm::vec3 pos) {
+		m_spawnerModel.Update(Time::dt);
 		if (m_timer > 0) {
 			m_timer -= Time::dt;
 			if (m_timer <= 0) {
 				m_timer = 0;
-				m_spawnerModel.SetDirection(false);
-				m_currWeapon = Player::WEAPON(rand() % 6 + 1);
+				m_spawnerModel.SetDirection(true);
+				switch (rand() % 7) {
+				case 0:		m_currWeapon = Player::WEAPON::FIST;		break;
+				case 1:		m_currWeapon = Player::WEAPON::PISTOL;		break;
+				case 2:		m_currWeapon = Player::WEAPON::RIFLE;		break;
+				case 3:		m_currWeapon = Player::WEAPON::CANON;		break;
+				case 4:		m_currWeapon = Player::WEAPON::MACHINEGUN;	break;
+				case 5:		m_currWeapon = Player::WEAPON::SHOTGUN;		break;
+				case 6:		m_currWeapon = Player::WEAPON::SWORD;		break;
+				}
 			}
 			return;
 		}
@@ -47,9 +49,15 @@ public:
 			[&](Player& p, PhysBody& body) {
 				if (p.IsPlayer()) {
 					if (body.TestAABB(pos + BLM::GLMup, m_radius)) {
-						if (p.PickUpWeapon(m_currWeapon)) {
+						if (m_currWeapon == Player::WEAPON::FIST) {
+							if (p.PickUpOffhand(Player::OFFHAND::HEALPACK2)) {
+								m_timer = m_delay;
+								m_spawnerModel.SetDirection(false);
+							}
+						}
+						else if (p.PickUpWeapon(m_currWeapon)) {
 							m_timer = m_delay;
-							m_spawnerModel.SetDirection(true);
+							m_spawnerModel.SetDirection(false);
 						}
 					}
 				}
@@ -60,11 +68,11 @@ public:
 private:
 	static const glm::mat4 m_gunOffset;
 
-	ObjMorphLoader m_spawnerModel;
+	ObjMorphLoader m_spawnerModel = {};
 
-	Player::WEAPON m_currWeapon;
+	Player::WEAPON m_currWeapon = Player::WEAPON::FIST;
 
-	float m_radius = 1;
+	float m_radius = 0.5f;
 	float m_timer = 0;
 	float m_delay = 5;
 };

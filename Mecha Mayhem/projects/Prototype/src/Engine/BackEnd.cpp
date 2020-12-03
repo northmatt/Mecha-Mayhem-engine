@@ -56,9 +56,8 @@ void BackEnd::GlfwWindowResizedCallback(GLFWwindow* window, int width, int heigh
 void BackEnd::GlfwWindowFocusCallback(GLFWwindow* window, int result)
 {
 	focus = (result == GLFW_TRUE);
-	if (fullscreen && focus) {
+	if (focus)
 		glfwFocusWindow(window);
-	}
 }
 
 GLFWwindow *BackEnd::window = nullptr;
@@ -138,7 +137,9 @@ void BackEnd::SetFullscreen()
 	glfwMakeContextCurrent(window);
 
 	//go fullscreen on selected monitor
-	glfwSetWindowMonitor(window, monitor, 0, 0, monitorVec[2], monitorVec[3], 60);
+	//glfwSetWindowMonitor(window, monitor, 0, 0, monitorVec[2], monitorVec[3], 60);
+	glfwSetWindowMonitor(window, nullptr, 32, -1, monitorVec[2], monitorVec[3], 60);
+
 	GlfwWindowFocusCallback(window, true);
 }
 

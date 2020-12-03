@@ -1,5 +1,6 @@
 #pragma once
 #include "Utilities/Scene.h"
+#include "Utilities/Catmull.h"
 
 class Tutorial : public Scene
 {
@@ -22,6 +23,44 @@ public:
 
 private:
 
+	CatmullFollower dronePath = { 3, {
+		glm::vec3(0, 7, 0),
+		glm::vec3(1, 7, -5),
+		glm::vec3(4, 7, -10),
+		glm::vec3(2, 9, -30),
+		glm::vec3(0, 9, -50),
+		glm::vec3(-2, 9, -30),
+		glm::vec3(-4, 7, -10),
+		glm::vec3(-1, 7, -5) }, 8
+	};
+	CatmullFollower dronePath2 = { 3, {
+		glm::vec3(2, 9, -30),
+		glm::vec3(0, 9, -50),
+		glm::vec3(-2, 9, -30),
+		glm::vec3(-4, 7, -10),
+		glm::vec3(-1, 7, -5),
+		glm::vec3(0, 7, 0),
+		glm::vec3(1, 7, -5),
+		glm::vec3(4, 7, -10)},8
+	};
+	CatmullFollower dronePath3 = { 3, {
+		glm::vec3(-2, 9, -30),
+		glm::vec3(-4, 7, -10),
+		glm::vec3(0, 7, 0),
+		glm::vec3(1, 7, -5),
+		glm::vec3(4, 7, -10),
+		glm::vec3(-1, 7, -5),
+		glm::vec3(2, 9, -30),
+		glm::vec3(0, 9, -50) },8
+	};
+	CatmullFollower dronePath4 = { 3, {
+		glm::vec3(-1, 5, 1),
+		glm::vec3(1, 5, 1),
+		glm::vec3(1, 5, -1),
+		glm::vec3(-1, 5, -1) },8
+	};
+
+
 	int width = 0;
 	int height = 0;
 
@@ -43,5 +82,10 @@ private:
 	entt::entity bodyEnt4 = entt::null;
 	entt::entity Head4 = entt::null;
 	entt::entity cameraEnt4 = entt::null;
+
+	entt::entity lightDrone = entt::null;
+	entt::entity cameraDrone = entt::null;
+	entt::entity speakerDrone = entt::null;
+	entt::entity shieldDrone = entt::null;
 };
 

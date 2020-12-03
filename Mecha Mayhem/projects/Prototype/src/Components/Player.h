@@ -27,6 +27,9 @@ public:
 	//inits the UI cam as well as lods the player anims
 	static void Init(int width, int height);
 
+	//currently only updates helidrone
+	static void Update();
+
 	//sets the UI aspect Ratio
 	static void SetUIAspect(int width, int height);
 
@@ -35,6 +38,10 @@ public:
 
 	//where to players go when they die?
 	static void SetSkyPos(glm::vec3 pos) { m_skyPos = pos; }
+
+	//get the weapon Obj, returns pistol if empty
+	static ObjLoader GetWeaponModel(WEAPON choice);
+	static ObjMorphLoader& GetOffhandModel(OFFHAND choice);
 
 	/*
 	loads with default stats
@@ -48,6 +55,8 @@ public:
 	Player& SetRotation(float y, float x) { m_rot = glm::vec2(x, y); return *this; }
 
 	Player& SetSpawn(const glm::vec3 pos) { m_spawnPos = pos; return *this; }
+
+	Player& SetMaxHealth(short amt) { m_maxHealth = amt; if (m_health > amt) m_health = amt; return *this; }
 
 	//sends the animations to the morph animator, so call before perform draw in morph
 	//if camNum matches the player's number, draw the UI
@@ -86,14 +95,9 @@ public:
 	//returns true if successful
 	bool PickUpOffhand(OFFHAND pickup);
 
-	static ObjLoader m_pistol;
-	static ObjLoader m_canon;
-	static ObjLoader m_rifle;
-	static ObjLoader m_machineGun;
-	static ObjLoader m_shotgun;
-	static ObjLoader m_sword;
 private:
 	void UseWeapon(PhysBody& body, Transform& head, float offset);
+	void SwapWeapon(bool outOfAmmo = false);
 	void UseHeal();
 	btVector3 Melee(const glm::vec3& pos);
 
@@ -132,10 +136,22 @@ private:
 	static Sprite m_dashBar;
 	static Sprite m_dashBarBack;
 	static Sprite m_reticle;
+	static Sprite m_scoreBack;
+	static Sprite m_digits[10];
 
-	CONUSER m_user = CONUSER::NONE;
+	static ObjLoader m_pistol;
+	static ObjLoader m_canon;
+	static ObjLoader m_rifle;
+	static ObjLoader m_machineGun;
+	static ObjLoader m_shotgun;
+	static ObjLoader m_sword;
+
+	static ObjMorphLoader m_heliDrone;
+	static ObjMorphLoader m_healPack;
 
 	ObjMorphLoader m_charModel = { "char/idle", true };
+
+	CONUSER m_user = CONUSER::NONE;
 
 	std::string m_charModelIndex = "char";
 
