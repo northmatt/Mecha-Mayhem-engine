@@ -13,6 +13,7 @@ namespace Rendering {
         auto spriteView = reg->view<Sprite, Transform>();
         auto playerView = reg->view<Player, PhysBody, Transform>();
         auto cameraView = reg->view<Camera, Transform>();
+        auto spawnerView = reg->view<Spawner, Transform>();
 
         int height = BackEnd::GetHalfHeight();
         int width = BackEnd::GetHalfWidth();
@@ -40,7 +41,7 @@ namespace Rendering {
 
             //reserve some queue size
             ObjLoader::BeginDraw(objView.size());
-            ObjMorphLoader::BeginDraw(morphView.size());
+            ObjMorphLoader::BeginDraw(morphView.size() + spawnerView.size() + playerView.size());
             //number of ui elements
             Sprite::BeginDraw(spriteView.size() + 6);
 
@@ -64,6 +65,13 @@ namespace Rendering {
             spriteView.each(
                 [&](Sprite& spr, Transform& trans) {
                     spr.Draw(VP, trans.GetModel());
+                }
+            );
+
+            spawnerView.each(
+                [&](Spawner& spawn, Transform& trans) {
+                    if (count == 0) spawn.Update(reg, trans.GetGlobalPosition());
+                    spawn.Render(trans.GetModel());
                 }
             );
 

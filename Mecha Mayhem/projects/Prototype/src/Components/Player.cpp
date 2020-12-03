@@ -209,11 +209,6 @@ void Player::Update(PhysBody& body)
 		if (m_weaponCooldown <= 0)
 			m_weaponCooldown = 0;
 	}
-
-	if (body.TestAABB({ 0, 2.5f, -50 }, 30.f) == true)
-		std::cout << "nice\n";
-	else if (body.TestAABB({ 0, 2.5f, -50 }, 45.f) == true)
-		std::cout << "nice2\n";
 }
 
 void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
@@ -261,7 +256,8 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 
 			if (m_punched = ControllerInput::GetButtonDown(BUTTON::X, m_user)) {
 				//punch only when on ground
-				vel = BLM::BTtoGLM(Melee());
+				vel = BLM::BTtoGLM(Melee(BLM::BTtoGLM(body.GetBody()->getWorldTransform().getOrigin())
+					- head.GetForwards()));
 			}
 			else {
 				//ground anims
@@ -403,7 +399,8 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 {
 	switch (m_currWeapon) {
 	case WEAPON::FIST:
-		body.SetVelocity(Melee());
+		body.SetVelocity(BLM::BTtoGLM(Melee(BLM::BTtoGLM(body.GetBody()->getWorldTransform().getOrigin())
+				- head.GetForwards())));
 		break;
 	default:	//break;	for demo, all guns do the same
 	//case WEAPON::PISTOL:
@@ -461,18 +458,24 @@ void Player::UseHeal()
 	}
 }
 
-btVector3 Player::Melee()
+btVector3 Player::Melee(const glm::vec3& pos)
 {
 	m_punched = true;
 
-	//do punch check here
-	//if (m_offhand == OFFHAND::SWORD) {
-	//}
-	//else
+	bool hit = false;
 
-	//m_punch.play();
+	ECS::GetRegistry()->view<Player, PhysBody>().each(
+		[&](Player& p, PhysBody& body) {
+			if (p.m_user != m_user) {
+				if (body.TestAABB(pos, 0.5f)) {
+					p.TakeDamage(1);
+				}
+			}
+		}
+	);
 
-	m_wiff.play();
+	if (hit)	m_punch.play();
+	else		m_wiff.play();
 
 	return BLM::BTzero;
 }

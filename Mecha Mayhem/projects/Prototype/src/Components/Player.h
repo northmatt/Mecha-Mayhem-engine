@@ -63,7 +63,7 @@ public:
 	bool TakeDamage(short dmg) {
 		if (m_health == 0)	return false;
 
-		if (m_health -= dmg <= 0) {
+		if ((m_health -= dmg) <= 0) {
 			m_health = 0;
 			m_respawnTimer = m_respawnDelay;
 			m_deathSound.play();
@@ -80,16 +80,22 @@ public:
 
 	bool IsPlayer() { return m_user != CONUSER::NONE; }
 
-private:
-	void UseWeapon(PhysBody& body, Transform& head, float offset);
-	void UseHeal();
-	btVector3 Melee();
-
 	//returns true if successful
 	bool PickUpWeapon(WEAPON pickup);
 
 	//returns true if successful
 	bool PickUpOffhand(OFFHAND pickup);
+
+	static ObjLoader m_pistol;
+	static ObjLoader m_canon;
+	static ObjLoader m_rifle;
+	static ObjLoader m_machineGun;
+	static ObjLoader m_shotgun;
+	static ObjLoader m_sword;
+private:
+	void UseWeapon(PhysBody& body, Transform& head, float offset);
+	void UseHeal();
+	btVector3 Melee(const glm::vec3& pos);
 
 	//digit 1 is first digit
 	int GetDigit(int number, int digit) {
@@ -108,12 +114,6 @@ private:
 
 	static glm::vec3 m_skyPos;
 	static Camera m_orthoCam;
-	static ObjLoader m_pistol;
-	static ObjLoader m_canon;
-	static ObjLoader m_rifle;
-	static ObjLoader m_machineGun;
-	static ObjLoader m_shotgun;
-	static ObjLoader m_sword;
 	static float m_camDistance;
 	static float m_dashDistance;
 
