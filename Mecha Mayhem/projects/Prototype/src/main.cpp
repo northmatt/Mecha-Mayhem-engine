@@ -23,10 +23,22 @@ int main() {
 		Scene* activeScene = scenes[0]->Reattach();
 		glfwSetWindowTitle(window, activeScene->GetName().c_str());
 
+		bool paused = false;
+
 		while (!glfwWindowShouldClose(window)) {
 			glfwPollEvents();
 
-			if (!BackEnd::HasFocus())	continue;
+			if (!BackEnd::HasFocus()) {
+				if (!paused) {
+					SoundManager::PauseEverything();
+					paused = true;
+				}
+				continue;
+			}
+			else if (paused) {
+				SoundManager::PlayEverything();
+				paused = false;
+			}
 
 			ControllerInput::ControllerRefresh();
 

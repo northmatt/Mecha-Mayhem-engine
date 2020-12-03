@@ -56,6 +56,8 @@ public:
 	static btVector3 GetRaycast(glm::vec3 startPos, glm::vec3 look);
 	btVector3 GetRaycast(glm::vec3 look);
 
+	bool TestAABB(const glm::vec3& pos, const float& radius);
+
 private:
 	btRigidBody* m_body = nullptr;
 	bool m_dynamic = false;

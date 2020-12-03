@@ -13,6 +13,7 @@ namespace Rendering {
         auto spriteView = reg->view<Sprite, Transform>();
         auto playerView = reg->view<Player, PhysBody, Transform>();
         auto cameraView = reg->view<Camera, Transform>();
+        auto spawnerView = reg->view<Spawner, Transform>();
 
         int height = BackEnd::GetHalfHeight();
         int width = BackEnd::GetHalfWidth();
@@ -40,7 +41,7 @@ namespace Rendering {
 
             //reserve some queue size
             ObjLoader::BeginDraw(objView.size());
-            ObjMorphLoader::BeginDraw(morphView.size());
+            ObjMorphLoader::BeginDraw(morphView.size() + spawnerView.size() + playerView.size());
             //number of ui elements
             Sprite::BeginDraw(spriteView.size() + 6);
 
@@ -67,13 +68,21 @@ namespace Rendering {
                 }
             );
 
+            spawnerView.each(
+                [&](Spawner& spawn, Transform& trans) {
+                    if (count == 0) spawn.Update(reg, trans.GetGlobalPosition());
+                    spawn.Render(trans.GetModel());
+                }
+            );
+
             //draw all players
             int temp = 2;
             playerView.each(
                 [&](Player& p, PhysBody& body, Transform& trans) {
                     if (count == 0) p.Update(body);
                     p.Draw(trans.GetModel(), count, numOfCams);
-                    Rendering::LightsPos[temp++] = trans.GetGlobalPosition();
+                    if (p.IsPlayer())
+                        Rendering::LightsPos[temp++] = trans.GetGlobalPosition();
                 }
             );
 
@@ -109,7 +118,7 @@ namespace Rendering {
         glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f)
     };
     glm::vec3 DefaultColour = glm::vec3(1.f);
-    size_t LightCount = 5;
+    size_t LightCount = 6;
 
     HitboxGen* hitboxes = nullptr;
     Effects* effects = nullptr;

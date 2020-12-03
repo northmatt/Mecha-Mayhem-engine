@@ -64,6 +64,9 @@ public:
 	//limit how many sounds playing in a group
 	static void limitGroups(unsigned limit);
 
+	static void PauseEverything();
+	static void PlayEverything();
+
 	//is channel playing
 	static bool isChannelPlaying(unsigned index);
 	//is group playing

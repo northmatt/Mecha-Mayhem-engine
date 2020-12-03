@@ -172,6 +172,17 @@ void SoundManager::limitGroups(unsigned limit)
 	}
 }
 
+void SoundManager::PauseEverything() {
+	for (int x(0); x < _channelGroups.size(); ++x) {
+		_channelGroups[x]->setPaused(true);
+	}
+}
+void SoundManager::PlayEverything() {
+	for (int x(0); x < _channelGroups.size(); ++x) {
+		_channelGroups[x]->setPaused(false);
+	}
+}
+
 bool SoundManager::isChannelPlaying(unsigned index)
 {
 	bool playing = false;

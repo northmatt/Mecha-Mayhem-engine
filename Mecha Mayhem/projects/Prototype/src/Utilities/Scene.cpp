@@ -53,6 +53,8 @@ Scene* Scene::Reattach()
         Rendering::hitboxes = &m_colliders;
     }
 
+    SoundManager::stopEverything();
+
     Rendering::effects = &m_effects;
 
     return this;

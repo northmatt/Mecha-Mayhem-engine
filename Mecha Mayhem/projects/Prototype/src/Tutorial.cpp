@@ -43,7 +43,7 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 
 	bodyEnt2 = ECS::CreateEntity();
 	ECS::AttachComponent<PhysBody>(bodyEnt2).CreatePlayer(bodyEnt2, startQuat, glm::vec3(0, 1.5f, 0));
-	ECS::AttachComponent<Player>(bodyEnt2).Init(CONUSER::TWO, 1).SetRotation(glm::radians(180.f), 0);
+	ECS::AttachComponent<Player>(bodyEnt2).Init(CONUSER::TWO, 2).SetRotation(glm::radians(180.f), 0);
 
 	Head2 = ECS::CreateEntity();
 	ECS::GetComponent<Transform>(Head2).SetPosition(glm::vec3(0, 0.75f, 0)).
@@ -54,7 +54,7 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 
 	bodyEnt3 = ECS::CreateEntity();
 	ECS::AttachComponent<PhysBody>(bodyEnt3).CreatePlayer(bodyEnt3, startQuat, glm::vec3(0, 1.5f, 0));
-	ECS::AttachComponent<Player>(bodyEnt3).Init(CONUSER::THREE, 1).SetRotation(glm::radians(180.f), 0);
+	ECS::AttachComponent<Player>(bodyEnt3).Init(CONUSER::THREE, 3).SetRotation(glm::radians(180.f), 0);
 
 	Head3 = ECS::CreateEntity();
 	ECS::GetComponent<Transform>(Head3).SetPosition(glm::vec3(0, 0.75f, 0)).
@@ -66,7 +66,7 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 
 	bodyEnt4 = ECS::CreateEntity();
 	ECS::AttachComponent<PhysBody>(bodyEnt4).CreatePlayer(bodyEnt4, startQuat, glm::vec3(0, 1.5f, 0));
-	ECS::AttachComponent<Player>(bodyEnt4).Init(CONUSER::FOUR, 1).SetRotation(glm::radians(180.f), 0);
+	ECS::AttachComponent<Player>(bodyEnt4).Init(CONUSER::FOUR, 4).SetRotation(glm::radians(180.f), 0);
 
 	Head4 = ECS::CreateEntity();
 	ECS::GetComponent<Transform>(Head4).SetPosition(glm::vec3(0, 0.75f, 0)).
@@ -74,23 +74,37 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	ECS::GetComponent<Transform>(cameraEnt4).SetPosition(glm::vec3(0, 0, camDistance)).
 		ChildTo(Head4).SetUsingParentScale(false);
 	
-	
-	{
-		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<PhysBody>(entity).Init(entity, 0.5f, 2, glm::vec3(0, 1.5f, 0), 1, true).
-			SetPosition(btVector3(-7.5f, 5, -50)).SetRotation(startQuat).GetBody()->setAngularFactor(BLM::BTzero);
-		ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 1).SetSpawn(glm::vec3(-7.5f, 5, -50));
+	//players
+	for (int i(0); i < 3; ++i) {
+		{
+			auto entity = ECS::CreateEntity();
+			ECS::AttachComponent<PhysBody>(entity).Init(entity, 0.5f, 2, glm::vec3(-7.5f, 5, i * 7.5f - 55), 1, true)
+				.SetRotation(startQuat).GetBody()->setAngularFactor(BLM::BTzero);
+			ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(-7.5f, 5, i * 7.5f - 55));
+		}
+		{
+			auto entity = ECS::CreateEntity();
+			ECS::AttachComponent<PhysBody>(entity).Init(entity, 0.5f, 2, glm::vec3(7.5f, 5, i * 7.5f - 55), 1, true)
+				.SetRotation(startQuat).GetBody()->setAngularFactor(BLM::BTzero);
+			ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(7.5f, 5, i * 7.5f - 55));
+		}
+		{
+			auto entity = ECS::CreateEntity();
+			ECS::AttachComponent<Spawner>(entity).Init(1, 5);
+			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(5.f, 0, i * 7.5f - 55));
+		}
+		{
+			auto entity = ECS::CreateEntity();
+			ECS::AttachComponent<Spawner>(entity).Init(1, 5);
+			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(-5.f, 0, i * 7.5f - 55));
+		}
 	}
+
+	//map
 	{
 		auto entity = ECS::CreateEntity();
 		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("maps/tutorialMap.obj", true);
 		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, 0, 0));
-	}
-
-	{
-		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<ObjMorphLoader>(entity).LoadMeshs("title", true);
-		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, 2.5f, -50)).SetScale(2.f);
 	}
 
 	/// End of creating entities
@@ -108,7 +122,9 @@ void Tutorial::Update()
 {
 	if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER::ONE)) {
 		m_nextScene = 2;
+		return;
 	}
+
 	if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER::ONE)) {
 		if (ControllerInput::GetButton(BUTTON::RB, CONUSER::ONE)) {
 			if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);

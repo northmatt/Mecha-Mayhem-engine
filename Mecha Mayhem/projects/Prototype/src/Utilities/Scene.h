@@ -18,7 +18,7 @@ public:
 	virtual Scene* Reattach();
 
 	virtual void Update() {}
-	virtual void Exit() { SoundManager::stopEverything(); }
+	virtual void Exit() {}
 	virtual void BackEndUpdate() final;
 	virtual int ChangeScene(int sceneCount) final;
 

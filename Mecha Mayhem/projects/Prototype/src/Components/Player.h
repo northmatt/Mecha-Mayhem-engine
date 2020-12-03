@@ -9,7 +9,12 @@ class Player
 public:
 	enum class WEAPON {
 		FIST,
-		GUN
+		PISTOL,
+		RIFLE,
+		CANON,
+		MACHINEGUN,
+		SHOTGUN,
+		SWORD
 	};
 	enum class OFFHAND {
 		EMPTY,
@@ -58,24 +63,39 @@ public:
 	bool TakeDamage(short dmg) {
 		if (m_health == 0)	return false;
 
-		if (m_health -= dmg <= 0) {
+		if ((m_health -= dmg) <= 0) {
 			m_health = 0;
 			m_respawnTimer = m_respawnDelay;
+			m_deathSound.play();
+			m_currWeapon = WEAPON::FIST;
+			m_secWeapon = WEAPON::FIST;
+			m_currWeaponAmmo = 0;
+			m_secWeaponAmmo = 0;
+			m_offhand = OFFHAND::EMPTY;
 			return true;
 		}
+		m_hitSound.play();
 		return false;
 	}
 
-
-private:
-	void UseWeapon(PhysBody& body, Transform& head, float offset);
-	void UseHeal();
+	bool IsPlayer() { return m_user != CONUSER::NONE; }
 
 	//returns true if successful
 	bool PickUpWeapon(WEAPON pickup);
 
 	//returns true if successful
 	bool PickUpOffhand(OFFHAND pickup);
+
+	static ObjLoader m_pistol;
+	static ObjLoader m_canon;
+	static ObjLoader m_rifle;
+	static ObjLoader m_machineGun;
+	static ObjLoader m_shotgun;
+	static ObjLoader m_sword;
+private:
+	void UseWeapon(PhysBody& body, Transform& head, float offset);
+	void UseHeal();
+	btVector3 Melee(const glm::vec3& pos);
 
 	//digit 1 is first digit
 	int GetDigit(int number, int digit) {
@@ -89,17 +109,21 @@ private:
 	}
 
 	static const glm::mat4 m_modelOffset;
-	static const glm::vec3 m_gunPos;
+	static const glm::mat4 m_gunOffset;
+	static constexpr float pi = glm::half_pi<float>() - 0.01f;
+
 	static glm::vec3 m_skyPos;
 	static Camera m_orthoCam;
-	static constexpr float pi = glm::half_pi<float>() - 0.01f;
 	static float m_camDistance;
 	static float m_dashDistance;
+
 	static Sound2D m_shootLaser;
 	static Sound2D m_hitSound;
+	static Sound2D m_deathSound;
 	static Sound2D m_swapWeapon;
 	static Sound2D m_walk[5];
 	static Sound2D m_wiff;
+	static Sound2D m_punch;
 
 	static Sprite m_healthBarOutline;
 	static Sprite m_healthBar;
@@ -107,7 +131,6 @@ private:
 	static Sprite m_dashBarOutline;
 	static Sprite m_dashBar;
 	static Sprite m_dashBarBack;
-	
 	static Sprite m_reticle;
 
 	CONUSER m_user = CONUSER::NONE;
@@ -126,13 +149,13 @@ private:
 	short m_killCount = 0;
 
 	short m_currWeaponAmmo = 0;
-	short m_secWeaponAmmo = 100;
+	short m_secWeaponAmmo = 0;
 	WEAPON m_currWeapon = WEAPON::FIST;
-	WEAPON m_secWeapon = WEAPON::GUN;
+	WEAPON m_secWeapon = WEAPON::FIST;
 
 	OFFHAND m_offhand = OFFHAND::EMPTY;
 
-	float m_dashDelay = 0.f;
+	float m_dashDelay = 1.f;
 	float m_dashTimer = 0.f;
 
 	float m_respawnDelay = 5.f;
