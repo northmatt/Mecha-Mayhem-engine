@@ -209,6 +209,11 @@ void Player::Update(PhysBody& body)
 		if (m_weaponCooldown <= 0)
 			m_weaponCooldown = 0;
 	}
+
+	if (body.TestAABB({ 0, 2.5f, -50 }, 30.f) == true)
+		std::cout << "nice\n";
+	else if (body.TestAABB({ 0, 2.5f, -50 }, 45.f) == true)
+		std::cout << "nice2\n";
 }
 
 void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)

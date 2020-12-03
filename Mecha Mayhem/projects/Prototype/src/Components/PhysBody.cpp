@@ -322,3 +322,25 @@ btVector3 PhysBody::GetRaycast(glm::vec3 look)
     }
 }
 
+bool PhysBody::TestAABB(const glm::vec3& pos, const float& radius)
+{
+    btVector3 m_bod_min, m_bod_max;
+    m_body->getAabb(m_bod_min, m_bod_max);
+
+    btVector3 bod_min = { pos.x - radius, pos.y - radius, pos.z - radius };
+    btVector3 bod_max = { pos.x + radius, pos.y + radius, pos.z + radius };
+
+    if (TestAabbAgainstAabb2(m_bod_min, m_bod_max, bod_min, bod_max) == false)
+        return false;
+
+    btVector3 dir = btVector3(std::clamp(pos.x, m_bod_min[0], m_bod_max[0]), std::clamp(pos.y, m_bod_min[1], m_bod_max[1]), std::clamp(pos.z, m_bod_min[2], m_bod_max[2])) - BLM::GLMtoBT(pos);
+    float dirLen = dir.length2();
+
+    //cap ||direction|| to explosionRaduis
+    if (dirLen > radius)
+        dir *= radius / dirLen;
+
+    //is in radius (test if [pos + direction] is in test2 AABB)
+    return TestPointAgainstAabb2(m_bod_min, m_bod_max, BLM::GLMtoBT(pos) + dir);
+}
+
