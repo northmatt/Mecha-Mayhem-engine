@@ -661,7 +661,10 @@ void ObjMorphLoader::Update(float dt)
 					m_timer -= data2.durations[m_p0];
 					m_indexHold = INT_MAX;
 					size_t p0 = m_p1;
-					m_p1 = (m_p0 = m_p0Hold) - 1;
+					if ((m_p0 = m_p0Hold) > 0)
+						m_p1 = m_p0 - 1;
+					else
+						m_p1 = data.frames.size() - 1;
 
 					m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].pos, pos1Buff);
 					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].pos, pos2Buff);
@@ -682,7 +685,7 @@ void ObjMorphLoader::Update(float dt)
 					m_timer -= data2.durations[m_p1];
 					m_indexHold = INT_MAX;
 					size_t p0 = m_p1;
-					m_p1 = (m_p0 = m_p0Hold) + 1;
+					m_p1 = ((m_p0 = m_p0Hold) + 1) % data.frames.size();
 
 					m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].pos, pos1Buff);
 					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].pos, pos2Buff);
@@ -774,7 +777,7 @@ void ObjMorphLoader::Update(float dt)
 			else
 				m_t = m_timer / data.durations[m_p1];
 
-			if (m_t > 1)
+			if (m_t >= 1)
 				m_t = 1;
 		}
 	}

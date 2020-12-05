@@ -441,7 +441,7 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 	//case WEAPON::PISTOL:
 		//shoot
 		{
-			short damage = 1;
+			short damage = 3;
 			m_weaponCooldown = 0.25f;
 			m_shootLaser.play();
 
@@ -520,8 +520,9 @@ btVector3 Player::Melee(const glm::vec3& pos)
 	ECS::GetRegistry()->view<Player, PhysBody>().each(
 		[&](Player& p, PhysBody& body) {
 			if (p.m_user != m_user) if (body.TestAABB(pos, 0.5f)) {
-				if (p.TakeDamage(1))
+				if (p.TakeDamage(2))
 					++m_killCount;
+				hit = true;
 			}
 		}
 	);

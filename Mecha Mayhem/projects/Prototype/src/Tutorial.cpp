@@ -78,13 +78,18 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 		auto entity = ECS::CreateEntity();
 		ECS::AttachComponent<PhysBody>(entity).CreatePlayer(entity, startQuat, glm::vec3(0, 1, -12))
 			.GetBody()->setMassProps(0, btVector3(0, -1, 0));
-		ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(2, 1, -59)).SetMaxHealth(5);
+		ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(4, 1, -59)).SetMaxHealth(5);
 	}
 	{
 		auto entity = ECS::CreateEntity();
 		ECS::AttachComponent<PhysBody>(entity).CreatePlayer(entity, startQuat, glm::vec3(0, 2.5f, -20))
 			.GetBody()->setMassProps(0, btVector3(0, -1, 0));
-		ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(-2, 1, -59)).SetMaxHealth(10);
+		ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(-4, 1, -59)).SetMaxHealth(10);
+	}
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
+		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, 0, -18));
 	}
 	//dummies
 	for (int i(0); i < 3; ++i) {

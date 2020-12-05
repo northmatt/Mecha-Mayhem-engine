@@ -27,6 +27,9 @@ public:
 	//inits the UI cam as well as lods the player anims
 	static void Init(int width, int height);
 
+	//deletes the static objs
+	static void Unload();
+
 	//currently only updates helidrone
 	static void Update();
 
@@ -149,7 +152,7 @@ private:
 	static ObjMorphLoader m_heliDrone;
 	static ObjMorphLoader m_healPack;
 
-	ObjMorphLoader m_charModel = { "char/idle", true };
+	ObjMorphLoader m_charModel = {};
 
 	CONUSER m_user = CONUSER::NONE;
 

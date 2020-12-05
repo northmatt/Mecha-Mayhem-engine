@@ -81,13 +81,29 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/cringe.obj", true);
 		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, -30, 0)).SetScale(4.f);
 	}
-
 	{
 		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<ObjMorphLoader>(entity).LoadMeshs("spawner/spawner", true).SetBounce(true);
-		ECS::GetComponent<Transform>(entity).SetPosition(
-			glm::vec3(20.4755f, -6.89454f + 8.85118f/2.f, 21.7629f)
-		).SetScale(1.25f);
+		ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
+		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0,
+			-23.5914, -5));
+	}
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
+		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0,
+			-23.5914, -8));
+	}
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
+		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(3,
+			-23.5914, -5));
+	}
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
+		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(3,
+			-23.5914, -8));
 	}
 
 	/// End of creating entities
