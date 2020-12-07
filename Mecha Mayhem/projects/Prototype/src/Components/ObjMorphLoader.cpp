@@ -128,7 +128,7 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 				else if (input == "t") {
 					ss >> m_t;
 				}
-				else if (input == "timer") {
+				else if (input == "time") {
 					ss >> m_timer;
 				}
 			}

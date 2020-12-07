@@ -327,7 +327,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 			m_charModel.BlendTo(m_charModelIndex + "/air");
 		}
 
-		//only do other input check if not moving
+		//only do other input check if not punching
 		if (!m_punched) {
 			if (ControllerInput::GetButtonDown(BUTTON::B, m_user)) {
 				UseHeal();
@@ -335,7 +335,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 					TakeDamage(1);
 			}
 
-			//dash if moving
+			//dash if moving and velocity adjustment
 			if (vel.x != 0 || vel.z != 0) {
 				glm::vec3 normalized = glm::normalize(glm::vec3(vel.x, 0, vel.z));
 				float percent = std::max(fabsf(vel.x), fabsf(vel.z));

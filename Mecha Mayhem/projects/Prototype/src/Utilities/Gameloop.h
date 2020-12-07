@@ -51,6 +51,7 @@ namespace Gameloop
 		ObjLoader::Unload();
 		ObjMorphLoader::Unload();
 		Sprite::Unload();
+		Effects::Unload();
 
 		SoundManager::stopEverything();
 
