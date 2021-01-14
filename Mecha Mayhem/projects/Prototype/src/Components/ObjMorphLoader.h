@@ -16,18 +16,18 @@ public:
 
 	static void Init();
 	static void Unload();
+
+	bool IsDone() { return (m_t == 1) && !m_loop && !m_bounce; }
+	size_t Getp0() { return m_p0; }
+	size_t Getp1() { return m_p1; }
+
+	bool IsAnim(const std::string& test) { return m_anims[m_index].fileName == test; }
 	
 	ObjMorphLoader& SetDirection(bool forwards) {
 		if (m_reversing == forwards)
 			ToggleDirection();
 		return *this;
 	}
-
-	bool IsDone() { return (m_t == 1) && !m_loop; }
-	size_t Getp0() { return m_p0; }
-	size_t Getp1() { return m_p1; }
-
-	bool IsAnim(const std::string& test) { return m_anims[m_index].fileName == test; }
 
 	//returns true if moving forwards
 	bool GetDirection() { return !m_reversing; }
@@ -58,7 +58,11 @@ public:
 		return *this;
 	}
 
-	ObjMorphLoader& SetSpeed(float speed) { m_speed = speed; return *this; }
+	ObjMorphLoader& SetSpeed(float speed) {
+		m_speed = speed;
+		return *this;
+	}
+
 	float GetSpeed() { return m_speed; }
 
 	void Update(float dt);
@@ -93,12 +97,12 @@ private:
 		bool loop = false;
 		bool reversing = false;
 		float startTime = 0;
+		float t = 0;
+		size_t start = 0;
+		size_t texture = INT_MAX;
 		std::vector<float> durations = {};
 		std::vector<size_t> frameIndices = {};
 		std::vector<Frames> frames = {};
-		size_t start = 0;
-		size_t t = 0;
-		size_t texture = INT_MAX;
 		VertexBuffer::sptr UVs = nullptr;
 	};
 

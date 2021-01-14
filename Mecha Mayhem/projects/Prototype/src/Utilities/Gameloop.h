@@ -21,8 +21,8 @@ namespace Gameloop
 
 		Input::Init(window);
 		HitboxGen::Init();
-		Effects::Init();
-		Player::Init(width, height);
+		//Effects::Init();
+		//Player::Init(width, height);
 
 		return window;
 	}
@@ -38,7 +38,7 @@ namespace Gameloop
 		//update the static dt
 		Time::Update(glfwGetTime());
 
-		Player::Update();
+		//Player::Update();
 	}
 
 	//stop everything (use at the end to avoid issues)

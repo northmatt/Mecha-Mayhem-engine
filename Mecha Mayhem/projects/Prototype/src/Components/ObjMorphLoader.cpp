@@ -534,8 +534,8 @@ void ObjMorphLoader::BlendTo(const std::string& baseFileName, float delay, int f
 	bool dupt = false;
 	for (int i(0); i < m_anims.size(); ++i) {
 		if (m_anims[i].fileName == baseFileName && m_anims[i].mat == data.mat) {
-			if (m_anims[i].frames[0].pos->GetElementCount() == data.frames[0].pos->GetElementCount() &&
-				m_anims[i].frameIndices.size() > frame) {
+			if (m_anims[i].frames[0].pos->GetElementCount() == data.frames[0].pos->GetElementCount()
+				&& m_anims[i].frameIndices.size() > frame) {
 				dupt = true;
 				break;
 			}
@@ -667,14 +667,14 @@ void ObjMorphLoader::Update(float dt)
 						m_p1 = data.frames.size() - 1;
 
 					m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].pos, pos1Buff);
-					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].pos, pos2Buff);
+					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].pos, pos2Buff);
 					m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].normal, norm1Buff);
-					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].normal, norm2Buff);
+					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].normal, norm2Buff);
 					if (data.mat) {
 						m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].colour, col1Buff);
-						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].colour, col2Buff);
+						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].colour, col2Buff);
 						m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].spec, spec1Buff);
-						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].spec, spec2Buff);
+						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].spec, spec2Buff);
 					}
 				}
 				else
@@ -688,14 +688,14 @@ void ObjMorphLoader::Update(float dt)
 					m_p1 = ((m_p0 = m_p0Hold) + 1) % data.frames.size();
 
 					m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].pos, pos1Buff);
-					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].pos, pos2Buff);
+					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].pos, pos2Buff);
 					m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].normal, norm1Buff);
-					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].normal, norm2Buff);
+					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].normal, norm2Buff);
 					if (data.mat) {
 						m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].colour, col1Buff);
-						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].colour, col2Buff);
+						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].colour, col2Buff);
 						m_vao->AddVertexBuffer(data2.frames[data2.frameIndices[p0]].spec, spec1Buff);
-						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].spec, spec2Buff);
+						m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].spec, spec2Buff);
 					}
 				}
 				else
@@ -709,14 +709,6 @@ void ObjMorphLoader::Update(float dt)
 			if (m_reversing) {
 				if (m_timer >= m_transitionSpeed) {
 					m_timer -= m_transitionSpeed;
-					m_p1 = (m_p0 = m_p1) - 1;
-					if (m_p0 == 0) {
-						if (m_bounce) {
-							m_reversing = false;
-							m_p1 = 1;
-						}
-						else	m_p1 = data.durations.size() - 1;
-					}
 					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].pos, pos1Buff);
 					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].pos, pos2Buff);
 					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].normal, norm1Buff);
@@ -737,14 +729,6 @@ void ObjMorphLoader::Update(float dt)
 			else {
 				if (m_timer >= m_transitionSpeed) {
 					m_timer -= m_transitionSpeed;
-					m_p1 = (m_p0 = m_p1) + 1;
-					if (m_p1 == data.durations.size()) {
-						if (m_bounce) {
-							m_reversing = true;
-							m_p1 = m_p0 - 1;
-						}
-						else	m_p1 = 0;
-					}
 					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].pos, pos1Buff);
 					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].pos, pos2Buff);
 					m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].normal, norm1Buff);
