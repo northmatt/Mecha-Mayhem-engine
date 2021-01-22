@@ -107,12 +107,12 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 		}
 		{
 			auto entity = ECS::CreateEntity();
-			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
+			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 20.5f);
 			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(5.f, 0, i * 7.5f - 55));
 		}
 		{
 			auto entity = ECS::CreateEntity();
-			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
+			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 20.5f);
 			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(-5.f, 0, i * 7.5f - 55));
 		}
 	}
@@ -160,19 +160,16 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	Player::SetCamDistance(camDistance);
 
 	Player::SetSkyPos(glm::vec3(0, 50, -45));
+
+	m_pauseSprite = Sprite(glm::vec4(1, 0, 0, 1), 3, 3);
 }
 
 void Tutorial::Update()
 {
 	if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER::ONE)) {
-		m_nextScene = 2;
-		return;
-	}
-
-	if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER::ONE)) {
 		if (ControllerInput::GetButton(BUTTON::RB, CONUSER::ONE)) {
-			if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
-			else							BackEnd::SetFullscreen();
+			m_nextScene = 2;
+			return;
 		}
 		else {
 			if (++m_camCount > 4)	m_camCount = 1;
@@ -189,31 +186,79 @@ void Tutorial::Update()
 		}
 	}
 
-	ECS::GetComponent<Player>(bodyEnt1).GetInput(
+	if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER::ONE)) {
+		if (ControllerInput::GetButton(BUTTON::RB, CONUSER::ONE)) {
+			if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
+			else							BackEnd::SetFullscreen();
+		}
+	}
+
+	for (size_t i(0); i < 4; ++i) {
+		if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(i))) {
+			m_paused = !m_paused;
+			return;
+		}
+	}
+
+	if (m_paused)
+		return;
+
+
+	auto &p1 = ECS::GetComponent<Player>(bodyEnt1);
+	auto &p2 = ECS::GetComponent<Player>(bodyEnt2);
+	auto &p3 = ECS::GetComponent<Player>(bodyEnt3);
+	auto &p4 = ECS::GetComponent<Player>(bodyEnt4);
+
+	p1.GetInput(
 		ECS::GetComponent<PhysBody>(bodyEnt1),
 		ECS::GetComponent<Transform>(Head1),
 		ECS::GetComponent<Transform>(cameraEnt1)
 	);
 
-	ECS::GetComponent<Player>(bodyEnt2).GetInput(
+	p2.GetInput(
 		ECS::GetComponent<PhysBody>(bodyEnt2),
 		ECS::GetComponent<Transform>(Head2),
 		ECS::GetComponent<Transform>(cameraEnt2)
 	);
 
-	ECS::GetComponent<Player>(bodyEnt3).GetInput(
+	p3.GetInput(
 		ECS::GetComponent<PhysBody>(bodyEnt3),
 		ECS::GetComponent<Transform>(Head3),
 		ECS::GetComponent<Transform>(cameraEnt3)
 	);
 
-	ECS::GetComponent<Player>(bodyEnt4).GetInput(
+	p4.GetInput(
 		ECS::GetComponent<PhysBody>(bodyEnt4),
 		ECS::GetComponent<Transform>(Head4),
 		ECS::GetComponent<Transform>(cameraEnt4)
 	);
 
+	if (p1.HasWon(killGoal) || p2.HasWon(killGoal) || p3.HasWon(killGoal) || p4.HasWon(killGoal)) {
+		m_reg = entt::registry();
 
+		btVector3 grav = m_world->getGravity();
+		for (int i = m_world->getNumCollisionObjects() - 1; i >= 0; --i) {
+			btCollisionObject* obj = m_world->getCollisionObjectArray()[i];
+			btRigidBody* body = btRigidBody::upcast(obj);
+			if (body && body->getMotionState())
+			{
+				delete body->getMotionState();
+			}
+			m_world->removeCollisionObject(obj);
+			delete obj;
+		}
+
+		delete m_world;
+		m_world = new btDiscreteDynamicsWorld(
+			_dispatcher, _broadphase, _solver, _collisionConfiguration);
+		m_world->setGravity(grav);
+
+		m_colliders.Clear();
+
+		Init(width, height);
+		m_nextScene = 0;
+
+	}
 
 	ECS::GetComponent<Transform>(lightDrone).SetPosition(dronePath.Update(Time::dt).GetPosition()).SetRotation(dronePath.GetLookingForwards(0.5f));
 	ECS::GetComponent<Transform>(cameraDrone).SetPosition(dronePath2.Update(Time::dt).GetPosition()).SetRotation(dronePath2.GetLookingForwards(0.5f));

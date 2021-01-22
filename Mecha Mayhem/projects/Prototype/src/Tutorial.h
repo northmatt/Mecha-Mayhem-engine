@@ -64,6 +64,8 @@ private:
 	int width = 0;
 	int height = 0;
 
+	size_t killGoal = 10;
+
 	float camDistance = 2.5f;
 	glm::quat startQuat = glm::quat(0, 0, 1, 0);
 

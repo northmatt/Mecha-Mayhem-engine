@@ -38,12 +38,15 @@ public:
 	static void BeginDraw(unsigned amt = 0);
 
 	void Draw(const glm::mat4& VP, const glm::mat4& model);
+	void DrawSingle(const glm::mat4& VP, const glm::mat4& model);
 
 	static void PerformDraw();
 
 	void SetScale(float scl) { m_scale = scl; }
 	void SetWidth(float width) { m_width = width; }
 	void SetHeight(float height) { m_height = height; }
+
+	bool IsValid() { return (m_width > 0) && (m_height > 0); }
 
 	struct Texture
 	{

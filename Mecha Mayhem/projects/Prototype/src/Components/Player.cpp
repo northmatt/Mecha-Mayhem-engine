@@ -135,16 +135,18 @@ Player& Player::Init(CONUSER user, int characterModel)
 	return *this;
 }
 
-void Player::Draw(const glm::mat4& model, short camNum, short numOfCams)
+void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool paused)
 {
 	if (short(m_user) == camNum) {
 		//draw ui
 		float healthPercent = float(m_health) / m_maxHealth;
 		float dashPercent = float(m_dashTimer) / m_dashDelay;
 		float x = 15.7777f;	//1.77 * 10 - 2
+		if (paused && numOfCams > 2)
+			x = 12.f;
 		float y = 7.5f;
 		if (numOfCams == 2)		x = 6.88889f;	//0.88 * 10 - 2
-		if (camNum % 2 == 0)	x *= -1.f;
+		if (camNum % 2 == 0)	x = -x;
 		if (camNum < 2 && numOfCams > 2)	y = -7.5f;
 
 		m_healthBar.SetWidth(14.95f * healthPercent);
@@ -187,7 +189,7 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams)
 		m_dashBarOutline.Draw(VP, glm::mat4(
 			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -7.25f, -10.f, 1		));
 
-		m_reticle.Draw(VP, glm::mat4(
+		if (!paused)	m_reticle.Draw(VP, glm::mat4(
 			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, 0, -10, 1		));
 
 		//is false when cam is too close
@@ -545,6 +547,8 @@ bool Player::PickUpWeapon(WEAPON pickup)
 		return true;
 	}
 	if (m_secWeapon == WEAPON::FIST) {
+		if (m_currWeapon == pickup)
+			return false;
 		m_secWeapon = pickup;
 		//based on weapon, add ammo
 		m_secWeaponAmmo = 20;

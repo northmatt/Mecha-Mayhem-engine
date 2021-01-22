@@ -32,6 +32,7 @@ protected:
 	btDiscreteDynamicsWorld *m_world = nullptr;
 	HitboxGen m_colliders;
 	Effects m_effects;
+	Sprite m_pauseSprite;
 
 	btDbvtBroadphase *_broadphase = new btDbvtBroadphase();
 	btCollisionConfiguration *_collisionConfiguration = new btDefaultCollisionConfiguration();

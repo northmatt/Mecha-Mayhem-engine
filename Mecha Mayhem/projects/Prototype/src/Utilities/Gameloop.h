@@ -23,6 +23,7 @@ namespace Gameloop
 		HitboxGen::Init();
 		Effects::Init();
 		Player::Init(width, height);
+		Rendering::Init(width, height);
 
 		return window;
 	}

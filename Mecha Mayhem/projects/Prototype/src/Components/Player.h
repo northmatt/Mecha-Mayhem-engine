@@ -63,7 +63,7 @@ public:
 
 	//sends the animations to the morph animator, so call before perform draw in morph
 	//if camNum matches the player's number, draw the UI
-	void Draw(const glm::mat4& model, short camNum, short numOfCams);
+	void Draw(const glm::mat4& model, short camNum, short numOfCams, bool paused);
 
 	//update the morph animator and stuff like health
 	void Update(PhysBody& body);
@@ -97,6 +97,8 @@ public:
 
 	//returns true if successful
 	bool PickUpOffhand(OFFHAND pickup);
+
+	bool HasWon(size_t scoreGoal) { return m_killCount >= scoreGoal; }
 
 private:
 	void UseWeapon(PhysBody& body, Transform& head, float offset);
