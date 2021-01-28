@@ -10,16 +10,7 @@ public:
 
 	virtual void Init(int windowWidth, int windowHeight) override;
 	virtual void Update() override;
-	virtual Scene* Reattach() override {
-		if (m_camCount == 2)
-			Player::SetUIAspect(width / 2.f, height);
-		else
-			Player::SetUIAspect(width, height);
-		Player::SetCamDistance(camDistance);
-		Player::SetSkyPos(glm::vec3(0, 50, -45));
-
-		return Scene::Reattach();
-	}
+	virtual Scene* Reattach() override;
 
 private:
 

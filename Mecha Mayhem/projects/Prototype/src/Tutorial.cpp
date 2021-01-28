@@ -1,4 +1,5 @@
 #include "Tutorial.h"
+#include "LeaderBoard.h"
 
 void Tutorial::Init(int windowWidth, int windowHeight)
 {
@@ -234,6 +235,11 @@ void Tutorial::Update()
 	);
 
 	if (p1.HasWon(killGoal) || p2.HasWon(killGoal) || p3.HasWon(killGoal) || p4.HasWon(killGoal)) {
+		LeaderBoard::players[0].score = ECS::GetComponent<Player>(bodyEnt1).GetScore();
+		LeaderBoard::players[1].score = ECS::GetComponent<Player>(bodyEnt2).GetScore();
+		LeaderBoard::players[2].score = ECS::GetComponent<Player>(bodyEnt3).GetScore();
+		LeaderBoard::players[3].score = ECS::GetComponent<Player>(bodyEnt4).GetScore();
+
 		m_reg = entt::registry();
 
 		btVector3 grav = m_world->getGravity();
@@ -256,7 +262,7 @@ void Tutorial::Update()
 		m_colliders.Clear();
 
 		Init(width, height);
-		m_nextScene = 0;
+		m_nextScene = 3;
 
 	}
 
@@ -270,4 +276,40 @@ void Tutorial::Update()
 	m_colliders.Update(Time::dt);
 	if (Input::GetKeyDown(KEY::F10))	if (!m_colliders.SaveToFile(false))	std::cout << "file save failed\n";
 	if (Input::GetKeyDown(KEY::F1))		if (!m_colliders.LoadFromFile())	std::cout << "file load failed\n";*/
+}
+
+Scene* Tutorial::Reattach() {
+	ECS::AttachRegistry(&m_reg);
+	if (m_world) {
+		PhysBody::Init(m_world);
+		ECS::AttachWorld(m_world);
+		Rendering::hitboxes = &m_colliders;
+	}
+
+	SoundManager::stopEverything();
+
+	Rendering::effects = &m_effects;
+
+	ECS::GetComponent<Player>(bodyEnt1).Init(LeaderBoard::players[0].user, LeaderBoard::players[0].model);
+	ECS::GetComponent<Player>(bodyEnt2).Init(LeaderBoard::players[1].user, LeaderBoard::players[1].model);
+	ECS::GetComponent<Player>(bodyEnt3).Init(LeaderBoard::players[2].user, LeaderBoard::players[2].model);
+	ECS::GetComponent<Player>(bodyEnt4).Init(LeaderBoard::players[3].user, LeaderBoard::players[3].model);
+
+	m_camCount = LeaderBoard::playerCount;
+
+	if (m_camCount == 2) {
+		ECS::GetComponent<Camera>(cameraEnt1).ResizeWindow(width / 2.f, height);
+		ECS::GetComponent<Camera>(cameraEnt2).ResizeWindow(width / 2.f, height);
+		Player::SetUIAspect(width / 2.f, height);
+	}
+	else {
+		ECS::GetComponent<Camera>(cameraEnt1).ResizeWindow(width, height);
+		ECS::GetComponent<Camera>(cameraEnt2).ResizeWindow(width, height);
+		Player::SetUIAspect(width, height);
+	}
+
+	Player::SetCamDistance(camDistance);
+	Player::SetSkyPos(glm::vec3(0, 50, -45));
+
+	return this;
 }

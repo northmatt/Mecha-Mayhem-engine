@@ -51,6 +51,8 @@ public:
 	0 = dummy
 	1 = JJ's
 	2 = JL's
+	3 = Ryan's
+	4 = Bag
 	*/
 	Player& Init(CONUSER user, int characterModel);
 
@@ -99,6 +101,7 @@ public:
 	bool PickUpOffhand(OFFHAND pickup);
 
 	bool HasWon(size_t scoreGoal) { return m_killCount >= scoreGoal; }
+	short GetScore() { return m_killCount; }
 
 private:
 	void UseWeapon(PhysBody& body, Transform& head, float offset);

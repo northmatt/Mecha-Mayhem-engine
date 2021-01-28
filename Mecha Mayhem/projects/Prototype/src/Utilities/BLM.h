@@ -19,6 +19,7 @@ public:
 	static const glm::vec3 GLMup;
 	static const glm::vec3 GLMzero;
 	static const glm::quat GLMQuat;
+	static constexpr float pi = glm::pi<float>();
 };
 
 inline const btVector3 BLM::BTzero = btVector3(0, 0, 0);

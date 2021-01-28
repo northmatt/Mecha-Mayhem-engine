@@ -21,12 +21,16 @@ public:
 	virtual void Exit() {}
 	virtual void BackEndUpdate() final;
 	virtual int ChangeScene(int sceneCount) final;
+	virtual bool ExitTest() final {
+		return m_exitGame;
+	}
 
 protected:
 	std::string m_name;
 	short m_camCount = 1;
 	int m_nextScene = -1;
 	bool m_paused = false;
+	bool m_exitGame = false;
 
 	entt::registry m_reg;
 	btDiscreteDynamicsWorld *m_world = nullptr;
