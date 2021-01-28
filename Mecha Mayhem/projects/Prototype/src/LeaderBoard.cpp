@@ -16,7 +16,7 @@ void LeaderBoard::Init(int windowWidth, int windowHeight)
 	ECS::GetComponent<Transform>(title).SetPosition(glm::vec3(0.f, 0.15f, -0.9f)).SetScale(0.25f).ChildTo(camera);
 
 	text = ECS::CreateEntity();
-	ECS::AttachComponent<Sprite>(text).Init("Start Text.png", -4, 1).SetScale(0.075f);
+	ECS::AttachComponent<Sprite>(text).Init("CharSelect.png", -4, 1).SetScale(0.075f);
 	ECS::GetComponent<Transform>(text).SetPosition(glm::vec3(0.f, -0.1f, -0.35f)).ChildTo(camera);
 }
 

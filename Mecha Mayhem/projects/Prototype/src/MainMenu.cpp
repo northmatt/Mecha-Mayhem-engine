@@ -27,20 +27,32 @@ void MainMenu::Init(int windowWidth, int windowHeight)
 	}
 	{
 		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<Sprite>(entity).Init(glm::vec4(0.5f, 0.5f, 1.f, 1.f), -19, 10);
-		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, 100, -10));
+		ECS::AttachComponent<Sprite>(entity).Init("CharSelect.png", -12.326f, 1.5f);
+		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, 103, -8));
 	}
 
 	for (int x(0); x < 4; ++x) {
+		{
+			auto entity = ECS::CreateEntity();
+			ECS::AttachComponent<Sprite>(entity).Init("ArrowL.png", -0.75f, 0.75f);
+			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(x * 4 - 7, 99, -8));
+		}
+		{
+			auto entity = ECS::CreateEntity();
+			ECS::AttachComponent<Sprite>(entity).Init("ArrowR.png", -0.75f, 0.75f);
+			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(x * 4 - 5, 99, -8));
+		}
 		models[x] = ECS::CreateEntity();
 		ECS::AttachComponent<Player>(models[x]).Init(CONUSER::NONE, LeaderBoard::players[x].model);
 		ECS::AttachComponent<PhysBody>(models[x]);
+		ECS::GetComponent<Transform>(models[x]).SetPosition(glm::vec3(x * 4 - 6, 99, -8)).SetRotation(glm::angleAxis(BLM::pi, BLM::GLMup)).SetScale(1.5f);
 	}
 
-	ECS::GetComponent<Transform>(models[0]).SetPosition(glm::vec3(-6, 99, -8)).SetRotation(glm::angleAxis(BLM::pi, BLM::GLMup)).SetScale(1.5f);
-	ECS::GetComponent<Transform>(models[1]).SetPosition(glm::vec3(-2, 99, -8)).SetRotation(glm::angleAxis(BLM::pi, BLM::GLMup)).SetScale(1.5f);
-	ECS::GetComponent<Transform>(models[2]).SetPosition(glm::vec3(2, 99, -8)).SetRotation(glm::angleAxis(BLM::pi, BLM::GLMup)).SetScale(1.5f);
-	ECS::GetComponent<Transform>(models[3]).SetPosition(glm::vec3(6, 99, -8)).SetRotation(glm::angleAxis(BLM::pi, BLM::GLMup)).SetScale(1.5f);
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<Sprite>(entity).Init(glm::vec4(0.5f, 0.5f, 1.f, 1.f), -19, 10);
+		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, 100, -10));
+	}
 }
 
 void MainMenu::Update()
@@ -146,7 +158,7 @@ void MainMenu::Update()
 				float rx = ControllerInput::GetRX(CONUSER(x));
 				if (rx != 0) {
 					glm::quat rot = ECS::GetComponent<Transform>(models[x]).GetLocalRotation();
-					ECS::GetComponent<Transform>(models[x]).SetRotation(glm::rotate(rot, rx, BLM::GLMup));
+					ECS::GetComponent<Transform>(models[x]).SetRotation(glm::rotate(rot, rx * Time::dt, BLM::GLMup));
 				}
 				lx = ControllerInput::GetLXRaw(CONUSER(x));
 

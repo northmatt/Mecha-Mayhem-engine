@@ -162,7 +162,7 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 
 	Player::SetSkyPos(glm::vec3(0, 50, -45));
 
-	m_pauseSprite = Sprite(glm::vec4(1, 0, 0, 1), 3, 3);
+	m_pauseSprite = Sprite("Pause.png", 8.952f, 3);
 }
 
 void Tutorial::Update()
