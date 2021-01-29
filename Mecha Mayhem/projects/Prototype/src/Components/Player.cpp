@@ -142,12 +142,14 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		float healthPercent = float(m_health) / m_maxHealth;
 		float dashPercent = float(m_dashTimer) / m_dashDelay;
 		float x = 15.7777f;	//1.77 * 10 - 2
-		if (paused && numOfCams > 2)
-			x = 12.f;
 		float y = 7.5f;
+		if (paused && numOfCams > 2) {
+			x = 12.f;
+			y = 5.f;
+		}
 		if (numOfCams == 2)		x = 6.88889f;	//0.88 * 10 - 2
 		if (camNum % 2 == 0)	x = -x;
-		if (camNum < 2 && numOfCams > 2)	y = -7.5f;
+		if (camNum < 2 && numOfCams > 2)	y = -y;
 
 		m_healthBar.SetWidth(14.95f * healthPercent);
 		m_dashBar.SetWidth(9.15f * (1 - dashPercent));
@@ -162,9 +164,10 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x, y, -10, 1			));
 		}
 		else if (m_killCount < 100) {
-			m_digits[GetDigit(m_killCount, 1)].Draw(VP, glm::mat4(
+			int digit2 = m_killCount / 10;
+			m_digits[m_killCount - digit2 * 10].Draw(VP, glm::mat4(
 				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x - 0.65f, y, -10, 1			));
-			m_digits[GetDigit(m_killCount, 2)].Draw(VP, glm::mat4(
+			m_digits[digit2].Draw(VP, glm::mat4(
 				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x + 0.65f, y, -10, 1			));
 		}
 		else {
@@ -332,9 +335,9 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 		//only do other input check if not punching
 		if (!m_punched) {
 			if (ControllerInput::GetButtonDown(BUTTON::B, m_user)) {
-				UseHeal();
-				if (m_offhand == OFFHAND::EMPTY || m_health == m_maxHealth)
+				if (m_offhand == OFFHAND::EMPTY)
 					TakeDamage(1);
+				UseHeal();
 			}
 
 			//dash if moving and velocity adjustment

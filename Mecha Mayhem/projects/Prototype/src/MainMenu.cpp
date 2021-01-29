@@ -19,16 +19,15 @@ void MainMenu::Init(int windowWidth, int windowHeight)
 	text = ECS::CreateEntity();
 	ECS::AttachComponent<Sprite>(text).Init("Start Text.png", -4.f, 1.f).SetScale(0.075f);
 	ECS::GetComponent<Transform>(text).SetPosition(glm::vec3(0.f, -0.1f, -0.35f)).ChildTo(camera);
-	
+
+	charSelect = ECS::CreateEntity();
+	ECS::AttachComponent<Sprite>(charSelect).Init("CharSelect.png", -12.326f, 1.5f);
+	ECS::GetComponent<Transform>(charSelect).SetPosition(glm::vec3(0, 103, -8));
+
 	{
 		auto entity = ECS::CreateEntity();
 		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/cringe.obj", true);
 		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, -5, 0));
-	}
-	{
-		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<Sprite>(entity).Init("CharSelect.png", -12.326f, 1.5f);
-		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, 103, -8));
 	}
 
 	for (int x(0); x < 4; ++x) {
@@ -48,11 +47,9 @@ void MainMenu::Init(int windowWidth, int windowHeight)
 		ECS::GetComponent<Transform>(models[x]).SetPosition(glm::vec3(x * 4 - 6, 99, -8)).SetRotation(glm::angleAxis(BLM::pi, BLM::GLMup)).SetScale(1.5f);
 	}
 
-	{
-		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<Sprite>(entity).Init(glm::vec4(0.5f, 0.5f, 1.f, 1.f), -19, 10);
-		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, 100, -10));
-	}
+	backGround = ECS::CreateEntity();
+	ECS::AttachComponent<Sprite>(backGround).Init(glm::vec4(0.5f, 0.5f, 1.f, 1.f), -19, 10);
+	ECS::GetComponent<Transform>(backGround).SetPosition(glm::vec3(0, 100, -10));
 }
 
 void MainMenu::Update()
@@ -122,16 +119,20 @@ void MainMenu::Update()
 			//exit
 			for (int x(0); x < 4; ++x) {
 				if (ControllerInput::GetButton(BUTTON::B, CONUSER(x))) {
-					if (ControllerInput::GetButtonDown(BUTTON::B, CONUSER(x))) {
-						m_exitHoldTimer = 1.f;
+					if (!playerSwapped[x]) {
+						if (ControllerInput::GetButtonDown(BUTTON::B, CONUSER(x))) {
+							m_exitHoldTimer = 1.f;
+						}
+						m_exitHoldTimer -= Time::dt;
+						if (m_exitHoldTimer <= 0.f) {
+							m_exitGame = true;
+							break;
+						}
+						ECS::GetComponent<Sprite>(text).SetWidth(-4.f * m_exitHoldTimer);
 					}
-					m_exitHoldTimer -= Time::dt;
-					if (m_exitHoldTimer <= 0.f) {
-						m_exitGame = true;
-					}
-					ECS::GetComponent<Sprite>(text).SetWidth(-4.f * m_exitHoldTimer);
 				}
 				else if (ControllerInput::GetButtonUp(BUTTON::B, CONUSER(x))) {
+					playerSwapped[x] = false;
 					ECS::GetComponent<Sprite>(text).SetWidth(-4.f);
 				}
 			}
@@ -206,16 +207,17 @@ void MainMenu::Update()
 					if (m_exitHoldTimer <= 0.f) {
 						m_scenePos = 0;
 						m_exitHoldTimer = 1.f;
+						playerSwapped[x] = true;
 
 						ECS::GetComponent<Transform>(title).SetRotation(BLM::GLMQuat).ChildTo(camera);
 						ECS::GetComponent<Transform>(text).SetRotation(BLM::GLMQuat).ChildTo(camera);
 					}
-					//ECS::GetComponent<Sprite>(text).SetWidth(-4.f * m_exitHoldTimer);
+					ECS::GetComponent<Sprite>(charSelect).SetWidth(-12.326f * m_exitHoldTimer);
 				}
 			}
 			else if (ControllerInput::GetButtonUp(BUTTON::B, CONUSER(x))) {
 				playerSwapped[x] = false;
-				//ECS::GetComponent<Sprite>(text).SetWidth(-4.f);
+				ECS::GetComponent<Sprite>(charSelect).SetWidth(-12.326f);
 			}
 		}
 
@@ -231,9 +233,11 @@ void MainMenu::Update()
 
 				LeaderBoard::playerCount = playerCount;
 			}
+			ECS::GetComponent<Sprite>(backGround).SetHeight(10 * m_confirmTimer);
 		}
 		else {
 			m_confirmTimer = 1.f;
+			ECS::GetComponent<Sprite>(backGround).SetHeight(10);
 		}
 	}
 }

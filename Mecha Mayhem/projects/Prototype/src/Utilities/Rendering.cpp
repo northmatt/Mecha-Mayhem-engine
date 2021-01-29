@@ -122,7 +122,7 @@ namespace Rendering {
             1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1, 0,
-            0, 0, -99.9f, 1
+            0, 0, -99.9999f, 1
         ));
         image.Draw(orthoVP.GetViewProjection(), glm::mat4(
             1, 0, 0, 0,

@@ -108,12 +108,12 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 		}
 		{
 			auto entity = ECS::CreateEntity();
-			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 20.5f);
+			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 5.f);
 			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(5.f, 0, i * 7.5f - 55));
 		}
 		{
 			auto entity = ECS::CreateEntity();
-			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 20.5f);
+			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 5.f);
 			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(-5.f, 0, i * 7.5f - 55));
 		}
 	}

@@ -43,6 +43,8 @@ private:
 	entt::entity camera = entt::null;
 	entt::entity title = entt::null;
 	entt::entity text = entt::null;
+	entt::entity charSelect = entt::null;
+	entt::entity backGround = entt::null;
 	entt::entity models[4] = {
 		entt::null,
 		entt::null,
