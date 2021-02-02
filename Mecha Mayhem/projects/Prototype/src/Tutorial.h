@@ -1,5 +1,6 @@
 #pragma once
 #include "Utilities/Scene.h"
+#include "Utilities/Catmull.h"
 
 class Tutorial : public Scene
 {
@@ -9,21 +10,52 @@ public:
 
 	virtual void Init(int windowWidth, int windowHeight) override;
 	virtual void Update() override;
-	virtual Scene* Reattach() override {
-		if (m_camCount == 2)
-			Player::SetUIAspect(width / 2.f, height);
-		else
-			Player::SetUIAspect(width, height);
-		Player::SetCamDistance(camDistance);
-		Player::SetSkyPos(glm::vec3(0, 50, -45));
-
-		return Scene::Reattach();
-	}
+	virtual Scene* Reattach() override;
 
 private:
 
+	CatmullFollower dronePath = { 3, {
+		glm::vec3(0, 7, 0),
+		glm::vec3(1, 7, -5),
+		glm::vec3(4, 7, -10),
+		glm::vec3(2, 9, -30),
+		glm::vec3(0, 9, -50),
+		glm::vec3(-2, 9, -30),
+		glm::vec3(-4, 7, -10),
+		glm::vec3(-1, 7, -5) }, 8
+	};
+	CatmullFollower dronePath2 = { 3, {
+		glm::vec3(2, 9, -30),
+		glm::vec3(0, 9, -50),
+		glm::vec3(-2, 9, -30),
+		glm::vec3(-4, 7, -10),
+		glm::vec3(-1, 7, -5),
+		glm::vec3(0, 7, 0),
+		glm::vec3(1, 7, -5),
+		glm::vec3(4, 7, -10)},8
+	};
+	CatmullFollower dronePath3 = { 3, {
+		glm::vec3(-2, 9, -30),
+		glm::vec3(-4, 7, -10),
+		glm::vec3(0, 7, 0),
+		glm::vec3(1, 7, -5),
+		glm::vec3(4, 7, -10),
+		glm::vec3(-1, 7, -5),
+		glm::vec3(2, 9, -30),
+		glm::vec3(0, 9, -50) },8
+	};
+	CatmullFollower dronePath4 = { 3, {
+		glm::vec3(-1, 5, 1),
+		glm::vec3(1, 5, 1),
+		glm::vec3(1, 5, -1),
+		glm::vec3(-1, 5, -1) },8
+	};
+
+
 	int width = 0;
 	int height = 0;
+
+	size_t killGoal = 11;
 
 	float camDistance = 2.5f;
 	glm::quat startQuat = glm::quat(0, 0, 1, 0);
@@ -43,5 +75,10 @@ private:
 	entt::entity bodyEnt4 = entt::null;
 	entt::entity Head4 = entt::null;
 	entt::entity cameraEnt4 = entt::null;
+
+	entt::entity lightDrone = entt::null;
+	entt::entity cameraDrone = entt::null;
+	entt::entity speakerDrone = entt::null;
+	entt::entity shieldDrone = entt::null;
 };
 

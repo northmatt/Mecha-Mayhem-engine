@@ -45,6 +45,17 @@ public:
 	//TAB to slow everything down
 	void Update(float dt);
 
+	void Clear() {
+		m_draw = false;
+		m_current = 0;
+		m_world = nullptr;
+		m_objects.clear();
+		for (int i(0); i < m_boxShape.size(); ++i) {
+			delete m_boxShape[i];
+		}
+		m_boxShape.clear();
+	}
+
 	//init things
 	static void Init() {
 		m_cube.LoadMesh("models/GodHimself.obj");

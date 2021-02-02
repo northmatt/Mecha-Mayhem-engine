@@ -3,7 +3,16 @@
 
 namespace Rendering {
 
-    void Update(entt::registry* reg, int numOfCams)
+    Sprite overlay;
+
+    void Init(int width, int height)
+    {
+        overlay = Sprite(glm::vec4(0, 0, 0.1f, 0.25f), 40, 20);
+        orthoVP.SetOrthoHeight(10.f).SetNear(-100.f).Setfar(100.f)
+            .SetIsOrtho(true).ResizeWindow(width, height).SetPosition(BLM::GLMzero);
+    }
+
+    void Update(entt::registry* reg, int numOfCams, bool paused)
     {
         glClearColor(BackColour.x, BackColour.y, BackColour.z, BackColour.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -13,6 +22,7 @@ namespace Rendering {
         auto spriteView = reg->view<Sprite, Transform>();
         auto playerView = reg->view<Player, PhysBody, Transform>();
         auto cameraView = reg->view<Camera, Transform>();
+        auto spawnerView = reg->view<Spawner, Transform>();
 
         int height = BackEnd::GetHalfHeight();
         int width = BackEnd::GetHalfWidth();
@@ -40,7 +50,7 @@ namespace Rendering {
 
             //reserve some queue size
             ObjLoader::BeginDraw(objView.size());
-            ObjMorphLoader::BeginDraw(morphView.size());
+            ObjMorphLoader::BeginDraw(morphView.size() + spawnerView.size() + playerView.size());
             //number of ui elements
             Sprite::BeginDraw(spriteView.size() + 6);
 
@@ -55,7 +65,7 @@ namespace Rendering {
             //draw all the morph objs
             morphView.each(
                 [&](ObjMorphLoader& obj, Transform& trans) {
-                    if (count == 0) obj.Update(Time::dt);
+                    if ((count == 0) && !paused) obj.Update(Time::dt);
                     obj.Draw(trans.GetModel());
                 }
             );
@@ -67,13 +77,21 @@ namespace Rendering {
                 }
             );
 
+            spawnerView.each(
+                [&](Spawner& spawn, Transform& trans) {
+                    if ((count == 0) && !paused) spawn.Update(reg, trans.GetGlobalPosition());
+                    spawn.Render(trans.GetModel());
+                }
+            );
+
             //draw all players
             int temp = 2;
             playerView.each(
                 [&](Player& p, PhysBody& body, Transform& trans) {
-                    if (count == 0) p.Update(body);
-                    p.Draw(trans.GetModel(), count, numOfCams);
-                    Rendering::LightsPos[temp++] = trans.GetGlobalPosition();
+                    if (count == 0 && !paused) p.Update(body);
+                    p.Draw(trans.GetModel(), count, numOfCams, paused);
+                    if (p.IsPlayer())
+                        Rendering::LightsPos[temp++] = trans.GetGlobalPosition();
                 }
             );
 
@@ -96,6 +114,25 @@ namespace Rendering {
         }
     }
 
+    void DrawPauseScreen(Sprite image)
+    {
+        glViewport(0, 0, BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
+        Sprite::BeginDraw(2);
+        overlay.Draw(orthoVP.GetViewProjection(), glm::mat4(
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, -99.9999f, 1
+        ));
+        image.Draw(orthoVP.GetViewProjection(), glm::mat4(
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, -100, 1
+        ));
+        Sprite::PerformDraw();
+    }
+
     glm::vec4 BackColour = { 0.2f, 0.2f, 0.2f, 1.f };
     std::array<glm::vec3, MAX_LIGHTS> LightsColour = {
         glm::vec3(1.f),
@@ -109,8 +146,9 @@ namespace Rendering {
         glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f)
     };
     glm::vec3 DefaultColour = glm::vec3(1.f);
-    size_t LightCount = 5;
+    size_t LightCount = 6;
 
     HitboxGen* hitboxes = nullptr;
     Effects* effects = nullptr;
+    Camera orthoVP;
 }

@@ -47,7 +47,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 		throw std::runtime_error("Failed to open file\nError 69: " + fileName);
 	}
 
-	std::vector<Materials> materials;
+	std::vector<Materials> materials = {};
 
 	if (usingMaterial)
 	{
@@ -165,11 +165,11 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	std::vector<glm::vec2> UV = { glm::vec2(0.f) };
 	std::vector<glm::vec3> normals = { glm::vec3() };
 
-	std::vector<size_t> bufferVertex;
-	std::vector<size_t> bufferUV;
-	std::vector<size_t> bufferNormals;
+	std::vector<size_t> bufferVertex = {};
+	std::vector<size_t> bufferUV = {};
+	std::vector<size_t> bufferNormals = {};
 
-	std::vector<size_t> bufferColours;	//index of material vector
+	std::vector<size_t> bufferColours = {};	//index of material vector
 
 	// stringStream was learnt throught the NotObjLoader, thank you Shawn once again
 	std::string line;

@@ -44,7 +44,7 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 
 	bodyEnt2 = ECS::CreateEntity();
 	ECS::AttachComponent<PhysBody>(bodyEnt2).CreatePlayer(bodyEnt2, startQuat, glm::vec3(0, 1.5f, 0));
-	ECS::AttachComponent<Player>(bodyEnt2).Init(CONUSER::TWO, 1).SetRotation(glm::radians(180.f), 0);
+	ECS::AttachComponent<Player>(bodyEnt2).Init(CONUSER::TWO, 2).SetRotation(glm::radians(180.f), 0);
 
 	Head2 = ECS::CreateEntity();
 	ECS::GetComponent<Transform>(Head2).SetPosition(glm::vec3(0, 0.75f, 0)).
@@ -55,7 +55,7 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 
 	bodyEnt3 = ECS::CreateEntity();
 	ECS::AttachComponent<PhysBody>(bodyEnt3).CreatePlayer(bodyEnt3, startQuat, glm::vec3(0, 1.5f, 0));
-	ECS::AttachComponent<Player>(bodyEnt3).Init(CONUSER::THREE, 1).SetRotation(glm::radians(180.f), 0);
+	ECS::AttachComponent<Player>(bodyEnt3).Init(CONUSER::THREE, 3).SetRotation(glm::radians(180.f), 0);
 
 	Head3 = ECS::CreateEntity();
 	ECS::GetComponent<Transform>(Head3).SetPosition(glm::vec3(0, 0.75f, 0)).
@@ -67,7 +67,7 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 
 	bodyEnt4 = ECS::CreateEntity();
 	ECS::AttachComponent<PhysBody>(bodyEnt4).CreatePlayer(bodyEnt4, startQuat, glm::vec3(0, 1.5f, 0));
-	ECS::AttachComponent<Player>(bodyEnt4).Init(CONUSER::FOUR, 1).SetRotation(glm::radians(180.f), 0);
+	ECS::AttachComponent<Player>(bodyEnt4).Init(CONUSER::FOUR, 4).SetRotation(glm::radians(180.f), 0);
 
 	Head4 = ECS::CreateEntity();
 	ECS::GetComponent<Transform>(Head4).SetPosition(glm::vec3(0, 0.75f, 0)).
@@ -76,24 +76,34 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 		ChildTo(Head4).SetUsingParentScale(false);
 
 
-	drone = ECS::CreateEntity();
-	ECS::AttachComponent<ObjMorphLoader>(drone).LoadMeshs("sword").LoadMeshs("shield").
-		LoadMeshs("drone").LoadMeshs("othershield/anim", true).LoadMeshs("anotherOne");
-	ECS::GetComponent<Transform>(drone).ChildTo(bodyEnt1).SetPosition(glm::vec3(0, 0, 1.f)).SetScale(0.3f);
-
-
 	{
 		auto entity = ECS::CreateEntity();
 		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/cringe.obj", true);
 		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, -30, 0)).SetScale(4.f);
 	}
-
 	{
 		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<ObjMorphLoader>(entity).LoadMeshs("spawner/spawner", true).SetBounce(true);
-		ECS::GetComponent<Transform>(entity).SetPosition(
-			glm::vec3(20.4755f, -6.89454f + 8.85118f/2.f, 21.7629f)
-		).SetScale(1.25f);
+		ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
+		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0,
+			-23.5914, -5));
+	}
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
+		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0,
+			-23.5914, -8));
+	}
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
+		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(3,
+			-23.5914, -5));
+	}
+	{
+		auto entity = ECS::CreateEntity();
+		ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
+		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(3,
+			-23.5914, -8));
 	}
 
 	/// End of creating entities
@@ -112,33 +122,7 @@ void DemoScene::Update()
 
 	if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER::ONE)) {
 		m_nextScene = 0;
-	}
-
-	ECS::GetComponent<Transform>(drone).SetPosition(dronePath.Update(Time::dt).GetPosition()).
-		SetRotation(dronePath.GetLookingForwards(Time::dt));
-
-	if (Input::GetKey(KEY::SEVEN))
-		dronePath.SetSpeed(dronePath.GetSpeed() + Time::dt);
-	else	dronePath.SetSpeed(1);
-
-	if (Input::GetKeyDown(KEY::ONE)) {
-		ECS::GetComponent<ObjMorphLoader>(drone).LoadMeshs("sword");
-	}
-	if (Input::GetKeyDown(KEY::TWO)) {
-		ECS::GetComponent<ObjMorphLoader>(drone).LoadMeshs("shield");
-	}
-	if (Input::GetKeyDown(KEY::THREE)) {
-		ECS::GetComponent<ObjMorphLoader>(drone).LoadMeshs("drone");
-	}
-	if (Input::GetKeyDown(KEY::FOUR)) {
-		ECS::GetComponent<ObjMorphLoader>(drone).LoadMeshs("othershield/anim", true);
-	}
-	if (Input::GetKeyDown(KEY::FIVE)) {
-		ECS::GetComponent<ObjMorphLoader>(drone).ToggleDirection();
-	}
-	if (Input::GetKeyDown(KEY::SIX)) {
-		//ECS::GetComponent<ObjMorphLoader>(drone).ToggleBounce();
-		ECS::GetComponent<ObjMorphLoader>(drone).LoadMeshs("anotherOne");
+		return;
 	}
 
 	if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER::ONE)) {

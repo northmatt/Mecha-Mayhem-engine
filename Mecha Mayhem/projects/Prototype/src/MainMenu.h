@@ -12,10 +12,26 @@ public:
 	virtual void Update() override;
 	virtual void Exit() override;
 
+	virtual Scene* Reattach() override {
+		m_bg.play();
+
+		return Scene::Reattach();
+	}
+
 private:
 	bool m_exit = false;
+	bool playerSwapped[4] = {};
+
+	int m_scenePos = 0;
+	int width = 10;
+	int height = 10;
+	const int maxSelect = 4;
 
 	float zoomTime = 1;
+	float m_exitHoldTimer = 0;
+	float m_confirmTimer = 1.f;
+
+	Sound2D m_bg = { "MainMenu.mp3", "BG" };
 
 	CatmullFollower cameraPath{ 1, {
 		glm::vec3(-2.5f, 2.5f, 12.5f),
@@ -27,5 +43,13 @@ private:
 	entt::entity camera = entt::null;
 	entt::entity title = entt::null;
 	entt::entity text = entt::null;
+	entt::entity charSelect = entt::null;
+	entt::entity backGround = entt::null;
+	entt::entity models[4] = {
+		entt::null,
+		entt::null,
+		entt::null,
+		entt::null
+	};
 };
 

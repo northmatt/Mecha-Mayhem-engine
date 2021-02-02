@@ -65,5 +65,6 @@ private:
 
 	static btAlignedObjectArray<btCollisionShape*> m_collisionShapes;
 	static btDiscreteDynamicsWorld* m_world;
+	static btCapsuleShape* m_playerPill;
 };
 

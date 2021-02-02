@@ -12,6 +12,11 @@ public:
 		dash = ObjMorphLoader("effects/dash", true);
 	}
 
+	static void Unload() {
+		laser = {};
+		dash = {};
+	}
+
 	void ShootLaser(const glm::quat& rotation, const glm::vec3& position, float length) {
 		glm::mat4 model = glm::translate(one, position);
 		model = model * glm::toMat4(rotation);

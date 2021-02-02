@@ -2,6 +2,7 @@
 
 btAlignedObjectArray<btCollisionShape*> PhysBody::m_collisionShapes = {};
 btDiscreteDynamicsWorld* PhysBody::m_world = nullptr;
+btCapsuleShape* PhysBody::m_playerPill = new btCapsuleShape(0.5f, 1.f);
 
 void PhysBody::Init(btDiscreteDynamicsWorld *world)
 {
@@ -138,7 +139,27 @@ PhysBody& PhysBody::Init(entt::entity id, float radius, const glm::vec3& pos, fl
 
 PhysBody& PhysBody::CreatePlayer(entt::entity id, const glm::quat& startRot, const glm::vec3& pos)
 {
-    Init(id, 0.5f, 2, pos, 1, true).SetRotation(startRot);
+    btTransform trans;
+    trans.setIdentity();
+    trans.setOrigin(BLM::GLMtoBT(pos));
+
+
+    btVector3 localInertia(0, 0, 0);
+
+    //when mass is zero, we make non dynamic
+    if (m_dynamic = true)
+        m_playerPill->calculateLocalInertia(1, localInertia);
+
+    //using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
+    btDefaultMotionState* myMotionState = new btDefaultMotionState(trans);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(1, myMotionState, m_playerPill, localInertia);
+    m_body = new btRigidBody(rbInfo);
+    m_body->setUserIndex(id);
+
+    m_world->addRigidBody(m_body);
+
+
+    SetRotation(startRot);
     m_body->setAngularFactor(BLM::BTzero);
     m_body->setFriction(0);
 

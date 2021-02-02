@@ -9,7 +9,7 @@ namespace Gameloop
 		srand(time(0));
 		// We'll borrow the logger from the toolkit, but we need to initialize it
 		Logger::Init();
-		SoundManager::init("./sounds/", 20);
+		SoundManager::init("./sounds/", 50);
 
 		GLFWwindow* window = BackEnd::Init("Mecha Mayhem", width, height);
 		if (!window)	return nullptr;
@@ -23,6 +23,7 @@ namespace Gameloop
 		HitboxGen::Init();
 		Effects::Init();
 		Player::Init(width, height);
+		Rendering::Init(width, height);
 
 		return window;
 	}
@@ -37,6 +38,8 @@ namespace Gameloop
 		ControllerInput::ControllerUpdate();
 		//update the static dt
 		Time::Update(glfwGetTime());
+
+		Player::Update();
 	}
 
 	//stop everything (use at the end to avoid issues)
@@ -49,6 +52,7 @@ namespace Gameloop
 		ObjLoader::Unload();
 		ObjMorphLoader::Unload();
 		Sprite::Unload();
+		Effects::Unload();
 
 		SoundManager::stopEverything();
 

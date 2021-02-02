@@ -23,7 +23,7 @@ public:
 		return *this;
 	}
 
-	bool IsDone() { return m_t == 1; }
+	bool IsDone() { return (m_t == 1) && !m_loop; }
 	size_t Getp0() { return m_p0; }
 	size_t Getp1() { return m_p1; }
 

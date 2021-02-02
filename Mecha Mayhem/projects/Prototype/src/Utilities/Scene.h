@@ -18,20 +18,25 @@ public:
 	virtual Scene* Reattach();
 
 	virtual void Update() {}
-	virtual void Exit() { SoundManager::stopEverything(); }
+	virtual void Exit() {}
 	virtual void BackEndUpdate() final;
 	virtual int ChangeScene(int sceneCount) final;
+	virtual bool ExitTest() final {
+		return m_exitGame;
+	}
 
 protected:
 	std::string m_name;
 	short m_camCount = 1;
 	int m_nextScene = -1;
 	bool m_paused = false;
+	bool m_exitGame = false;
 
 	entt::registry m_reg;
 	btDiscreteDynamicsWorld *m_world = nullptr;
 	HitboxGen m_colliders;
 	Effects m_effects;
+	Sprite m_pauseSprite;
 
 	btDbvtBroadphase *_broadphase = new btDbvtBroadphase();
 	btCollisionConfiguration *_collisionConfiguration = new btDefaultCollisionConfiguration();

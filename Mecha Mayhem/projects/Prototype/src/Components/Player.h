@@ -9,7 +9,12 @@ class Player
 public:
 	enum class WEAPON {
 		FIST,
-		GUN
+		PISTOL,
+		RIFLE,
+		CANON,
+		MACHINEGUN,
+		SHOTGUN,
+		SWORD
 	};
 	enum class OFFHAND {
 		EMPTY,
@@ -22,6 +27,12 @@ public:
 	//inits the UI cam as well as lods the player anims
 	static void Init(int width, int height);
 
+	//deletes the static objs
+	static void Unload();
+
+	//currently only updates helidrone
+	static void Update();
+
 	//sets the UI aspect Ratio
 	static void SetUIAspect(int width, int height);
 
@@ -31,11 +42,17 @@ public:
 	//where to players go when they die?
 	static void SetSkyPos(glm::vec3 pos) { m_skyPos = pos; }
 
+	//get the weapon Obj, returns pistol if empty
+	static ObjLoader GetWeaponModel(WEAPON choice);
+	static ObjMorphLoader& GetOffhandModel(OFFHAND choice);
+
 	/*
 	loads with default stats
 	0 = dummy
 	1 = JJ's
 	2 = JL's
+	3 = Ryan's
+	4 = Bag
 	*/
 	Player& Init(CONUSER user, int characterModel);
 
@@ -44,9 +61,11 @@ public:
 
 	Player& SetSpawn(const glm::vec3 pos) { m_spawnPos = pos; return *this; }
 
+	Player& SetMaxHealth(short amt) { m_maxHealth = amt; if (m_health > amt) m_health = amt; return *this; }
+
 	//sends the animations to the morph animator, so call before perform draw in morph
 	//if camNum matches the player's number, draw the UI
-	void Draw(const glm::mat4& model, short camNum, short numOfCams);
+	void Draw(const glm::mat4& model, short camNum, short numOfCams, bool paused);
 
 	//update the morph animator and stuff like health
 	void Update(PhysBody& body);
@@ -58,24 +77,37 @@ public:
 	bool TakeDamage(short dmg) {
 		if (m_health == 0)	return false;
 
-		if (m_health -= dmg <= 0) {
+		if ((m_health -= dmg) <= 0) {
 			m_health = 0;
 			m_respawnTimer = m_respawnDelay;
+			m_deathSound.play();
+			m_currWeapon = WEAPON::FIST;
+			m_secWeapon = WEAPON::FIST;
+			m_currWeaponAmmo = 0;
+			m_secWeaponAmmo = 0;
+			m_offhand = OFFHAND::EMPTY;
 			return true;
 		}
+		m_hitSound.play();
 		return false;
 	}
 
-
-private:
-	void UseWeapon(PhysBody& body, Transform& head, float offset);
-	void UseHeal();
+	bool IsPlayer() { return m_user != CONUSER::NONE; }
 
 	//returns true if successful
 	bool PickUpWeapon(WEAPON pickup);
 
 	//returns true if successful
 	bool PickUpOffhand(OFFHAND pickup);
+
+	bool HasWon(size_t scoreGoal) { return m_killCount >= scoreGoal; }
+	short GetScore() { return m_killCount; }
+
+private:
+	void UseWeapon(PhysBody& body, Transform& head, float offset);
+	void SwapWeapon(bool outOfAmmo = false);
+	void UseHeal();
+	btVector3 Melee(const glm::vec3& pos);
 
 	//digit 1 is first digit
 	int GetDigit(int number, int digit) {
@@ -89,17 +121,21 @@ private:
 	}
 
 	static const glm::mat4 m_modelOffset;
-	static const glm::vec3 m_gunPos;
+	static const glm::mat4 m_gunOffset;
+	static constexpr float pi = glm::half_pi<float>() - 0.01f;
+
 	static glm::vec3 m_skyPos;
 	static Camera m_orthoCam;
-	static constexpr float pi = glm::half_pi<float>() - 0.01f;
 	static float m_camDistance;
 	static float m_dashDistance;
+
 	static Sound2D m_shootLaser;
 	static Sound2D m_hitSound;
+	static Sound2D m_deathSound;
 	static Sound2D m_swapWeapon;
 	static Sound2D m_walk[5];
 	static Sound2D m_wiff;
+	static Sound2D m_punch;
 
 	static Sprite m_healthBarOutline;
 	static Sprite m_healthBar;
@@ -107,12 +143,23 @@ private:
 	static Sprite m_dashBarOutline;
 	static Sprite m_dashBar;
 	static Sprite m_dashBarBack;
-	
 	static Sprite m_reticle;
+	static Sprite m_scoreBack;
+	static Sprite m_digits[10];
+
+	static ObjLoader m_pistol;
+	static ObjLoader m_canon;
+	static ObjLoader m_rifle;
+	static ObjLoader m_machineGun;
+	static ObjLoader m_shotgun;
+	static ObjLoader m_sword;
+
+	static ObjMorphLoader m_heliDrone;
+	static ObjMorphLoader m_healPack;
+
+	ObjMorphLoader m_charModel = {};
 
 	CONUSER m_user = CONUSER::NONE;
-
-	ObjMorphLoader m_charModel = { "char/idle", true };
 
 	std::string m_charModelIndex = "char";
 
@@ -126,13 +173,13 @@ private:
 	short m_killCount = 0;
 
 	short m_currWeaponAmmo = 0;
-	short m_secWeaponAmmo = 100;
+	short m_secWeaponAmmo = 0;
 	WEAPON m_currWeapon = WEAPON::FIST;
-	WEAPON m_secWeapon = WEAPON::GUN;
+	WEAPON m_secWeapon = WEAPON::FIST;
 
 	OFFHAND m_offhand = OFFHAND::EMPTY;
 
-	float m_dashDelay = 0.f;
+	float m_dashDelay = 1.f;
 	float m_dashTimer = 0.f;
 
 	float m_respawnDelay = 5.f;
