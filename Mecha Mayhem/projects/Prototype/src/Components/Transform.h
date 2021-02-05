@@ -2,6 +2,7 @@
 
 #include "bullet/btBulletDynamicsCommon.h"
 #include "Utilities/BLM.h"
+#include <entt/entt.hpp>
 
 class Transform
 {
@@ -11,8 +12,8 @@ public:
 	Transform(const glm::vec3& pos, const glm::quat& rot);
 	Transform(const glm::vec3& pos, const glm::quat& rot, const glm::vec3& scale);
 
-	Transform& ChildTo(unsigned index);
-	bool HasParent() { return m_hasParent; }
+	Transform& ChildTo(entt::entity index);
+	bool HasParent() { return m_parent != entt::null; }
 	Transform& UnChild();
 
 	Transform& SetUsingParentScale(bool yes);
@@ -47,8 +48,7 @@ public:
 	Transform& LookAt(const glm::vec3 pos);
 
 private:
-	unsigned m_parent = 0;
-	bool m_hasParent = false;
+	entt::entity m_parent = entt::null;
 	bool m_usingParentScale = true;
 
 	bool m_dirty = true;

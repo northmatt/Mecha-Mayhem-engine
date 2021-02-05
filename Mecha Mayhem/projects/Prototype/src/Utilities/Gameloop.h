@@ -84,13 +84,13 @@ namespace Gameloop
 		Input::Unload();
 		PhysBody::Unload();
 		ECS::DettachRegistry();
-		BackEnd::Unload();
 		ObjLoader::Unload();
 		ObjMorphLoader::Unload();
 		Sprite::Unload();
 		Effects::Unload();
 
 		if (usingImGui)	BackEnd::CloseImGui();
+		BackEnd::Unload();
 
 		SoundManager::stopEverything();
 
