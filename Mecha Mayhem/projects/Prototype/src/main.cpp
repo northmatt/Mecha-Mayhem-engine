@@ -6,7 +6,9 @@
 
 int main() {
 	int width = 1280, height = 720;
-	GLFWwindow* window = Gameloop::Start("Mecha Mayhem", width, height);
+	const bool usingImGui = true;
+
+	GLFWwindow* window = Gameloop::Start("Mecha Mayhem", width, height, usingImGui);
 	if (!window)	return 1;
 
 	{
@@ -59,6 +61,8 @@ int main() {
 			//do not touch plz
 			activeScene->BackEndUpdate();
 			Gameloop::Update();
+			if (usingImGui)
+				Gameloop::ImGuiWindow(window, activeScene);
 
 			glfwSwapBuffers(window);
 		}
@@ -66,6 +70,6 @@ int main() {
 		activeScene->Exit();
 	}
 
-	Gameloop::Stop();
+	Gameloop::Stop(usingImGui);
 	return 0;
 }

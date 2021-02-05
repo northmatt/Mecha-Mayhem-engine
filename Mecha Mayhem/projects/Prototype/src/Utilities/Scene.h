@@ -19,6 +19,12 @@ public:
 
 	virtual void Update() {}
 	virtual void Exit() {}
+
+	virtual void ImGuiFunc() {
+		ImGui::SetWindowSize(ImVec2(150, 50));
+		ImGui::Text("Empty");
+	};
+
 	virtual void BackEndUpdate() final;
 	virtual int ChangeScene(int sceneCount) final;
 	virtual bool ExitTest() final {
