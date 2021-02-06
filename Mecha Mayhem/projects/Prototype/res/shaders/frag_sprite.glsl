@@ -1,5 +1,5 @@
 #version 410
-layout(location = 0) in vec2 inUV;
+layout(location = 4) in vec2 inUV;
 
 uniform sampler2D s_texture;
 

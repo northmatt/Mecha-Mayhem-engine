@@ -4,7 +4,6 @@ layout(location = 0) in vec3 inPos;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec3 inColour;
 layout(location = 3) in vec3 inSpec;
-layout(location = 4) in vec2 inUV;
 
 uniform vec3 camPos;
 
@@ -16,8 +15,6 @@ uniform float ambientLightStrength;
 uniform vec3  ambientColour;
 uniform float ambientStrength;
 
-uniform sampler2D s_texture;
-
 out vec4 frag_color;
 
 void main() {
@@ -25,15 +22,18 @@ void main() {
 	vec3 N = normalize(inNormal);
 	vec3 camDir = normalize(camPos - inPos);
 	vec3 lightDir = vec3(0.0, 0.0, 0.0);
+	float lightDistSq = 0.0;
 	vec3 total = vec3(0.0, 0.0, 0.0);
 
 	for(int i = 0; i < lightCount; ++i) {
-		lightDir = normalize(lightsPos[i] - inPos);
+		lightDir = lightsPos[i] - inPos;
+		lightDistSq = dot(lightDir, lightDir);
+		lightDistSq = length(lightDir);
+		lightDir = normalize(lightDir);
 
-		//								 diffuse with attenuation									 SpecStrength													ShininessCoefficient
-		total += (ambientLightStrength + max(dot(N, lightDir), 0.0) / length(lightsPos[i] - inPos) + inSpec.x * pow(max(dot(N, normalize(camDir + lightDir)), 0.0), inSpec.y)) * lightsColour[i];
+		//								 diffuse					  SpecStrength													 ShininessCoefficient
+		total += (ambientLightStrength + max(dot(N, lightDir), 0.0) + inSpec.x * pow(max(dot(N, normalize(camDir + lightDir)), 0.0), inSpec.y)) / lightDistSq * lightsColour[i];
 	}
 
-	vec4 textureColour = texture(s_texture, inUV);
-	frag_color = vec4((ambientColour * ambientStrength + total) * inColour * textureColour.rgb, textureColour.a * inSpec.z);
+	frag_color = vec4((ambientColour * ambientStrength + total) * inColour, inSpec.z);
 }

@@ -394,13 +394,16 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	}
 
 	file.close();
-
+	 
 	std::vector<float> interleaved;
 
 	for (size_t i = 0; i < bufferVertex.size(); ++i) {
 		interleaved.push_back(vertex[bufferVertex[i]].x);
 		interleaved.push_back(vertex[bufferVertex[i]].y);
 		interleaved.push_back(vertex[bufferVertex[i]].z);
+		interleaved.push_back(normals[bufferNormals[i]].x);
+		interleaved.push_back(normals[bufferNormals[i]].y);
+		interleaved.push_back(normals[bufferNormals[i]].z);
 		if (usingMaterial) {
 			interleaved.push_back(materials[bufferColours[i]].colours.x);
 			interleaved.push_back(materials[bufferColours[i]].colours.y);
@@ -413,9 +416,6 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 			interleaved.push_back(UV[bufferUV[i]].x);
 			interleaved.push_back(UV[bufferUV[i]].y);
 		}
-		interleaved.push_back(normals[bufferNormals[i]].x);
-		interleaved.push_back(normals[bufferNormals[i]].y);
-		interleaved.push_back(normals[bufferNormals[i]].z);
 	}
 
 	VertexBuffer::sptr interleaved_vbo = VertexBuffer::Create();
@@ -428,9 +428,9 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 		m_models[ind].vao->AddVertexBuffer(interleaved_vbo, {
 			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
 			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3),
-			BufferAttribute(4, 3, GL_FLOAT, false, stride, sizeof(float) * 6),
-			BufferAttribute(2, 2, GL_FLOAT, false, stride, sizeof(float) * 9),
-			BufferAttribute(3, 3, GL_FLOAT, false, stride, sizeof(float) * 11)
+			BufferAttribute(2, 3, GL_FLOAT, false, stride, sizeof(float) * 6),
+			BufferAttribute(3, 3, GL_FLOAT, false, stride, sizeof(float) * 9),
+			BufferAttribute(4, 2, GL_FLOAT, false, stride, sizeof(float) * 11)
 			});
 	}
 	else if (usingMaterial) {
@@ -439,8 +439,8 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 		m_models[ind].vao->AddVertexBuffer(interleaved_vbo, {
 			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
 			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3),
-			BufferAttribute(3, 3, GL_FLOAT, false, stride, sizeof(float) * 6),
-			BufferAttribute(2, 3, GL_FLOAT, false, stride, sizeof(float) * 9)
+			BufferAttribute(2, 3, GL_FLOAT, false, stride, sizeof(float) * 6),
+			BufferAttribute(3, 3, GL_FLOAT, false, stride, sizeof(float) * 9)
 			});
 	}
 	else {
@@ -460,18 +460,18 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 void ObjLoader::Init()
 {
 	m_matShader = Shader::Create();
-	m_matShader->LoadShaderPartFromFile("shaders/mat_vertex_shader.glsl", GL_VERTEX_SHADER);
-	m_matShader->LoadShaderPartFromFile("shaders/mat_frag_shader.glsl", GL_FRAGMENT_SHADER);
+	m_matShader->LoadShaderPartFromFile("shaders/vert_mat.glsl", GL_VERTEX_SHADER);
+	m_matShader->LoadShaderPartFromFile("shaders/frag_mat.glsl", GL_FRAGMENT_SHADER);
 	m_matShader->Link();
 
 	m_texShader = Shader::Create();
-	m_texShader->LoadShaderPartFromFile("shaders/tex_vertex_shader.glsl", GL_VERTEX_SHADER);
-	m_texShader->LoadShaderPartFromFile("shaders/tex_frag_shader.glsl", GL_FRAGMENT_SHADER);
+	m_texShader->LoadShaderPartFromFile("shaders/vert_tex.glsl", GL_VERTEX_SHADER);
+	m_texShader->LoadShaderPartFromFile("shaders/frag_tex.glsl", GL_FRAGMENT_SHADER);
 	m_texShader->Link();
 
 	m_shader = Shader::Create();
-	m_shader->LoadShaderPartFromFile("shaders/vertex_shader.glsl", GL_VERTEX_SHADER);
-	m_shader->LoadShaderPartFromFile("shaders/frag_shader.glsl", GL_FRAGMENT_SHADER);
+	m_shader->LoadShaderPartFromFile("shaders/vert_none.glsl", GL_VERTEX_SHADER);
+	m_shader->LoadShaderPartFromFile("shaders/frag_none.glsl", GL_FRAGMENT_SHADER);
 	m_shader->Link();
 
 	m_matQueue.clear();
