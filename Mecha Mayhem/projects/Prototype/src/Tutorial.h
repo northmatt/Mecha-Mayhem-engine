@@ -76,9 +76,9 @@ private:
 	entt::entity Head4 = entt::null;
 	entt::entity cameraEnt4 = entt::null;
 
-	entt::entity lightDrone = entt::null;
+	/*entt::entity lightDrone = entt::null;
 	entt::entity cameraDrone = entt::null;
 	entt::entity speakerDrone = entt::null;
-	entt::entity shieldDrone = entt::null;
+	entt::entity shieldDrone = entt::null;*/
 };
 

@@ -884,7 +884,9 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 			m_shader->SetUniform("t", m_defaultQueue[i].t);
 			m_defaultQueue[i].vao->Render();
 		}
+		Shader::UnBind();
 	}
+
 
 	if (m_texQueue.size() != 0) {
 		//global stuff
@@ -910,6 +912,7 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 
 			m_texQueue[i].vao->Render();
 		}
+		Shader::UnBind();
 	}
 
 	if (m_matQueue.size() != 0) {
@@ -931,8 +934,6 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 			m_matShader->SetUniform("t", m_matQueue[i].t);
 			m_matQueue[i].vao->Render();
 		}
-	}
-
 	Shader::UnBind();
-	VertexArrayObject::UnBind();
+	}
 }

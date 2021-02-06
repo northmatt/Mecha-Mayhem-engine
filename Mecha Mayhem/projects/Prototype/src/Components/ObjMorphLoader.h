@@ -116,7 +116,7 @@ private:
 	static Shader::sptr m_shader;
 	static Shader::sptr m_matShader;
 	static Shader::sptr m_texShader;
-	static std::vector<BufferAttribute> pos1Buff;
+	static std::vector<BufferAttribute> pos1Buff; 
 	static std::vector<BufferAttribute> pos2Buff;
 	static std::vector<BufferAttribute> norm1Buff;
 	static std::vector<BufferAttribute> norm2Buff;

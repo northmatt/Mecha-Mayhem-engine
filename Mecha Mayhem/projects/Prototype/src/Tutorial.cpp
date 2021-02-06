@@ -126,7 +126,7 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	}
 
 	//details
-	{
+	/*{
 		auto entity = ECS::CreateEntity();
 		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/light.obj", true);
 		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, 5, 4));
@@ -150,7 +150,7 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 		auto entity = ECS::CreateEntity();
 		ECS::AttachComponent<ObjMorphLoader>(entity).LoadMeshs("drone/shield", true);
 		shieldDrone = entity;
-	}
+	}*/
 
 	/// End of creating entities
 	Rendering::DefaultColour = glm::vec4(1.f, 0.5f, 0.5f, 1.f);
@@ -167,34 +167,34 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 
 void Tutorial::Update()
 {
-	if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER::ONE)) {
-		if (ControllerInput::GetButton(BUTTON::RB, CONUSER::ONE)) {
-			m_nextScene = 2;
-			return;
-		}
-		else {
-			if (++m_camCount > 4)	m_camCount = 1;
-			if (m_camCount == 2) {
-				ECS::GetComponent<Camera>(cameraEnt1).ResizeWindow(width / 2.f, height);
-				ECS::GetComponent<Camera>(cameraEnt2).ResizeWindow(width / 2.f, height);
-				Player::SetUIAspect(width / 2.f, height);
+	for (size_t i(0); i < 4; ++i) {
+		if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER(i))) {
+			if (ControllerInput::GetButton(BUTTON::RB, CONUSER(i))) {
+				m_nextScene = 2;
+				return;
 			}
 			else {
-				ECS::GetComponent<Camera>(cameraEnt1).ResizeWindow(width, height);
-				ECS::GetComponent<Camera>(cameraEnt2).ResizeWindow(width, height);
-				Player::SetUIAspect(width, height);
+				if (++m_camCount > 4)	m_camCount = 1;
+				if (m_camCount == 2) {
+					ECS::GetComponent<Camera>(cameraEnt1).ResizeWindow(width / 2.f, height);
+					ECS::GetComponent<Camera>(cameraEnt2).ResizeWindow(width / 2.f, height);
+					Player::SetUIAspect(width / 2.f, height);
+				}
+				else {
+					ECS::GetComponent<Camera>(cameraEnt1).ResizeWindow(width, height);
+					ECS::GetComponent<Camera>(cameraEnt2).ResizeWindow(width, height);
+					Player::SetUIAspect(width, height);
+				}
 			}
 		}
-	}
 
-	if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER::ONE)) {
-		if (ControllerInput::GetButton(BUTTON::RB, CONUSER::ONE)) {
-			if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
-			else							BackEnd::SetFullscreen();
+		if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(i))) {
+			if (ControllerInput::GetButton(BUTTON::RB, CONUSER(i))) {
+				if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
+				else							BackEnd::SetFullscreen();
+			}
 		}
-	}
 
-	for (size_t i(0); i < 4; ++i) {
 		if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(i))) {
 			m_paused = !m_paused;
 			return;
@@ -266,10 +266,10 @@ void Tutorial::Update()
 
 	}
 
-	ECS::GetComponent<Transform>(lightDrone).SetPosition(dronePath.Update(Time::dt).GetPosition()).SetRotation(dronePath.GetLookingForwards(0.5f));
+	/*ECS::GetComponent<Transform>(lightDrone).SetPosition(dronePath.Update(Time::dt).GetPosition()).SetRotation(dronePath.GetLookingForwards(0.5f));
 	ECS::GetComponent<Transform>(cameraDrone).SetPosition(dronePath2.Update(Time::dt).GetPosition()).SetRotation(dronePath2.GetLookingForwards(0.5f));
 	ECS::GetComponent<Transform>(speakerDrone).SetPosition(dronePath3.Update(Time::dt).GetPosition()).SetRotation(dronePath3.GetLookingForwards(0.5f));
-	ECS::GetComponent<Transform>(shieldDrone).SetPosition(dronePath4.Update(Time::dt).GetPosition()).SetRotation(dronePath4.GetLookingForwards(0.5f));
+	ECS::GetComponent<Transform>(shieldDrone).SetPosition(dronePath4.Update(Time::dt).GetPosition()).SetRotation(dronePath4.GetLookingForwards(0.5f));*/
 
 
 	/*if (Input::GetKeyDown(KEY::FSLASH))	m_colliders.ToggleDraw();

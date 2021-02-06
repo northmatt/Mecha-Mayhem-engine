@@ -2,11 +2,11 @@
 #include "DemoScene.h"
 #include "Tutorial.h"
 #include "MainMenu.h"
-#include "LeaderBoard.h"
+#include "LeaderBoard.h" 
 
 int main() {
 	int width = 1280, height = 720;
-	const bool usingImGui = true;
+	const bool usingImGui = false;
 
 	GLFWwindow* window = Gameloop::Start("Mecha Mayhem", width, height, usingImGui);
 	if (!window)	return 1;
@@ -15,7 +15,7 @@ int main() {
 		// Creating demo scenes
 		std::vector<Scene*> scenes;
 		scenes.push_back(new MainMenu("Mecha Mayhem"));
-		scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0)));
+		scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0))); 
 		scenes.push_back(new DemoScene("MM Demo", glm::vec3(0, -100, 0)));
 		scenes.push_back(new LeaderBoard("THe Winner is..."));
  		 

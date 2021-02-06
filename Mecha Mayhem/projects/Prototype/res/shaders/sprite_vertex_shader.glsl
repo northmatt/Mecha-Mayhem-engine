@@ -7,9 +7,9 @@ uniform mat4 MVP;
 layout(location = 0) out vec2 outUV;
 
 void main() {
-	gl_Position = MVP * vec4(inPosition, 1.0);
 
 	outUV = inUV;
+	gl_Position = MVP * vec4(inPosition, 1.0);
 }
 
 

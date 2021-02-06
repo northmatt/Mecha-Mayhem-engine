@@ -80,6 +80,7 @@ namespace Gameloop
 
 	//stop everything (use at the end to avoid issues)
 	void Stop(bool usingImGui) {
+		if (usingImGui)	BackEnd::CloseImGui();
 		//unloading static things
 		Input::Unload();
 		PhysBody::Unload();
@@ -90,7 +91,6 @@ namespace Gameloop
 		Sprite::Unload();
 		Effects::Unload();
 
-		if (usingImGui)	BackEnd::CloseImGui();
 
 		SoundManager::stopEverything();
 
