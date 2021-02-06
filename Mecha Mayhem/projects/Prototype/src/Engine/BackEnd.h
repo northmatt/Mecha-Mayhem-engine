@@ -13,6 +13,10 @@
 #include <GLM/gtc/matrix_transform.hpp>
 #include <GLM/gtc/type_ptr.hpp>
 #include <entt/entt.hpp>
+#include <imgui.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_glfw.h>
+
 #include "Engine/VertexArrayObject.h"
 #include "Engine/IndexBuffer.h"
 #include "Engine/Shader.h"
@@ -22,6 +26,8 @@ class BackEnd abstract
 public:
 	//returns
 	static GLFWwindow* Init(std::string name, int width, int height);
+	static void InitImGui();
+	static void CloseImGui();
 	static void Unload();
 
 	static void SetAspect(int width, int height);

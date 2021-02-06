@@ -115,6 +115,46 @@ GLFWwindow* BackEnd::Init(std::string name, int width, int height)
     return window;
 }
 
+void BackEnd::InitImGui()
+{
+	//shamelessly copied from Intermidiate CG OTTER
+
+	// Creates a new ImGUI context
+	ImGui::CreateContext();
+	// Gets our ImGUI input/output 
+	ImGuiIO& io = ImGui::GetIO();
+	// Allow docking to our window
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	// Allow multiple viewports (so we can drag ImGui off our window)
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	// Allow our viewports to use transparent backbuffers
+	io.ConfigFlags |= ImGuiConfigFlags_TransparentBackbuffers;
+
+	// Set up the ImGui implementation for OpenGL
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 410");
+
+	// Dark mode FTW
+	ImGui::StyleColorsDark();
+
+	// Get our imgui style
+	ImGuiStyle& style = ImGui::GetStyle();
+	//style.Alpha = 1.0f;
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+		style.WindowRounding = 0.0f;
+		style.Colors[ImGuiCol_WindowBg].w = 0.8f;
+	}
+}
+
+void BackEnd::CloseImGui()
+{
+	// Cleanup the ImGui implementation
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	// Destroy our ImGui context
+	ImGui::DestroyContext();
+}
+
 void BackEnd::Unload()
 {
 	delete window;
