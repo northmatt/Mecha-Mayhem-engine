@@ -430,7 +430,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3),
 			BufferAttribute(2, 3, GL_FLOAT, false, stride, sizeof(float) * 6),
 			BufferAttribute(3, 3, GL_FLOAT, false, stride, sizeof(float) * 9),
-			BufferAttribute(4, 2, GL_FLOAT, false, stride, sizeof(float) * 11)
+			BufferAttribute(4, 2, GL_FLOAT, false, stride, sizeof(float) * 12)
 			});
 	}
 	else if (usingMaterial) {

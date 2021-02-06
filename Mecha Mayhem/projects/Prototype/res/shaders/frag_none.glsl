@@ -41,7 +41,6 @@ void main() {
 	for(int i = 0; i < lightCount; ++i) {
 		lightDir = lightsPos[i] - inPos;
 		lightDistSq = dot(lightDir, lightDir);
-		lightDistSq = length(lightDir);
 		lightDir = normalize(lightDir);
 
 		//								 diffuse					  SpecStrength													 ShininessCoefficient

@@ -19,8 +19,8 @@ void main() {
 	gl_Position = MVP * vec4(inPosition, 1.0);
 
 	outPosition = (transform * vec4(inPosition, 1)).xyz;
-	outColour = inColour;
 	outNormal = mat3(transform) * inNormal;
+	outColour = inColour;
 	outSpecStrength = inSpecStrength;
 	outUV = inUV;
 }
