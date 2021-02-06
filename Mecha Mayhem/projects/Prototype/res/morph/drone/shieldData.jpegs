@@ -1,0 +1,9 @@
+bounce start 0 time 0
+anim 0 5
+anim 0 5
+anim 0 0.2
+anim 1 0.2
+anim 2 0.2
+anim 3 0.2
+anim 4 0.2
+anim 4 5

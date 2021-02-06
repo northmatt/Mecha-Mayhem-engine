@@ -23,12 +23,6 @@ float Player::m_dashDistance = 7.5f;
 glm::vec3 Player::m_skyPos = glm::vec3(0, 50, 0);
 
 Camera Player::m_orthoCam = {};
-ObjLoader Player::m_pistol = {};
-ObjLoader Player::m_canon = {};
-ObjLoader Player::m_rifle = {};
-ObjLoader Player::m_machineGun = {};
-ObjLoader Player::m_shotgun = {};
-ObjLoader Player::m_sword = {};
 Sound2D Player::m_shootLaser = {};
 Sound2D Player::m_hitSound = {};
 Sound2D Player::m_deathSound = {};
@@ -43,6 +37,16 @@ Sprite Player::m_dashBarOutline = {};
 Sprite Player::m_dashBar = {};
 Sprite Player::m_dashBarBack = {};
 Sprite Player::m_reticle = {};
+Sprite Player::m_scoreBack = {};
+Sprite Player::m_digits[10] = {};
+ObjLoader Player::m_pistol = {};
+ObjLoader Player::m_canon = {};
+ObjLoader Player::m_rifle = {};
+ObjLoader Player::m_machineGun = {};
+ObjLoader Player::m_shotgun = {};
+ObjLoader Player::m_sword = {};
+ObjMorphLoader Player::m_heliDrone = {};
+ObjMorphLoader Player::m_healPack = {};
 
 void Player::Init(int width, int height)
 {
@@ -55,6 +59,9 @@ void Player::Init(int width, int height)
 	m_machineGun.LoadMesh("models/MachineGun.obj", true);
 	m_shotgun.LoadMesh("models/Shotgun.obj", true);
 	m_sword.LoadMesh("models/Sword.obj", true);
+
+	m_heliDrone.LoadMeshs("drone/Heli", true);
+	m_healPack.LoadMeshs("healing", true);
 
 	m_shootLaser = { "laser.mp3", "shooting" };
 	m_shootLaser.setGroupVolume(0.5f);
@@ -75,12 +82,15 @@ void Player::Init(int width, int height)
 	m_healthBar = { glm::vec4(0, 0, 1, 1.f), 14.95f, 0.9f };
 	m_healthBarBack = { glm::vec4(0, 0, 0, 1.f), 14.95f, 0.9f };
 
-	m_dashBarOutline = { "energybar.png", 10.38, 1.5f };
+	m_dashBarOutline = { "energybar.png", 10.38f, 1.5f };
 	m_dashBar = { glm::vec4(1, 1, 1, 1.f), 9.15f, 0.5f };
 	m_dashBarBack = { glm::vec4(0, 0, 0, 1.f), 9.15f, 0.5f };
 
 	m_reticle = { "reticle.png", 1.f, 1.f };
+	m_scoreBack = { "ScoreBox.png", 3.f, 3.223f };
+	for (int i(0); i < 10; ++i)	m_digits[i] = { "num/" + std::to_string(i) +".png", 1.25f, 1.6667f };
 
+	ObjMorphLoader("dummy/idle", true).LoadMeshs("dummy/death", true);
 	ObjMorphLoader("char/idle", true).LoadMeshs("char/walk", true)
 		.LoadMeshs("char/air", true).LoadMeshs("char/death", true)
 			.LoadMeshs("char/punch", true);
@@ -93,6 +103,12 @@ void Player::Init(int width, int height)
 	ObjMorphLoader("char4/idle", true).LoadMeshs("char4/walk", true)
 		.LoadMeshs("char4/air", true).LoadMeshs("char4/death", true)
 			.LoadMeshs("char4/punch", true);
+}
+
+void Player::Update()
+{
+	m_heliDrone.Update(Time::dt);
+	m_healPack.Update(Time::dt);
 }
 
 void Player::SetUIAspect(int width, int height)
@@ -119,17 +135,47 @@ Player& Player::Init(CONUSER user, int characterModel)
 	return *this;
 }
 
-void Player::Draw(const glm::mat4& model, short camNum, short numOfCams)
+void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool paused)
 {
 	if (short(m_user) == camNum) {
 		//draw ui
 		float healthPercent = float(m_health) / m_maxHealth;
 		float dashPercent = float(m_dashTimer) / m_dashDelay;
+		float x = 15.7777f;	//1.77 * 10 - 2
+		float y = 7.5f;
+		if (paused && numOfCams > 2) {
+			x = 12.f;
+			y = 5.f;
+		}
+		if (numOfCams == 2)		x = 6.88889f;	//0.88 * 10 - 2
+		if (camNum % 2 == 0)	x = -x;
+		if (camNum < 2 && numOfCams > 2)	y = -y;
 
 		m_healthBar.SetWidth(14.95f * healthPercent);
 		m_dashBar.SetWidth(9.15f * (1 - dashPercent));
 
 		glm::mat4 VP = m_orthoCam.GetViewProjection();
+
+		m_scoreBack.Draw(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			x, y, -9.9f, 1		));
+
+		if (m_killCount < 10) {
+			m_digits[m_killCount].Draw(VP, glm::mat4(
+				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x, y, -10, 1			));
+		}
+		else if (m_killCount < 100) {
+			int digit2 = m_killCount / 10;
+			m_digits[m_killCount - digit2 * 10].Draw(VP, glm::mat4(
+				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x - 0.65f, y, -10, 1			));
+			m_digits[digit2].Draw(VP, glm::mat4(
+				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x + 0.65f, y, -10, 1			));
+		}
+		else {
+			m_digits[0].Draw(VP, glm::mat4(
+				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x - 0.65f, y, -10, 1			));
+			m_digits[0].Draw(VP, glm::mat4(
+				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x + 0.65f, y, -10, 1			));
+		}
 
 		m_healthBar.Draw(VP, glm::mat4(
 			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			(1 - healthPercent) * 7.475f, -8.5f, -9.9f, 1		));
@@ -146,27 +192,19 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams)
 		m_dashBarOutline.Draw(VP, glm::mat4(
 			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -7.25f, -10.f, 1		));
 
-		m_reticle.Draw(VP, glm::mat4(
+		if (!paused)	m_reticle.Draw(VP, glm::mat4(
 			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, 0, -10, 1		));
 
 		//is false when cam is too close
 		if (!m_drawSelf)	return;
 	}
-	if (!m_punched) {
-		switch (m_currWeapon) {
-			//draw gun
-		case WEAPON::PISTOL:		m_pistol.Draw(model * m_gunOffset);		break;
-		case WEAPON::CANON:			m_canon.Draw(model * m_gunOffset);		break;
-		case WEAPON::RIFLE:			m_rifle.Draw(model * m_gunOffset);		break;
-		case WEAPON::MACHINEGUN:	m_machineGun.Draw(model * m_gunOffset);	break;
-		case WEAPON::SHOTGUN:		m_shotgun.Draw(model * m_gunOffset);	break;
-		case WEAPON::SWORD:			m_sword.Draw(model * m_gunOffset);	break;
-
-			//WEAPON::FIST is included
-		default:	break;
-		}
+	if (!m_punched && m_currWeapon != WEAPON::FIST) {
+		GetWeaponModel(m_currWeapon).Draw(model * m_gunOffset);
 	}
 	m_charModel.Draw(model + m_modelOffset);
+	if (m_respawnTimer > 0) {
+		m_heliDrone.Draw(model + -m_modelOffset);
+	}
 }
 
 void Player::Update(PhysBody& body)
@@ -216,19 +254,13 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 	//dont care if not a player or dead
 	if (m_user == CONUSER::NONE)	return;
 	if (m_health == 0) {
+		personalCam.SetPosition(glm::vec3(0, 0, m_camDistance));
 		body.SetVelocity(BLM::BTzero);
 		head.SetRotation(glm::quat(-0.71f, 0.71f, 0.f, 0.f));
 		return;
 	}
 
-	if (m_punched) {
-		m_charModel.BlendTo(m_charModelIndex + "/punch");
-
-		if (m_charModel.IsDone())	m_punched = false;
-		else						return;
-	}
-
-	//controls
+	//Camera Rotation (above punch for user experience)
 	{
 		m_rot.x += ControllerInput::GetRY(m_user) * 3.f * Time::dt;
 		m_rot.y += ControllerInput::GetRX(m_user) * 3.f * Time::dt;
@@ -238,7 +270,20 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 
 		body.SetRotation(glm::rotate(m_startRot, -m_rot.y, BLM::GLMup));
 		head.SetRotation(glm::rotate(m_startRot, m_rot.x, glm::vec3(1, 0, 0)));
+	}
 
+	if (m_punched) {
+		m_charModel.BlendTo(m_charModelIndex + "/punch");
+
+		if (m_charModel.IsDone()) {
+			m_charModel.BlendTo(m_charModelIndex + "/idle");
+			m_punched = false;
+		}
+		else						return;
+	}
+
+	//controls
+	{
 		glm::vec3 vel = glm::vec3(0.f);
 		vel.y = body.SetAwake().GetVelocity().y();
 
@@ -287,14 +332,15 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 			m_charModel.BlendTo(m_charModelIndex + "/air");
 		}
 
-		//only do other input check if not moving
+		//only do other input check if not punching
 		if (!m_punched) {
 			if (ControllerInput::GetButtonDown(BUTTON::B, m_user)) {
+				if (m_offhand == OFFHAND::EMPTY)
+					TakeDamage(1);
 				UseHeal();
-				TakeDamage(100);
 			}
 
-			//dash if moving
+			//dash if moving and velocity adjustment
 			if (vel.x != 0 || vel.z != 0) {
 				glm::vec3 normalized = glm::normalize(glm::vec3(vel.x, 0, vel.z));
 				float percent = std::max(fabsf(vel.x), fabsf(vel.z));
@@ -378,14 +424,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 	//gun
 	{
 		if (ControllerInput::GetButtonDown(BUTTON::Y, m_user) && m_secWeapon != WEAPON::FIST) {
-			m_swapWeapon.play();
-			WEAPON tempWeap = m_currWeapon;
-			m_currWeapon = m_secWeapon;
-			m_secWeapon = tempWeap;
-
-			short tempAmmo = m_currWeaponAmmo;
-			m_currWeaponAmmo = m_secWeaponAmmo;
-			m_secWeaponAmmo = tempAmmo;
+			SwapWeapon();
 		}
 		if (m_weaponCooldown == 0) {
 			if (ControllerInput::GetRTRaw(m_user)) {
@@ -399,14 +438,15 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 {
 	switch (m_currWeapon) {
 	case WEAPON::FIST:
-		body.SetVelocity(BLM::BTtoGLM(Melee(BLM::BTtoGLM(body.GetBody()->getWorldTransform().getOrigin())
+		if (m_grounded)
+			body.SetVelocity(BLM::BTtoGLM(Melee(BLM::BTtoGLM(body.GetBody()->getWorldTransform().getOrigin())
 				- head.GetForwards())));
 		break;
 	default:	//break;	for demo, all guns do the same
 	//case WEAPON::PISTOL:
 		//shoot
 		{
-			short damage = 1;
+			short damage = 3;
 			m_weaponCooldown = 0.25f;
 			m_shootLaser.play();
 
@@ -434,24 +474,42 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 
 			//deal with ammo here
 			if (--m_currWeaponAmmo <= 0) {
-				m_currWeapon = m_secWeapon;
-				m_secWeapon = WEAPON::FIST;
+				SwapWeapon(true);
 			}
 		}
 		break;
 	}
 }
 
+void Player::SwapWeapon(bool outOfAmmo)
+{
+	m_swapWeapon.play();
+	WEAPON tempWeap = m_currWeapon;
+	m_currWeapon = m_secWeapon;
+
+	short tempAmmo = m_currWeaponAmmo;
+	m_currWeaponAmmo = m_secWeaponAmmo;
+
+	if (outOfAmmo) { m_secWeapon = WEAPON::FIST; m_secWeaponAmmo = 0; }
+	else { m_secWeapon = tempWeap; m_secWeaponAmmo = tempAmmo; }
+
+	m_weaponCooldown = 1.f;
+}
+
 void Player::UseHeal()
 {
+	if (m_health == m_maxHealth)	return;
+
 	if (m_offhand == OFFHAND::HEALPACK1) {
 		m_health += 3;
+		m_swapWeapon.play();
 		if (m_health > m_maxHealth)
 			m_health = m_maxHealth;
 		m_offhand = OFFHAND::EMPTY;
 	}
 	if (m_offhand == OFFHAND::HEALPACK2) {
 		m_health += 3;
+		m_swapWeapon.play();
 		if (m_health > m_maxHealth)
 			m_health = m_maxHealth;
 		m_offhand = OFFHAND::HEALPACK1;
@@ -466,10 +524,10 @@ btVector3 Player::Melee(const glm::vec3& pos)
 
 	ECS::GetRegistry()->view<Player, PhysBody>().each(
 		[&](Player& p, PhysBody& body) {
-			if (p.m_user != m_user) {
-				if (body.TestAABB(pos, 0.5f)) {
-					p.TakeDamage(1);
-				}
+			if (p.m_user != m_user) if (body.TestAABB(pos, 0.5f)) {
+				if (p.TakeDamage(2))
+					++m_killCount;
+				hit = true;
 			}
 		}
 	);
@@ -492,6 +550,8 @@ bool Player::PickUpWeapon(WEAPON pickup)
 		return true;
 	}
 	if (m_secWeapon == WEAPON::FIST) {
+		if (m_currWeapon == pickup)
+			return false;
 		m_secWeapon = pickup;
 		//based on weapon, add ammo
 		m_secWeaponAmmo = 20;
@@ -511,4 +571,34 @@ bool Player::PickUpOffhand(OFFHAND pickup)
 		return true;
 	}
 	return false;
+}
+
+ObjLoader Player::GetWeaponModel(WEAPON choice)
+{
+	switch (choice) {
+		//draw gun
+	case WEAPON::CANON:			return m_canon;
+	case WEAPON::RIFLE:			return m_rifle;
+	case WEAPON::MACHINEGUN:	return m_machineGun;
+	case WEAPON::SHOTGUN:		return m_shotgun;
+	case WEAPON::SWORD:			return m_sword;
+
+	//case WEAPON::PISTOL:		return m_pistol;
+		//WEAPON::FIST is included
+	default:	return m_pistol;
+	}
+}
+
+ObjMorphLoader& Player::GetOffhandModel(OFFHAND choice)
+{
+	return m_healPack;
+
+	//do for real
+	switch (choice) {
+		//draw gun
+	case OFFHAND::HEALPACK1:	return m_healPack;
+	case OFFHAND::HEALPACK2:	return m_healPack;
+		//empty included
+	default:	return m_healPack;
+	}
 }

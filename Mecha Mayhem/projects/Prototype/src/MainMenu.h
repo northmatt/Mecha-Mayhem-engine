@@ -20,11 +20,16 @@ public:
 
 private:
 	bool m_exit = false;
+	bool playerSwapped[4] = {};
 
+	int m_scenePos = 0;
 	int width = 10;
 	int height = 10;
+	const int maxSelect = 4;
 
 	float zoomTime = 1;
+	float m_exitHoldTimer = 0;
+	float m_confirmTimer = 1.f;
 
 	Sound2D m_bg = { "MainMenu.mp3", "BG" };
 
@@ -38,5 +43,13 @@ private:
 	entt::entity camera = entt::null;
 	entt::entity title = entt::null;
 	entt::entity text = entt::null;
+	entt::entity charSelect = entt::null;
+	entt::entity backGround = entt::null;
+	entt::entity models[4] = {
+		entt::null,
+		entt::null,
+		entt::null,
+		entt::null
+	};
 };
 
