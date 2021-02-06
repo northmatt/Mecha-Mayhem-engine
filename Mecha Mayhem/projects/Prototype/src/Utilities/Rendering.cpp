@@ -135,13 +135,13 @@ namespace Rendering {
 
     glm::vec4 BackColour = { 0.2f, 0.2f, 0.2f, 1.f };
     std::array<glm::vec3, MAX_LIGHTS> LightsColour = {
-       glm::vec3(120.f),
+       glm::vec3(200.f),
        glm::vec3(15.f, 15.f, 0.f),
-       glm::vec3(.5f), glm::vec3(.5f), glm::vec3(1.5f), glm::vec3(1.5f),
-       glm::vec3(1.5f), glm::vec3(1.5f), glm::vec3(1.5f), glm::vec3(1.5f)
+       glm::vec3(.15f), glm::vec3(.15f), glm::vec3(.5f), glm::vec3(.5f),
+       glm::vec3(.5f), glm::vec3(.5f), glm::vec3(.5f), glm::vec3(.5f)
     };
     std::array<glm::vec3, MAX_LIGHTS> LightsPos = {
-        glm::vec3(0.f, 20.f, 0.f), glm::vec3(0.f),
+        glm::vec3(0.f, 10.f, 0.f), glm::vec3(0.f),
         glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f),
         glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f)
     };

@@ -83,7 +83,7 @@ void MainMenu::Update()
 			glm::angleAxis(glm::radians(lx * 3), BLM::GLMup) * glm::angleAxis(glm::radians(ly * 3), glm::vec3(-1, 0, 0))
 		).GetGlobalPosition();
 
-		Rendering::LightsPos[4] = Rendering::LightsPos[5] = ECS::GetComponent<Transform>(camera).SetPosition(
+		Rendering::LightsPos[4] = ECS::GetComponent<Transform>(camera).SetPosition(
 			cameraPath.Update(Time::dt).GetPosition()).SetRotation(
 				cameraPath.GetLookingForwards(Time::dt) * glm::angleAxis(glm::radians(rx * 4), glm::vec3(0, -1, 0))
 				* glm::angleAxis(glm::radians(ry * 4), glm::vec3(1, 0, 0))).GetGlobalPosition();
