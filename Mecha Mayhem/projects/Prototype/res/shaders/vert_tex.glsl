@@ -15,14 +15,14 @@ layout(location = 3) out vec3 outSpecStrength;
 layout(location = 4) out vec2 outUV;
 
 void main() {
-	// vertex position in clip space
-	gl_Position = MVP * vec4(inPosition, 1.0);
-
 	outPosition = (transform * vec4(inPosition, 1)).xyz;
 	outNormal = mat3(transform) * inNormal;
 	outColour = inColour;
 	outSpecStrength = inSpecStrength;
 	outUV = inUV;
+
+	// vertex position in clip space
+	gl_Position = MVP * vec4(inPosition, 1.0);
 }
 
 
