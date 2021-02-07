@@ -4,6 +4,7 @@
 #include "Components/Player.h"
 #include "Components/SpawnStation.h"
 #include "Utilities/HitboxReader.h"
+#include "GAss/ColorCorrection.h"
 #include "Effects.h"
 
 namespace Rendering
@@ -11,7 +12,7 @@ namespace Rendering
 	//sets up the VP
 	void Init(int width, int height);
 
-	void Update(entt::registry* reg, int numOfCams, bool paused);
+	void Update(entt::registry* reg, int numOfCams, bool paused, PostEffect* postEffects = nullptr);
 	void DrawPauseScreen(Sprite image);
 
 	extern glm::vec4 BackColour;

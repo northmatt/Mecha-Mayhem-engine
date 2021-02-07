@@ -3,17 +3,17 @@
 #include "Engine/Shader.h"
 #include "Engine/Texture2D.h"
 
-//struct DepthTarget
-//{
-//	//Deconstructor for Depth Target
-//	//*Unloads texture
-//	~DepthTarget();
-//	//Deletes the texture of the depth target
-//	void Unload();
-//	//Holds the depth texture
-//	//ITexture _texture;
-//	Texture2D _texture;
-//};
+	struct DepthTarget
+	{
+		//Deconstructor for Depth Target
+		//*Unloads texture
+		~DepthTarget();
+		//Deletes the texture of the depth target
+		void Unload();
+		//Holds the depth texture
+		//ITexture _texture;
+		Texture2D _texture;
+	};
 
 struct ColorTarget
 {
@@ -99,7 +99,7 @@ protected:
 	//OpenGL framebuffer handle
 	GLuint _FBO;
 	//Depth attachment (either one or none)
-	//DepthTarget _depth;
+	DepthTarget _depth;
 	//Color attachments (can be either 1 or above
 	ColorTarget _color;
 

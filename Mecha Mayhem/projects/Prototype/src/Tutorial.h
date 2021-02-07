@@ -1,7 +1,7 @@
 #pragma once
 #include "Utilities/Scene.h"
 #include "Utilities/Catmull.h"
-#include "GAss/ColorCorrection.h"
+
 
 class Tutorial : public Scene
 {
@@ -9,10 +9,11 @@ public:
 	Tutorial(const std::string& name, const glm::vec3& gravity = glm::vec3(0.f)) :
 		Scene(name, gravity, true) {}
 
+
 	virtual void Init(int windowWidth, int windowHeight) override;
 	virtual void Update() override;
 	virtual Scene* Reattach() override;
-
+	virtual void BackEndUpdate() override;
 	
 	void SetCubeFiles(LUT3D warmCube, LUT3D coldCube, LUT3D customCube);
 
@@ -85,6 +86,10 @@ private:
 	entt::entity bodyEnt4 = entt::null;
 	entt::entity Head4 = entt::null;
 	entt::entity cameraEnt4 = entt::null;
+
+	//entt::entity basicEffectEnt = entt::null;
+	PostEffect* basicEffect = nullptr;
+	ColorCorrection* colorCorrectionEffect = nullptr;
 
 	/*entt::entity lightDrone = entt::null;
 	entt::entity cameraDrone = entt::null;

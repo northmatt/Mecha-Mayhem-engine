@@ -5,19 +5,19 @@ GLuint Framebuffer::_fullscreenQuadVAO = 0;
 
 int Framebuffer::_maxColorAttachments = 0;
 bool Framebuffer::_isInitFSQ = false;
-//
-//DepthTarget::~DepthTarget()
-//{
-//	//Unloads the depth target
-//	Unload();
-//}
-//
-//void DepthTarget::Unload()
-//{
-//	//Deletes the texture at the specific handle
-//	//glDeleteTextures(1, &_texture.GetHandle());
-//	glDeleteTextures(1, &_texture.GetHandle());
-//}
+	
+	DepthTarget::~DepthTarget()
+	{
+		//Unloads the depth target
+		Unload();
+	}
+	
+	void DepthTarget::Unload()
+	{
+		//Deletes the texture at the specific handle
+		//glDeleteTextures(1, &_texture.GetHandle());
+		glDeleteTextures(1, &_texture.GetHandle());
+	}
 
 ColorTarget::~ColorTarget()
 {
@@ -66,27 +66,27 @@ void Framebuffer::Init()
 
 	if (_depthActive)
 	{
-		throw std::runtime_error("DEPTH NOT IMPLEMENTED, DO NOT USE");
-		////because we have depth we need to clear our depth bit
-		//_clearFlag |= GL_DEPTH_BUFFER_BIT;
+		//throw std::runtime_error("DEPTH NOT IMPLEMENTED, DO NOT USE");
+		//because we have depth we need to clear our depth bit
+		_clearFlag |= GL_DEPTH_BUFFER_BIT;
 
-		////Generate the texture
-		//glGenTextures(1, &_depth._texture.GetHandle());
-		////Binds the texture
-		//glBindTexture(GL_TEXTURE_2D, _depth._texture.GetHandle());
-		////Sets the texture data
-		//glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT24, _width, _height);
+		//Generate the texture
+		glGenTextures(1, &_depth._texture.GetHandle());
+		//Binds the texture
+		glBindTexture(GL_TEXTURE_2D, _depth._texture.GetHandle());
+		//Sets the texture data
+		glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT24, _width, _height);
 
-		////Set texture parameters
-		//glTextureParameteri(_depth._texture.GetHandle(), GL_TEXTURE_MIN_FILTER, _filter);
-		//glTextureParameteri(_depth._texture.GetHandle(), GL_TEXTURE_MAG_FILTER, _filter);
-		//glTextureParameteri(_depth._texture.GetHandle(), GL_TEXTURE_WRAP_S, _wrap);
-		//glTextureParameteri(_depth._texture.GetHandle(), GL_TEXTURE_WRAP_T, _wrap);
+		//Set texture parameters
+		glTextureParameteri(_depth._texture.GetHandle(), GL_TEXTURE_MIN_FILTER, _filter);
+		glTextureParameteri(_depth._texture.GetHandle(), GL_TEXTURE_MAG_FILTER, _filter);
+		glTextureParameteri(_depth._texture.GetHandle(), GL_TEXTURE_WRAP_S, _wrap);
+		glTextureParameteri(_depth._texture.GetHandle(), GL_TEXTURE_WRAP_T, _wrap);
 
-		////Sets up as a framebuffer texture
-		//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depth._texture.GetHandle(), 0);
+		//Sets up as a framebuffer texture
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depth._texture.GetHandle(), 0);
 
-		//glBindTexture(GL_TEXTURE_2D, GL_NONE);
+		glBindTexture(GL_TEXTURE_2D, GL_NONE);
 	}
 
 	//If there is more than zero color attachments
@@ -135,14 +135,14 @@ void Framebuffer::Init()
 void Framebuffer::AddDepthTarget()
 {
 	//If there is a handle already, unload it
-	//if (_depth._texture.GetHandle())
-	//{
-	//	_depth.Unload();
-	//}
+	if (_depth._texture.GetHandle())
+	{
+		_depth.Unload();
+	}
 	//Make depth active true
-	//_depthActive = true;
-	_depthActive = false;
-	throw std::runtime_error("DEPTH NOT IMPLEMENTED, DO NOT USE");
+	_depthActive = true;
+	//_depthActive = false;
+	//throw std::runtime_error("DEPTH NOT IMPLEMENTED, DO NOT USE");
 }
 
 void Framebuffer::AddColorTarget(GLenum format)

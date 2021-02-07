@@ -12,10 +12,15 @@ namespace Rendering {
             .SetIsOrtho(true).ResizeWindow(width, height).SetPosition(BLM::GLMzero);
     }
 
-    void Update(entt::registry* reg, int numOfCams, bool paused)
+    void Update(entt::registry* reg, int numOfCams, bool paused, PostEffect* postEffects)
     {
         glClearColor(BackColour.x, BackColour.y, BackColour.z, BackColour.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if (postEffects != nullptr)
+        {
+            postEffects->BindBuffers(0);
+        }
 
         auto objView = reg->view<ObjLoader, Transform>();
         auto morphView = reg->view<ObjMorphLoader, Transform>();
@@ -112,6 +117,7 @@ namespace Rendering {
             if (++count >= numOfCams)
                 break;
         }
+        glViewport(0,0, width * 2, height * 2);
     }
 
     void DrawPauseScreen(Sprite image)

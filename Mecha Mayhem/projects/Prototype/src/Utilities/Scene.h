@@ -25,7 +25,7 @@ public:
 		ImGui::Text("Empty");
 	};
 
-	virtual void BackEndUpdate() final;
+	virtual void BackEndUpdate();
 	virtual int ChangeScene(int sceneCount) final;
 	virtual bool ExitTest() final {
 		return m_exitGame;

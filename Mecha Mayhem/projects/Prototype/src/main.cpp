@@ -10,7 +10,7 @@ int main() {
 
 	GLFWwindow* window = Gameloop::Start("Mecha Mayhem", width, height, usingImGui);
 	if (!window)	return 1;
-
+	Framebuffer::InitFullscreenQuad();
 	{
 		// Creating demo scenes
 		std::vector<Scene*> scenes;

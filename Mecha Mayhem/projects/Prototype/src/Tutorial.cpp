@@ -153,6 +153,23 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 		shieldDrone = entity;
 	}*/
 
+	//CG//
+
+	LUT3D warm("LUT/WarmLut.cube");
+	SetCubeFiles(warm, warm, warm);
+	colorCorrectionEffect = new ColorCorrection();
+	colorCorrectionEffect->Init(width, height, warm);
+
+	basicEffect = new PostEffect();
+	basicEffect->Init(width, height);
+	//basicEffectEnt = ECS::CreateEntity();
+	//ECS::AttachComponent<PostEffect*>(basicEffectEnt, new PostEffect());
+
+	//ECS::GetComponent<PostEffect*>(basicEffectEnt)->Init(width, height);
+	//colorCorrectionEffect->Init(width, height, warm);
+
+	//CG//
+
 	/// End of creating entities
 	Rendering::DefaultColour = glm::vec4(1.f, 0.5f, 0.5f, 1.f);
 	Rendering::hitboxes = &m_colliders;
@@ -321,6 +338,46 @@ Scene* Tutorial::Reattach() {
 	Player::SetSkyPos(glm::vec3(0, 50, -45));
 
 	return this;
+}
+
+void Tutorial::BackEndUpdate()
+{
+	if (!m_paused) {
+		if (m_world != nullptr) {
+
+			m_world->stepSimulation(Time::dt, 10);
+
+			m_reg.view<PhysBody, Transform>().each(
+				[](PhysBody& phys, Transform& trans) {
+				if (phys.IsDynamic() || phys.Changed())
+					trans.SetTransform(phys.GetTransform());
+			}
+			);
+		}
+		m_effects.Update();
+	}
+	
+	basicEffect->Clear();
+
+
+	//always render
+	if (m_camCount < 1)
+		m_camCount = 1;
+	else if (m_camCount > 4)
+		m_camCount = 4;
+	Rendering::Update(&m_reg, m_camCount, m_paused, basicEffect);
+
+	if (m_paused)   if (m_pauseSprite.IsValid()) {
+		Rendering::DrawPauseScreen(m_pauseSprite);
+	}
+	basicEffect->UnbindBuffer();
+	
+	colorCorrectionEffect->ApplyEffect(basicEffect);
+	colorCorrectionEffect->DrawToScreen();
+
+	//basicEffect->DrawToScreen();
+	
+
 }
 
 void Tutorial::SetCubeFiles(LUT3D warmCube, LUT3D coldCube, LUT3D customCube)

@@ -13,7 +13,7 @@ void ColorCorrection::Init(unsigned width, unsigned height, LUT3D cube)
 	_shaders.push_back(Shader::Create());
 	_shaders[index]->LoadShaderPartFromFile("shaders/passthrough_vert.glsl", GL_VERTEX_SHADER);
 	////TODO CHANGE THIS TO THE RIGHT SHADER
-	_shaders[index]->LoadShaderPartFromFile("shaders/post/color_correction_frag.glsl", GL_FRAGMENT_SHADER);
+	_shaders[index]->LoadShaderPartFromFile("shaders/color_correction_frag.glsl", GL_FRAGMENT_SHADER);
 
 	_cube = cube;
 
