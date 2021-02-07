@@ -26,6 +26,7 @@ namespace Gameloop
 		Effects::Init();
 		Player::Init(width, height);
 		Rendering::Init(width, height);
+		Framebuffer::InitFullscreenQuad();
 
 		return window;
 	}

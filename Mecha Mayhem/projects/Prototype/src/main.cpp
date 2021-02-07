@@ -42,6 +42,8 @@ int main() {
 					SoundManager::PauseEverything();
 					paused = true;
 				}
+				if (usingImGui)
+					Gameloop::ImGuiWindow(window, activeScene);
 				continue;
 			}
 			else if (paused) {

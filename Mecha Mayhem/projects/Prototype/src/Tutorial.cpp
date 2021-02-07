@@ -156,6 +156,9 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	Rendering::DefaultColour = glm::vec4(1.f, 0.5f, 0.5f, 1.f);
 	Rendering::hitboxes = &m_colliders;
 	Rendering::effects = &m_effects;
+	Rendering::frameEffects = &m_frameEffects;
+
+	m_frameEffects.Init(width, height);
 
 	Player::SetUIAspect(width, height);
 	Player::SetCamDistance(camDistance);
@@ -261,6 +264,9 @@ void Tutorial::Update()
 
 		m_colliders.Clear();
 
+		width = BackEnd::GetHalfWidth() * 2;
+		height = BackEnd::GetHalfHeight() * 2;
+
 		Init(width, height);
 		m_nextScene = 3;
 
@@ -288,7 +294,10 @@ Scene* Tutorial::Reattach() {
 
 	SoundManager::stopEverything();
 
+	m_frameEffects.Resize(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
+
 	Rendering::effects = &m_effects;
+	Rendering::frameEffects = &m_frameEffects;
 
 	ECS::GetComponent<Player>(bodyEnt1).Init(LeaderBoard::players[0].user, LeaderBoard::players[0].model);
 	ECS::GetComponent<Player>(bodyEnt2).Init(LeaderBoard::players[1].user, LeaderBoard::players[1].model);

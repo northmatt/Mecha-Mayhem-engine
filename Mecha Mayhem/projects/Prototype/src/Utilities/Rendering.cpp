@@ -14,8 +14,12 @@ namespace Rendering {
 
     void Update(entt::registry* reg, int numOfCams, bool paused)
     {
+        frameEffects->Clear();
+
         glClearColor(BackColour.x, BackColour.y, BackColour.z, BackColour.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        frameEffects->Bind();
 
         auto objView = reg->view<ObjLoader, Transform>();
         auto morphView = reg->view<ObjMorphLoader, Transform>();
@@ -150,5 +154,6 @@ namespace Rendering {
 
     HitboxGen* hitboxes = nullptr;
     Effects* effects = nullptr;
+    FrameEffects* frameEffects = nullptr;
     Camera orthoVP;
 }

@@ -93,7 +93,6 @@ void Sprite::DrawSingle(const glm::mat4& VP, const glm::mat4& model)
 	m_square->Render();
 
 	Shader::UnBind();
-	VertexArrayObject::UnBind();
 }
 
 void Sprite::PerformDraw()
@@ -110,7 +109,6 @@ void Sprite::PerformDraw()
 		}
 
 		Shader::UnBind();
-		VertexArrayObject::UnBind();
 	}
 }
 

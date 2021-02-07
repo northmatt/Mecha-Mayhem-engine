@@ -168,9 +168,9 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 			stringTrimming::ltrim(matLine);
 			if (matLine.substr(0, 6) == "newmtl")
 			{
+				matIndex = materials.size();
 				materials.push_back({ matLine.substr(7), glm::vec3(1.f), glm::vec3(1.f) });
-				tempExponent = tempTrans = 1;
-				matIndex = materials.size() - 1;
+				tempExponent = tempTrans = 1.f;
 			}
 			else if (matLine.substr(0, 6) == "map_Kd")
 			{
@@ -571,17 +571,17 @@ void ObjMorphLoader::Init()
 {
 	m_matShader = Shader::Create();
 	m_matShader->LoadShaderPartFromFile("shaders/mat_morph_vert.glsl", GL_VERTEX_SHADER);
-	m_matShader->LoadShaderPartFromFile("shaders/mat_morph_frag.glsl", GL_FRAGMENT_SHADER);
+	m_matShader->LoadShaderPartFromFile("shaders/mat_frag_shader.glsl", GL_FRAGMENT_SHADER);
 	m_matShader->Link();
 
 	m_texShader = Shader::Create();
 	m_texShader->LoadShaderPartFromFile("shaders/tex_morph_vert.glsl", GL_VERTEX_SHADER);
-	m_texShader->LoadShaderPartFromFile("shaders/tex_morph_frag.glsl", GL_FRAGMENT_SHADER);
+	m_texShader->LoadShaderPartFromFile("shaders/tex_frag_shader.glsl", GL_FRAGMENT_SHADER);
 	m_texShader->Link();
 
 	m_shader = Shader::Create();
 	m_shader->LoadShaderPartFromFile("shaders/morph_vert.glsl", GL_VERTEX_SHADER);
-	m_shader->LoadShaderPartFromFile("shaders/morph_frag.glsl", GL_FRAGMENT_SHADER);
+	m_shader->LoadShaderPartFromFile("shaders/frag_shader.glsl", GL_FRAGMENT_SHADER);
 	m_shader->Link();
 
 	pos1Buff =  { BufferAttribute(0, 3, GL_FLOAT, false, NULL, NULL) };
@@ -878,12 +878,26 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 		m_shader->SetUniform("ambientColour", ambientColour);
 		m_shader->SetUniform("ambientStrength", ambientStrength);
 
+		m_shader->SetUniform("usingAmbient", int(ObjLoader::usingAmbient));
+		m_shader->SetUniform("usingDiffuse", int(ObjLoader::usingDiffuse));
+		m_shader->SetUniform("usingSpecular", int(ObjLoader::usingSpecular));
+		m_shader->SetUniform("noLighting", int(ObjLoader::noLighting));
+		m_shader->SetUniform("toonShading", int(ObjLoader::toonShading));
+		m_shader->SetUniform("usingDiffuseRamp", int(ObjLoader::usingDiffuseRamp));
+		m_shader->SetUniform("usingSpecularRamp", int(ObjLoader::usingSpecularRamp));
+
+		m_shader->SetUniform("diffuseRamp", 1);
+		m_shader->SetUniform("specularRamp", 2);
+
 		for (int i(0); i < m_defaultQueue.size(); ++i) {
 			m_shader->SetUniformMatrix("MVP", VP * m_defaultQueue[i].model);
 			m_shader->SetUniformMatrix("transform", m_defaultQueue[i].model);
 			m_shader->SetUniform("t", m_defaultQueue[i].t);
+			ObjLoader::diffuseRamp->Bind(1);
+			ObjLoader::specularRamp->Bind(2);
 			m_defaultQueue[i].vao->Render();
 		}
+		Shader::UnBind();
 	}
 
 	if (m_texQueue.size() != 0) {
@@ -899,6 +913,16 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 		m_texShader->SetUniform("ambientColour", ambientColour);
 		m_texShader->SetUniform("ambientStrength", ambientStrength);
 
+		m_texShader->SetUniform("usingAmbient", int(ObjLoader::usingAmbient));
+		m_texShader->SetUniform("usingDiffuse", int(ObjLoader::usingDiffuse));
+		m_texShader->SetUniform("usingSpecular", int(ObjLoader::usingSpecular));
+		m_texShader->SetUniform("noLighting", int(ObjLoader::noLighting));
+		m_texShader->SetUniform("toonShading", int(ObjLoader::toonShading));
+		m_texShader->SetUniform("usingDiffuseRamp", int(ObjLoader::usingDiffuseRamp));
+		m_texShader->SetUniform("usingSpecularRamp", int(ObjLoader::usingSpecularRamp));
+
+		m_texShader->SetUniform("diffuseRamp", 1);
+		m_texShader->SetUniform("specularRamp", 2);
 		m_texShader->SetUniform("s_texture", 0);
 
 		for (int i(0); i < m_texQueue.size(); ++i) {
@@ -906,10 +930,13 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 			m_texShader->SetUniformMatrix("transform", m_texQueue[i].model);
 			m_texShader->SetUniform("t", m_texQueue[i].t);
 
+			ObjLoader::diffuseRamp->Bind(1);
+			ObjLoader::specularRamp->Bind(2);
 			Sprite::m_textures[m_texQueue[i].texture].texture->Bind(0);
 
 			m_texQueue[i].vao->Render();
 		}
+		Shader::UnBind();
 	}
 
 	if (m_matQueue.size() != 0) {
@@ -925,14 +952,25 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 		m_matShader->SetUniform("ambientColour", ambientColour);
 		m_matShader->SetUniform("ambientStrength", ambientStrength);
 
+		m_matShader->SetUniform("usingAmbient", int(ObjLoader::usingAmbient));
+		m_matShader->SetUniform("usingDiffuse", int(ObjLoader::usingDiffuse));
+		m_matShader->SetUniform("usingSpecular", int(ObjLoader::usingSpecular));
+		m_matShader->SetUniform("noLighting", int(ObjLoader::noLighting));
+		m_matShader->SetUniform("toonShading", int(ObjLoader::toonShading));
+		m_matShader->SetUniform("usingDiffuseRamp", int(ObjLoader::usingDiffuseRamp));
+		m_matShader->SetUniform("usingSpecularRamp", int(ObjLoader::usingSpecularRamp));
+
+		m_matShader->SetUniform("diffuseRamp", 1);
+		m_matShader->SetUniform("specularRamp", 2);
+
 		for (int i(0); i < m_matQueue.size(); ++i) {
 			m_matShader->SetUniformMatrix("MVP", VP * m_matQueue[i].model);
 			m_matShader->SetUniformMatrix("transform", m_matQueue[i].model);
 			m_matShader->SetUniform("t", m_matQueue[i].t);
+			ObjLoader::diffuseRamp->Bind(1);
+			ObjLoader::specularRamp->Bind(2);
 			m_matQueue[i].vao->Render();
 		}
+		Shader::UnBind();
 	}
-
-	Shader::UnBind();
-	VertexArrayObject::UnBind();
 }
