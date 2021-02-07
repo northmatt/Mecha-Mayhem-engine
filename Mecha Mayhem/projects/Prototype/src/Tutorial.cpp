@@ -1,6 +1,7 @@
 #include "Tutorial.h"
 #include "LeaderBoard.h"
 
+
 void Tutorial::Init(int windowWidth, int windowHeight)
 {
 	ECS::AttachRegistry(&m_reg);
@@ -166,7 +167,15 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 }
 
 void Tutorial::Update()
-{
+{	
+	
+			////////////////////////////////
+			//	C G  a s s i g n m e n t  //
+			///////////////////////////////
+	
+	
+
+
 	for (size_t i(0); i < 4; ++i) {
 		if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER(i))) {
 			if (ControllerInput::GetButton(BUTTON::RB, CONUSER(i))) {
@@ -312,4 +321,11 @@ Scene* Tutorial::Reattach() {
 	Player::SetSkyPos(glm::vec3(0, 50, -45));
 
 	return this;
+}
+
+void Tutorial::SetCubeFiles(LUT3D warmCube, LUT3D coldCube, LUT3D customCube)
+{
+	m_warmCube = warmCube;
+	m_coldCube = coldCube;
+	m_CustomCube = customCube;
 }

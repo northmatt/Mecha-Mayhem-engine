@@ -1,6 +1,7 @@
 #pragma once
 #include "Utilities/Scene.h"
 #include "Utilities/Catmull.h"
+#include "GAss/ColorCorrection.h"
 
 class Tutorial : public Scene
 {
@@ -12,8 +13,17 @@ public:
 	virtual void Update() override;
 	virtual Scene* Reattach() override;
 
-private:
+	
+	void SetCubeFiles(LUT3D warmCube, LUT3D coldCube, LUT3D customCube);
 
+private:
+	
+	//CG ASS.
+	//TODO: Get Cube file
+	LUT3D m_warmCube;
+	LUT3D m_coldCube;
+	LUT3D m_CustomCube;
+		  
 	CatmullFollower dronePath = { 3, {
 		glm::vec3(0, 7, 0),
 		glm::vec3(1, 7, -5),

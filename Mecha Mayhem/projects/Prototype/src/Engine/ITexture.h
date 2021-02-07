@@ -36,8 +36,10 @@ public:
 	/// <summary>
 	/// Gets the underlying OpenGL handle for this texture
 	/// </summary>
-	GLuint GetHandle() const { return _handle; }
+	GLuint& GetHandle() { return _handle; }
 	
+	//GLuint& GetHandlePoint() { return _handle; }
+
 	/// <summary>
 	/// Clears this texture to a given color
 	/// </summary>
