@@ -30,7 +30,7 @@ namespace Gameloop
 		return window;
 	}
 
-	void ImGuiWindow(GLFWwindow* window, Scene* currScene)
+	void ImGuiWindow(GLFWwindow* window, Scene* currScene, bool& imGuiClosed)
 	{
 		// Implementation new frame
 		ImGui_ImplOpenGL3_NewFrame();
@@ -38,7 +38,7 @@ namespace Gameloop
 		// ImGui context new frame
 		ImGui::NewFrame();
 
-		if (ImGui::Begin(currScene->GetName().c_str())) {
+		if (ImGui::Begin(currScene->GetName().c_str(), &imGuiClosed, ImVec2(80, 100))) {
 			// Render our GUI stuff
 			currScene->ImGuiFunc();
 		}
@@ -81,6 +81,7 @@ namespace Gameloop
 	//stop everything (use at the end to avoid issues)
 	void Stop(bool usingImGui) {
 		//unloading static things
+		if (usingImGui)	BackEnd::CloseImGui();
 		Input::Unload();
 		PhysBody::Unload();
 		ECS::DettachRegistry();
@@ -89,8 +90,6 @@ namespace Gameloop
 		ObjMorphLoader::Unload();
 		Sprite::Unload();
 		Effects::Unload();
-
-		if (usingImGui)	BackEnd::CloseImGui();
 
 		SoundManager::stopEverything();
 

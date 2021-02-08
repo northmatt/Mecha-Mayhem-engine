@@ -160,7 +160,6 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 		m_models[ind].mat = false;
 	}
 
-
 	std::vector<glm::vec3> vertex = { glm::vec3() };
 	std::vector<glm::vec2> UV = { glm::vec2(0.f) };
 	std::vector<glm::vec3> normals = { glm::vec3() };
@@ -395,61 +394,73 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 
 	file.close();
 	 
-	std::vector<float> interleaved;
+	std::vector<float> position;
+	std::vector<float> normal;
+	std::vector<float> colours;
+	std::vector<float> specStre;
+	std::vector<float> uvv;
 
 	for (size_t i = 0; i < bufferVertex.size(); ++i) {
-		interleaved.push_back(vertex[bufferVertex[i]].x);
-		interleaved.push_back(vertex[bufferVertex[i]].y);
-		interleaved.push_back(vertex[bufferVertex[i]].z);
-		interleaved.push_back(normals[bufferNormals[i]].x);
-		interleaved.push_back(normals[bufferNormals[i]].y);
-		interleaved.push_back(normals[bufferNormals[i]].z);
+		position.push_back(vertex[bufferVertex[i]].x);
+		position.push_back(vertex[bufferVertex[i]].y);
+		position.push_back(vertex[bufferVertex[i]].z);
+		normal.push_back(normals[bufferNormals[i]].x);
+		normal.push_back(normals[bufferNormals[i]].y);
+		normal.push_back(normals[bufferNormals[i]].z);
 		if (usingMaterial) {
-			interleaved.push_back(materials[bufferColours[i]].colours.x);
-			interleaved.push_back(materials[bufferColours[i]].colours.y);
-			interleaved.push_back(materials[bufferColours[i]].colours.z);
-			interleaved.push_back(materials[bufferColours[i]].specStrength.x);
-			interleaved.push_back(materials[bufferColours[i]].specStrength.y);
-			interleaved.push_back(materials[bufferColours[i]].specStrength.z);
+			colours.push_back(materials[bufferColours[i]].colours.x);
+			colours.push_back(materials[bufferColours[i]].colours.y);
+			colours.push_back(materials[bufferColours[i]].colours.z);
+			specStre.push_back(materials[bufferColours[i]].specStrength.x);
+			specStre.push_back(materials[bufferColours[i]].specStrength.y);
+			specStre.push_back(materials[bufferColours[i]].specStrength.z);
 		}
 		if (usingTexture) {
-			interleaved.push_back(UV[bufferUV[i]].x);
-			interleaved.push_back(UV[bufferUV[i]].y);
+			uvv.push_back(UV[bufferUV[i]].x);
+			uvv.push_back(UV[bufferUV[i]].y);
+			uvv.push_back(0.f);
 		}
 	}
 
-	VertexBuffer::sptr interleaved_vbo = VertexBuffer::Create();
-	interleaved_vbo->LoadData(interleaved.data(), interleaved.size());
+	VertexBuffer::sptr pos_vbo = VertexBuffer::Create();
+	pos_vbo->LoadData(position.data(), position.size());
+	VertexBuffer::sptr colours_vbo = VertexBuffer::Create();
+	colours_vbo->LoadData(colours.data(), colours.size());
+	VertexBuffer::sptr specStre_vbo = VertexBuffer::Create();
+	specStre_vbo->LoadData(specStre.data(), specStre.size());
+	VertexBuffer::sptr normal_vbo = VertexBuffer::Create();
+	normal_vbo->LoadData(normal.data(), normal.size());
+	VertexBuffer::sptr uvv_vbo = VertexBuffer::Create();
+	uvv_vbo->LoadData(uvv.data(), uvv.size());
 
 	//change this once UVs are added
 	if (usingTexture) {
-		size_t stride = sizeof(float) * 14;
-		//m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
-		m_models[ind].vao->AddVertexBuffer(interleaved_vbo, {
-			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
-			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3),
-			BufferAttribute(2, 3, GL_FLOAT, false, stride, sizeof(float) * 6),
-			BufferAttribute(3, 3, GL_FLOAT, false, stride, sizeof(float) * 9),
-			BufferAttribute(4, 2, GL_FLOAT, false, stride, sizeof(float) * 12)
-			});
+		m_models[ind].vao->AddVertexBuffer(pos_vbo, {
+			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
+			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(colours_vbo, {
+			BufferAttribute(2, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(specStre_vbo, {
+			BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(uvv_vbo, {
+			BufferAttribute(4, 3, GL_FLOAT, false, 0, 0) });
 	}
 	else if (usingMaterial) {
-		size_t stride = sizeof(float) * 12;
-		//m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
-		m_models[ind].vao->AddVertexBuffer(interleaved_vbo, {
-			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
-			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3),
-			BufferAttribute(2, 3, GL_FLOAT, false, stride, sizeof(float) * 6),
-			BufferAttribute(3, 3, GL_FLOAT, false, stride, sizeof(float) * 9)
-			});
+		m_models[ind].vao->AddVertexBuffer(pos_vbo, {
+			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
+			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(colours_vbo, {
+			BufferAttribute(2, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(specStre_vbo, {
+			BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) });
 	}
 	else {
-		size_t stride = sizeof(float) * 6;
-		//m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
-		m_models[ind].vao->AddVertexBuffer(interleaved_vbo, {
-			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
-			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3)
-			});
+		m_models[ind].vao->AddVertexBuffer(pos_vbo, {
+			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
+			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
 	}
 
 	m_index = ind;
@@ -555,6 +566,7 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 
 			m_models[m_defaultQueue[i].modelIndex].vao->Render();
 		}
+		Shader::UnBind();
 	}
 
 	if (m_texQueue.size() != 0) {
@@ -579,6 +591,7 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 
 			m_models[m_texQueue[i].modelIndex].vao->Render();
 		}
+		Shader::UnBind();
 	}
 
 	if (m_matQueue.size() != 0) {
@@ -600,8 +613,6 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 
 			m_models[m_matQueue[i].modelIndex].vao->Render();
 		}
+		Shader::UnBind();
 	}
-
-	Shader::UnBind();
-	VertexArrayObject::UnBind();
 }

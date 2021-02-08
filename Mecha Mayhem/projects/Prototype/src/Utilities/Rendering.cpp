@@ -102,10 +102,10 @@ namespace Rendering {
             //do all the draws
             ObjLoader::PerformDraw(view, camCam,
                 DefaultColour, LightsPos, LightsColour, LightCount,
-                1, 4, 0.5f, AmbientColour, AmbientStrength);
+                1, 4, 0.0f, AmbientColour, AmbientStrength);
             ObjMorphLoader::PerformDraw(view, camCam,
                 DefaultColour, LightsPos, LightsColour, LightCount,
-                1, 4, 0.5f, AmbientColour, AmbientStrength);
+                1, 4, 0.0f, AmbientColour, AmbientStrength);
             Sprite::PerformDraw();
 
             //exit even if some cams haven't been checked, because only the amount specified should render

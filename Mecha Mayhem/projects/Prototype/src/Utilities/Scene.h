@@ -21,8 +21,41 @@ public:
 	virtual void Exit() {}
 
 	virtual void ImGuiFunc() {
-		ImGui::SetWindowSize(ImVec2(150, 50));
-		ImGui::Text("Empty");
+		if (ImGui::Button("Ambient Toggle", ImVec2(140.0f, 20.0f))) {
+			doAmbient = !doAmbient;
+		}
+		
+		if (ImGui::Button("Diffuse Toggle", ImVec2(140.0f, 20.0f))) {
+			doDiffuse = !doDiffuse;
+		}
+		
+		if (ImGui::Button("Spec Toggle", ImVec2(140.0f, 20.0f))) {
+			doSpecular = !doSpecular;
+		}
+
+		if (ImGui::Button("Multi Light Toggle", ImVec2(140.0f, 20.0f))) {
+			doMultiLight = !doMultiLight;
+		}
+
+		if (ImGui::Button("Diffuse Ramp Toggle", ImVec2(140.0f, 20.0f))) {
+			doDiffuseRamp = !doDiffuseRamp;
+		}
+
+		if (ImGui::Button("Spec Ramp Toggle", ImVec2(140.0f, 20.0f))) {
+			doSpecularRamp = !doSpecularRamp;
+		}
+
+		if (ImGui::Button("Warm LUT Toggle", ImVec2(140.0f, 20.0f))) {
+			doWarmCol = !doWarmCol;
+		}
+
+		if (ImGui::Button("Cold LUT Toggle", ImVec2(140.0f, 20.0f))) {
+			doColdCol = !doColdCol;
+		}
+
+		if (ImGui::Button("Custom LUT Toggle", ImVec2(140.0f, 20.0f))) {
+			doCustomCol = !doCustomCol;
+		}
 	};
 
 	virtual void BackEndUpdate() final;
@@ -37,6 +70,16 @@ protected:
 	int m_nextScene = -1;
 	bool m_paused = false;
 	bool m_exitGame = false;
+
+	bool doAmbient = true;
+	bool doDiffuse = true;
+	bool doSpecular = true;
+	bool doMultiLight = true;
+	bool doDiffuseRamp = false;
+	bool doSpecularRamp = false;
+	bool doWarmCol = false;
+	bool doColdCol = false;
+	bool doCustomCol = false;
 
 	entt::registry m_reg;
 	btDiscreteDynamicsWorld *m_world = nullptr;

@@ -5,6 +5,7 @@
 #include "Components/SpawnStation.h"
 #include "Utilities/HitboxReader.h"
 #include "Effects.h"
+#include "Graphics/Framebuffer.h"
 
 namespace Rendering
 {
@@ -25,5 +26,7 @@ namespace Rendering
 	extern HitboxGen* hitboxes;
 	extern Effects* effects;
 	extern Camera orthoVP;
+
+	extern Framebuffer* testBuffer;
 };
 
