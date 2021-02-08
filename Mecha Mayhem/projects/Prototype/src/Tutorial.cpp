@@ -154,11 +154,21 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	}*/
 
 	//CG//
-
+	
 	LUT3D warm("LUT/WarmLut.cube");
 	SetCubeFiles(warm, warm, warm);
 	colorCorrectionEffect = new ColorCorrection();
 	colorCorrectionEffect->Init(width, height, warm);
+
+	LUT3D cold("LUT/ColdLut.cube");
+	SetCubeFiles(cold, cold, cold);
+	colorCorrectionEffect = new ColorCorrection();
+	colorCorrectionEffect->Init(width, height, cold);
+
+	LUT3D horror("LUT/HorrorLut.cube");
+	SetCubeFiles(horror, horror, horror);
+	colorCorrectionEffect = new ColorCorrection();
+	colorCorrectionEffect->Init(width, height, horror);
 
 	basicEffect = new PostEffect();
 	basicEffect->Init(width, height);
