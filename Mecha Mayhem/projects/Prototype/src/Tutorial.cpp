@@ -156,9 +156,10 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	//CG//
 
 	LUT3D warm("LUT/WarmLut.cube");
-	SetCubeFiles(warm, warm, warm);
+	LUT3D cold("LUT/ColdLut.cube");
+	LUT3D cust("LUT/HorrorLut.cube");
+	SetCubeFiles(warm, cold, cust);
 	colorCorrectionEffect = new ColorCorrection();
-	colorCorrectionEffect->Init(width, height, warm);
 
 	basicEffect = new PostEffect();
 	basicEffect->Init(width, height);
@@ -182,6 +183,30 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 
 	m_pauseSprite = Sprite("Pause.png", 8.952f, 3);
 }
+void setAllUniforms(int nolight, int ambient, int diffuse, int spec, int custom) 
+{
+	ObjLoader::setUniforms("u_noLight", nolight);
+	ObjMorphLoader::setUniforms("u_noLight", nolight);
+
+	ObjLoader::setUniforms("u_ambient", ambient);
+	ObjMorphLoader::setUniforms("u_ambient", ambient);
+
+	ObjLoader::setUniforms("u_diffuse", diffuse);
+	ObjMorphLoader::setUniforms("u_diffuse", diffuse);
+
+	ObjLoader::setUniforms("u_specular", spec);
+	ObjMorphLoader::setUniforms("u_specular", spec);
+
+	ObjLoader::setUniforms("u_customEff", custom);
+	ObjMorphLoader::setUniforms("u_customEff", custom);
+
+	//ObjLoader::setUniforms("u_rampDiffuse", difRamp);
+	//ObjMorphLoader::setUniforms("u_rampDiffuse", difRamp);
+
+	//ObjLoader::setUniforms("u_rampSpec", specRamp);
+	//ObjMorphLoader::setUniforms("u_rampSpec", specRamp);
+}
+
 
 void Tutorial::Update()
 {	
@@ -189,8 +214,65 @@ void Tutorial::Update()
 			////////////////////////////////
 			//	C G  a s s i g n m e n t  //
 			///////////////////////////////
-	
-	
+	if (Input::GetKeyDown(KEY::ONE))
+	{
+		setAllUniforms(1, 0, 0, 0, 0);
+	}
+	if (Input::GetKeyDown(KEY::TWO))
+	{
+		setAllUniforms(0, 1, 0, 0, 0);
+	}
+	if (Input::GetKeyDown(KEY::THREE))
+	{
+		setAllUniforms(0, 0, 0, 1, 0);
+	}
+	if (Input::GetKeyDown(KEY::FOUR))
+	{
+		setAllUniforms(0, 1, 1, 1, 0);
+	}
+	if (Input::GetKeyDown(KEY::FIVE))
+	{
+		setAllUniforms(0, 1, 1, 1, 1);
+	}
+	if (Input::GetKeyDown(KEY::SIX))
+	{
+		difRamp = !difRamp;
+		//a toggle
+		ObjLoader::setUniforms("u_rampDiffuse", difRamp);
+		ObjMorphLoader::setUniforms("u_rampDiffuse", difRamp);
+	}
+	if (Input::GetKeyDown(KEY::SEVEN))
+	{
+		specRamp = !specRamp;
+		//a toggle
+		ObjLoader::setUniforms("u_rampSpec", specRamp);
+		ObjMorphLoader::setUniforms("u_rampSpec", specRamp);
+	}
+	 //This causes a memory leak. Too bad!
+	else if (Input::GetKeyDown(KEY::EIGHT))
+	{
+		usingCube = !usingCube;
+		if (usingCube)
+		{
+			colorCorrectionEffect->Init(width, height, m_warmCube);
+		}
+	}
+	else if (Input::GetKeyDown(KEY::NINE))
+	{
+		usingCube = !usingCube;
+		if (usingCube)
+		{
+			colorCorrectionEffect->Init(width, height, m_coldCube);
+		}
+	}
+	if (Input::GetKeyDown(KEY::ZERO))
+	{
+		usingCube = !usingCube;
+		if (usingCube)
+		{
+			colorCorrectionEffect->Init(width, height, m_CustomCube);
+		}
+	}
 
 
 	for (size_t i(0); i < 4; ++i) {
@@ -371,9 +453,15 @@ void Tutorial::BackEndUpdate()
 		Rendering::DrawPauseScreen(m_pauseSprite);
 	}
 	basicEffect->UnbindBuffer();
-	
-	colorCorrectionEffect->ApplyEffect(basicEffect);
-	colorCorrectionEffect->DrawToScreen();
+	if (usingCube)
+	{
+		colorCorrectionEffect->ApplyEffect(basicEffect);
+		colorCorrectionEffect->DrawToScreen();
+	}
+	else 
+	{
+		basicEffect->DrawToScreen();
+	}
 
 	//basicEffect->DrawToScreen();
 	

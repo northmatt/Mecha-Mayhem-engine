@@ -9,7 +9,7 @@ uniform vec3 camPos;
 uniform vec3  lightsPos[MAX_LIGHTS];
 uniform vec3  lightsColour[MAX_LIGHTS];
 uniform int lightCount;
-uniform bool unLit;
+//uniform bool unLit;
 
 uniform float ambientLightStrength;
 uniform vec3  ambientColour;
@@ -17,6 +17,18 @@ uniform float ambientStrength;
 
 uniform float specularStrength;
 uniform float shininess;
+
+//general
+uniform int u_noLight;
+uniform int u_ambient;
+uniform int u_diffuse;
+uniform int u_specular;
+uniform int u_customEff;
+//ramp
+uniform int u_rampDiffuse;
+uniform int u_rampSpec;
+uniform sampler2D s_rampDiffuse;
+uniform sampler2D s_rampSpec;
 
 out vec4 frag_color;
 
@@ -34,7 +46,7 @@ void main() {
 	//	else if (spec < 1)
 	//		spec = 0.75;
 
-	if (unLit)
+	if (u_noLight > 0)
 		result = colour;
 	else {
 		vec3 N = normalize(inNormal);
@@ -46,15 +58,28 @@ void main() {
 			lightDir = normalize(lightsPos[i] - inPos);
 
 			//Add diffuse intensity with attenuation
-			float diffuse = max(dot(N, lightDir), 0.0) / length(lightsPos[i] - inPos);
+			float diffuse = max(dot(N, lightDir), 0.0) / length(lightsPos[i] - inPos) * u_diffuse;
+
+			if(u_rampDiffuse > 0)
+			{
+				diffuse = texture(s_rampDiffuse, vec2(diffuse, 0.0)).g;
+			}
 
 			//Specular		SpecStrength													ShininessCoefficient
-			float specular = specularStrength * pow(max(dot(N, normalize(camDir + lightDir)), 0.0), shininess);
+			float specular = specularStrength * pow(max(dot(N, normalize(camDir + lightDir)), 0.0), shininess) * u_specular;
 
-			total += (ambientLightStrength + diffuse + specular) * lightsColour[i];
+			if(u_rampSpec > 0)
+			{
+				specular = texture(s_rampSpec, vec2(specular, 0.0)).g;
+			}
+
+			total += ((ambientLightStrength * u_ambient) + diffuse + specular) * lightsColour[i];
 		}
-
-		result = (ambientColour * ambientStrength + total) * colour;
+		if(u_customEff > 0)
+		{
+		total = sin(cos(tan(total + camPos) + camPos.yyy) + inPos.zxy);
+		}
+		result = ((ambientColour * ambientStrength * u_ambient) + total) * colour;
 	}
 
 	frag_color = vec4(result, 1);

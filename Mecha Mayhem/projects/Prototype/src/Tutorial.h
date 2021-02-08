@@ -91,6 +91,12 @@ private:
 	PostEffect* basicEffect = nullptr;
 	ColorCorrection* colorCorrectionEffect = nullptr;
 
+	bool usingCube = false;
+	bool difRamp = false;
+	bool specRamp = false;
+
+
+
 	/*entt::entity lightDrone = entt::null;
 	entt::entity cameraDrone = entt::null;
 	entt::entity speakerDrone = entt::null;
