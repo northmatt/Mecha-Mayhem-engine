@@ -571,18 +571,28 @@ void ObjMorphLoader::Init()
 {
 	m_matShader = Shader::Create();
 	m_matShader->LoadShaderPartFromFile("shaders/mat_morph_vert.glsl", GL_VERTEX_SHADER);
-	m_matShader->LoadShaderPartFromFile("shaders/mat_morph_frag.glsl", GL_FRAGMENT_SHADER);
+	m_matShader->LoadShaderPartFromFile("shaders/mat_frag_shader.glsl", GL_FRAGMENT_SHADER);
 	m_matShader->Link();
 
 	m_texShader = Shader::Create();
 	m_texShader->LoadShaderPartFromFile("shaders/tex_morph_vert.glsl", GL_VERTEX_SHADER);
-	m_texShader->LoadShaderPartFromFile("shaders/tex_morph_frag.glsl", GL_FRAGMENT_SHADER);
+	m_texShader->LoadShaderPartFromFile("shaders/tex_frag_shader.glsl", GL_FRAGMENT_SHADER);
 	m_texShader->Link();
 
 	m_shader = Shader::Create();
 	m_shader->LoadShaderPartFromFile("shaders/morph_vert.glsl", GL_VERTEX_SHADER);
-	m_shader->LoadShaderPartFromFile("shaders/morph_frag.glsl", GL_FRAGMENT_SHADER);
+	m_shader->LoadShaderPartFromFile("shaders/frag_shader.glsl", GL_FRAGMENT_SHADER);
 	m_shader->Link();
+
+	m_shader->SetUniform("s_rampDiffuse", 1);
+	m_shader->SetUniform("s_rampSpec", 2);
+
+	m_texShader->SetUniform("s_rampDiffuse", 1);
+	m_texShader->SetUniform("s_rampSpec", 2);
+
+	m_matShader->SetUniform("s_rampDiffuse", 1);
+	m_matShader->SetUniform("s_rampSpec", 2);
+
 
 	pos1Buff =  { BufferAttribute(0, 3, GL_FLOAT, false, NULL, NULL) };
 	pos2Buff =  { BufferAttribute(1, 3, GL_FLOAT, false, NULL, NULL) };
@@ -882,6 +892,8 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 			m_shader->SetUniformMatrix("MVP", VP * m_defaultQueue[i].model);
 			m_shader->SetUniformMatrix("transform", m_defaultQueue[i].model);
 			m_shader->SetUniform("t", m_defaultQueue[i].t);
+			ObjLoader::difRampT->Bind(1);
+			ObjLoader::specRampT->Bind(2);
 			m_defaultQueue[i].vao->Render();
 		}
 		Shader::UnBind();
@@ -910,6 +922,9 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 
 			Sprite::m_textures[m_texQueue[i].texture].texture->Bind(0);
 
+			ObjLoader::difRampT->Bind(1);
+			ObjLoader::specRampT->Bind(2);
+
 			m_texQueue[i].vao->Render();
 		}
 		Shader::UnBind();
@@ -932,6 +947,10 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 			m_matShader->SetUniformMatrix("MVP", VP * m_matQueue[i].model);
 			m_matShader->SetUniformMatrix("transform", m_matQueue[i].model);
 			m_matShader->SetUniform("t", m_matQueue[i].t);
+
+			ObjLoader::difRampT->Bind(1);
+			ObjLoader::specRampT->Bind(2);
+
 			m_matQueue[i].vao->Render();
 		}
 	Shader::UnBind();

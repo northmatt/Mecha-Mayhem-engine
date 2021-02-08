@@ -14,6 +14,12 @@ public:
 	static void Init();
 	static void Unload();
 
+	static void setUniforms(std::string name, int value) 
+	{
+		m_shader->SetUniform(name, value);
+		m_matShader->SetUniform(name, value);
+		m_texShader->SetUniform(name, value); 
+	}
 	static void BeginDraw(unsigned amt = 0);
 
 	void Draw(const glm::mat4& model);
@@ -26,6 +32,9 @@ public:
 	void Enable() { m_enabled = true; }
 	void Disable() { m_enabled = false; }
 	bool GetEnabled() { return m_enabled; }
+
+	static Texture2D::sptr difRampT;
+	static Texture2D::sptr specRampT;
 
 private:
 

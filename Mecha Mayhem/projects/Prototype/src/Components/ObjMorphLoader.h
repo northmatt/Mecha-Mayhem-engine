@@ -17,6 +17,13 @@ public:
 	static void Init();
 	static void Unload();
 	
+	static void setUniforms(std::string name, int value)
+	{
+		m_shader->SetUniform(name, value);
+		m_matShader->SetUniform(name, value);
+		m_texShader->SetUniform(name, value);
+	}
+
 	ObjMorphLoader& SetDirection(bool forwards) {
 		if (m_reversing == forwards)
 			ToggleDirection();

@@ -532,6 +532,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 
 void ObjLoader::Init()
 {
+
 	m_matShader = Shader::Create();
 	m_matShader->LoadShaderPartFromFile("shaders/mat_vertex_shader.glsl", GL_VERTEX_SHADER);
 	m_matShader->LoadShaderPartFromFile("shaders/mat_frag_shader.glsl", GL_FRAGMENT_SHADER);
@@ -550,6 +551,19 @@ void ObjLoader::Init()
 	m_matQueue.clear();
 	m_texQueue.clear();
 	m_defaultQueue.clear();
+
+	difRampT = Texture2D::LoadFromFile("DiffuseRamp.png");
+	specRampT = Texture2D::LoadFromFile("SpecularRamp.png");
+
+	m_shader->SetUniform("s_rampDiffuse", 1);
+	m_shader->SetUniform("s_rampSpec", 2);
+
+	m_texShader->SetUniform("s_rampDiffuse", 1);
+	m_texShader->SetUniform("s_rampSpec", 2);
+
+	m_matShader->SetUniform("s_rampDiffuse", 1);
+	m_matShader->SetUniform("s_rampSpec", 2); 
+
 }
 
 void ObjLoader::Unload()
@@ -626,6 +640,9 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 			m_shader->SetUniformMatrix("MVP", VP * m_defaultQueue[i].model);
 			m_shader->SetUniformMatrix("transform", m_defaultQueue[i].model);
 
+			difRampT->Bind(1);
+			specRampT->Bind(2);
+
 			m_models[m_defaultQueue[i].modelIndex].vao->Render();
 		}
 	Shader::UnBind();
@@ -650,7 +667,8 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 			m_texShader->SetUniformMatrix("transform", m_texQueue[i].model);
 
 			Sprite::m_textures[m_models[m_texQueue[i].modelIndex].texture].texture->Bind(0);
-
+			difRampT->Bind(1);
+			specRampT->Bind(2);
 			m_models[m_texQueue[i].modelIndex].vao->Render();
 		}
 	Shader::UnBind();
@@ -672,9 +690,12 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 		for (int i(0); i < m_matQueue.size(); ++i) {
 			m_matShader->SetUniformMatrix("MVP", VP * m_matQueue[i].model);
 			m_matShader->SetUniformMatrix("transform", m_matQueue[i].model);
-
+			difRampT->Bind(1);
+			specRampT->Bind(2);
 			m_models[m_matQueue[i].modelIndex].vao->Render();
 		}
 	Shader::UnBind();
 	}
-}
+} 
+Texture2D::sptr ObjLoader::difRampT = nullptr;
+Texture2D::sptr ObjLoader::specRampT = nullptr;
