@@ -1,5 +1,7 @@
 #include "Scene.h"
 
+Scene* Scene::_activeScene = nullptr;
+
 Scene::Scene(const std::string& name, const glm::vec3& gravity, bool physics)
 	: m_name(name)
 {

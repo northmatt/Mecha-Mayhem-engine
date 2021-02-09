@@ -50,6 +50,16 @@ void MainMenu::Init(int windowWidth, int windowHeight)
 	backGround = ECS::CreateEntity();
 	ECS::AttachComponent<Sprite>(backGround).Init(glm::vec4(0.5f, 0.5f, 1.f, 1.f), -19, 10);
 	ECS::GetComponent<Transform>(backGround).SetPosition(glm::vec3(0, 100, -10));
+
+	auto framebufferObject = ECS::CreateEntity();
+	{
+		int width, height;
+		glfwGetWindowSize(BackEnd::GetWindow(), &width, &height);
+
+		ECS::AttachComponent<PostEffect>(framebufferObject);
+		simplePPEffect = &ECS::GetComponent<PostEffect>(framebufferObject);
+		simplePPEffect->Init(width, height);
+	}
 }
 
 void MainMenu::Update()
@@ -244,4 +254,36 @@ void MainMenu::Update()
 
 void MainMenu::Exit()
 {
+}
+
+void MainMenu::BackEndUpdate() {
+	if (!m_paused) {
+		if (m_world != nullptr) {
+
+			m_world->stepSimulation(Time::dt, 10);
+
+			m_reg.view<PhysBody, Transform>().each([](PhysBody& phys, Transform& trans) {
+				if (phys.IsDynamic() || phys.Changed())
+					trans.SetTransform(phys.GetTransform());
+				}
+			);
+		}
+		m_effects.Update();
+	}
+
+	simplePPEffect->Clear();
+
+	//always render
+	if (m_camCount < 1)
+		m_camCount = 1;
+	else if (m_camCount > 4)
+		m_camCount = 4;
+	Rendering::Update(&m_reg, m_camCount, m_paused, simplePPEffect);
+
+	if (m_paused)   if (m_pauseSprite.IsValid()) {
+		Rendering::DrawPauseScreen(m_pauseSprite);
+	}
+
+	simplePPEffect->UnbindBuffer();
+	simplePPEffect->DrawToScreen();
 }

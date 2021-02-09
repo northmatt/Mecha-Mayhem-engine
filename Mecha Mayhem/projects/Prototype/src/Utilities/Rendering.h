@@ -5,14 +5,13 @@
 #include "Components/SpawnStation.h"
 #include "Utilities/HitboxReader.h"
 #include "Effects.h"
-#include "Graphics/Framebuffer.h"
 
 namespace Rendering
 {
 	//sets up the VP
 	void Init(int width, int height);
 
-	void Update(entt::registry* reg, int numOfCams, bool paused);
+	void Update(entt::registry* reg, int numOfCams, bool paused, PostEffect* PE = nullptr);
 	void DrawPauseScreen(Sprite image);
 
 	extern glm::vec4 BackColour;
@@ -26,7 +25,5 @@ namespace Rendering
 	extern HitboxGen* hitboxes;
 	extern Effects* effects;
 	extern Camera orthoVP;
-
-	extern Framebuffer* testBuffer;
 };
 

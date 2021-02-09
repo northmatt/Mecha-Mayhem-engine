@@ -58,11 +58,13 @@ public:
 		}
 	};
 
-	virtual void BackEndUpdate() final;
+	virtual void BackEndUpdate();
 	virtual int ChangeScene(int sceneCount) final;
 	virtual bool ExitTest() final {
 		return m_exitGame;
 	}
+
+	static Scene* _activeScene;
 
 protected:
 	std::string m_name;

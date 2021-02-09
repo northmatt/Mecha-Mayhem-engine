@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
-#include <Engine/Texture2D.h>
-#include <Engine/Shader.h>
+#include "Engine/Texture2D.h"
+#include "Engine/Shader.h"
 
 struct DepthTarget
 {

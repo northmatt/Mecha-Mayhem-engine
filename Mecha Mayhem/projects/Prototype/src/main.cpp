@@ -13,6 +13,8 @@ int main() {
 	if (!window)	return 1;
 
 	{
+		Framebuffer::InitFullscreenQuad();
+
 		// Creating demo scenes
 		std::vector<Scene*> scenes;
 		scenes.push_back(new MainMenu("Mecha Mayhem"));
@@ -28,6 +30,7 @@ int main() {
 		int currScene = 0, count = scenes.size();
 		Scene* activeScene = scenes[0]->Reattach();
 		glfwSetWindowTitle(window, activeScene->GetName().c_str());
+		Scene::_activeScene = activeScene;
 
 		bool paused = false;
 
@@ -57,6 +60,7 @@ int main() {
 			if ((currScene = activeScene->ChangeScene(count)) > -1) {
 				activeScene->Exit();
 				glfwSetWindowTitle(window, (activeScene = scenes[currScene]->Reattach())->GetName().c_str());
+				Scene::_activeScene = activeScene;
 			}
 
 			//do not touch plz

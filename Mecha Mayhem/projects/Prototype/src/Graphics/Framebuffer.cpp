@@ -82,7 +82,7 @@ void Framebuffer::Init()
 
 		//Sets up as a framebuffer texture
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depth._texture.GetHandle(), 0);
-		
+
 		glBindTexture(GL_TEXTURE_2D, GL_NONE);
 	}
 

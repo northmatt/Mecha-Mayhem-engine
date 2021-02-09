@@ -12,10 +12,13 @@ namespace Rendering {
             .SetIsOrtho(true).ResizeWindow(width, height).SetPosition(BLM::GLMzero);
     }
 
-    void Update(entt::registry* reg, int numOfCams, bool paused)
+    void Update(entt::registry* reg, int numOfCams, bool paused, PostEffect* PE)
     {
         glClearColor(BackColour.x, BackColour.y, BackColour.z, BackColour.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if (PE != nullptr)
+            PE->BindBuffer(0);
 
         auto objView = reg->view<ObjLoader, Transform>();
         auto morphView = reg->view<ObjMorphLoader, Transform>();

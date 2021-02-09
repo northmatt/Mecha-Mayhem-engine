@@ -20,6 +20,8 @@
 #include "Engine/VertexArrayObject.h"
 #include "Engine/IndexBuffer.h"
 #include "Engine/Shader.h"
+#include "Graphics/Framebuffer.h"
+#include "Graphics/Post/PostEffect.h"
 
 class BackEnd abstract
 {
@@ -41,6 +43,7 @@ public:
 	static int GetHalfHeight() { return _lastHeight; }
 
 	static bool HasFocus() { return focus; }
+	static GLFWwindow* GetWindow() { return window; }
 private:
 	static void GlfwWindowResizedCallback(GLFWwindow* window, int width, int height);
 	static void GlfwWindowFocusCallback(GLFWwindow* window, int result);

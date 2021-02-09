@@ -11,6 +11,7 @@ public:
 	virtual void Init(int windowWidth, int windowHeight) override;
 	virtual void Update() override;
 	virtual void Exit() override;
+	virtual void BackEndUpdate() override;
 
 	virtual Scene* Reattach() override {
 		m_bg.play();
@@ -51,5 +52,7 @@ private:
 		entt::null,
 		entt::null
 	};
+
+	PostEffect* simplePPEffect;
 };
 

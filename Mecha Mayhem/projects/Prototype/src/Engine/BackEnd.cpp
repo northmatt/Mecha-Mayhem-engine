@@ -1,4 +1,5 @@
 #include "BackEnd.h"
+#include "Utilities/Scene.h"
 
 #define LOG_GL_NOTIFICATIONS
 
@@ -42,6 +43,13 @@ void BackEnd::GlfwWindowResizedCallback(GLFWwindow* window, int width, int heigh
 		//glViewport(0, 0, wide, height);
 		_lastHeight = height / 2;
 		_lastWidth = wide / 2;
+
+		Scene::_activeScene->GetRegistry()->view<Framebuffer>().each([=](Framebuffer& buf) {
+			buf.Reshape(wide, height);
+		});
+		Scene::_activeScene->GetRegistry()->view<PostEffect>().each([=](PostEffect& buf) {
+			buf.Reshape(wide, height);
+		});
 	}
 	else {
 		int high = width * _aspect2;
@@ -49,6 +57,13 @@ void BackEnd::GlfwWindowResizedCallback(GLFWwindow* window, int width, int heigh
 		//glViewport(0, 0, width / 2, high / 2);
 		_lastHeight = high / 2;
 		_lastWidth = width / 2;
+
+		Scene::_activeScene->GetRegistry()->view<Framebuffer>().each([=](Framebuffer& buf) {
+			buf.Reshape(width, high);
+		});
+		Scene::_activeScene->GetRegistry()->view<PostEffect>().each([=](PostEffect& buf) {
+			buf.Reshape(width, high);
+		});
 	}
 
 }
@@ -61,6 +76,7 @@ void BackEnd::GlfwWindowFocusCallback(GLFWwindow* window, int result)
 }
 
 GLFWwindow *BackEnd::window = nullptr;
+Scene* _activeScene = nullptr;
 float BackEnd::_aspect = 1;
 float BackEnd::_aspect2 = 1;
 bool BackEnd::focus = false;
