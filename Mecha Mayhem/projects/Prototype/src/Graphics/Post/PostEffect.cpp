@@ -1,11 +1,14 @@
 #include "PostEffect.h"
 
 void PostEffect::Init(unsigned width, unsigned height) {
-	size_t index = _buffers.size();
-	_buffers.push_back(new Framebuffer());
-	_buffers[index]->AddColorTarget(GL_RGBA8);
-	_buffers[index]->AddDepthTarget();
-	_buffers[index]->Init(width, height);
+	size_t index = 0;
+	if (!_shaders.size() > 0) {
+		index = _buffers.size();
+		_buffers.push_back(new Framebuffer());
+		_buffers[index]->AddColorTarget(GL_RGBA8);
+		_buffers[index]->AddDepthTarget();
+		_buffers[index]->Init(width, height);
+	}
 
 	index = _shaders.size();
 	_shaders.push_back(Shader::Create());

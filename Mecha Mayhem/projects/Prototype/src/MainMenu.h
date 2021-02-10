@@ -54,5 +54,6 @@ private:
 	};
 
 	PostEffect* simplePPEffect;
+	ColCor* simpleCCEffect;
 };
 

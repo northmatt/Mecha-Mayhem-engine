@@ -8,6 +8,25 @@ void MainMenu::Init(int windowWidth, int windowHeight)
 	width = windowWidth;
 	height = windowHeight;
 
+	int Awidth, Aheight;
+	glfwGetWindowSize(BackEnd::GetWindow(), &Awidth, &Aheight);
+
+	{
+		LUT3D cube("LUT/WarmLut.cube");
+
+		auto colEffectObject = ECS::CreateEntity();
+		ECS::AttachComponent<ColCor>(colEffectObject);
+		simpleCCEffect = &ECS::GetComponent<ColCor>(colEffectObject);
+		simpleCCEffect->Init(Awidth, Aheight, cube);
+	}
+	 
+	{
+		auto postEffectObject = ECS::CreateEntity();
+		ECS::AttachComponent<PostEffect>(postEffectObject);
+		simplePPEffect = &ECS::GetComponent<PostEffect>(postEffectObject);
+		simplePPEffect->Init(Awidth, Aheight);
+	}
+
 	camera = ECS::CreateEntity();
 	ECS::AttachComponent<Camera>(camera).SetFovDegrees(60.f)
 		.ResizeWindow(windowWidth, windowHeight).SetNear(0.3f);
@@ -50,16 +69,6 @@ void MainMenu::Init(int windowWidth, int windowHeight)
 	backGround = ECS::CreateEntity();
 	ECS::AttachComponent<Sprite>(backGround).Init(glm::vec4(0.5f, 0.5f, 1.f, 1.f), -19, 10);
 	ECS::GetComponent<Transform>(backGround).SetPosition(glm::vec3(0, 100, -10));
-
-	auto framebufferObject = ECS::CreateEntity();
-	{
-		int width, height;
-		glfwGetWindowSize(BackEnd::GetWindow(), &width, &height);
-
-		ECS::AttachComponent<PostEffect>(framebufferObject);
-		simplePPEffect = &ECS::GetComponent<PostEffect>(framebufferObject);
-		simplePPEffect->Init(width, height);
-	}
 }
 
 void MainMenu::Update()
@@ -283,7 +292,9 @@ void MainMenu::BackEndUpdate() {
 	if (m_paused)   if (m_pauseSprite.IsValid()) {
 		Rendering::DrawPauseScreen(m_pauseSprite);
 	}
-
+	
 	simplePPEffect->UnbindBuffer();
-	simplePPEffect->DrawToScreen();
+
+	simpleCCEffect->ApplyAffects(simplePPEffect);
+	simpleCCEffect->DrawToScreen();
 }

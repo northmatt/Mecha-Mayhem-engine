@@ -115,6 +115,8 @@ namespace Rendering {
             if (++count >= numOfCams)
                 break;
         }
+
+        glViewport(0, 0, width * 2, height * 2);
     }
 
     void DrawPauseScreen(Sprite image)

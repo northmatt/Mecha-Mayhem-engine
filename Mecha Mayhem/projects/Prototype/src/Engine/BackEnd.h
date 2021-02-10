@@ -19,9 +19,7 @@
 
 #include "Engine/VertexArrayObject.h"
 #include "Engine/IndexBuffer.h"
-#include "Engine/Shader.h"
-#include "Graphics/Framebuffer.h"
-#include "Graphics/Post/PostEffect.h"
+#include "Graphics/Post/ColCor.h"
 
 class BackEnd abstract
 {

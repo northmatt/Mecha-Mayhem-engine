@@ -50,6 +50,9 @@ void BackEnd::GlfwWindowResizedCallback(GLFWwindow* window, int width, int heigh
 		Scene::_activeScene->GetRegistry()->view<PostEffect>().each([=](PostEffect& buf) {
 			buf.Reshape(wide, height);
 		});
+		Scene::_activeScene->GetRegistry()->view<ColCor>().each([=](ColCor& buf) {
+			buf.Reshape(wide, height);
+		});
 	}
 	else {
 		int high = width * _aspect2;
@@ -62,6 +65,9 @@ void BackEnd::GlfwWindowResizedCallback(GLFWwindow* window, int width, int heigh
 			buf.Reshape(width, high);
 		});
 		Scene::_activeScene->GetRegistry()->view<PostEffect>().each([=](PostEffect& buf) {
+			buf.Reshape(width, high);
+		});
+		Scene::_activeScene->GetRegistry()->view<ColCor>().each([=](ColCor& buf) {
 			buf.Reshape(width, high);
 		});
 	}
