@@ -110,6 +110,9 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 	Rendering::DefaultColour = glm::vec4(1.f, 0.5f, 0.5f, 1.f);
 	Rendering::hitboxes = &m_colliders;
 	Rendering::effects = &m_effects;
+	Rendering::frameEffects = &m_frameEffects;
+
+	m_frameEffects.Init(width, height);
 
 	Player::SetUIAspect(width, height);
 	Player::SetCamDistance(camDistance);

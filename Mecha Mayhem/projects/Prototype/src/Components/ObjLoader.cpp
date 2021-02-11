@@ -160,7 +160,6 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 		m_models[ind].mat = false;
 	}
 
-
 	std::vector<glm::vec3> vertex = { glm::vec3() };
 	std::vector<glm::vec2> UV = { glm::vec2(0.f) };
 	std::vector<glm::vec3> normals = { glm::vec3() };
@@ -394,62 +393,98 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	}
 
 	file.close();
+	 
+	std::vector<float> position;
+	std::vector<float> normal;
+	std::vector<float> colours;
+	std::vector<float> specStre;
+	std::vector<float> uvv;
 
-	std::vector<float> interleaved;
+	std::vector<float> position_data = {};
+	std::vector<float> colour_data = {};
+	std::vector<float> spec_data = {};
+	std::vector<float> UV_data = {};
+	std::vector<float> normal_data = {};
 
 	for (size_t i = 0; i < bufferVertex.size(); ++i) {
-		interleaved.push_back(vertex[bufferVertex[i]].x);
-		interleaved.push_back(vertex[bufferVertex[i]].y);
-		interleaved.push_back(vertex[bufferVertex[i]].z);
+		position_data.push_back(vertex[bufferVertex[i]].x);
+		position_data.push_back(vertex[bufferVertex[i]].y);
+		position_data.push_back(vertex[bufferVertex[i]].z);
 		if (usingMaterial) {
-			interleaved.push_back(materials[bufferColours[i]].colours.x);
-			interleaved.push_back(materials[bufferColours[i]].colours.y);
-			interleaved.push_back(materials[bufferColours[i]].colours.z);
-			interleaved.push_back(materials[bufferColours[i]].specStrength.x);
-			interleaved.push_back(materials[bufferColours[i]].specStrength.y);
-			interleaved.push_back(materials[bufferColours[i]].specStrength.z);
+			colour_data.push_back(materials[bufferColours[i]].colours.x);
+			colour_data.push_back(materials[bufferColours[i]].colours.y);
+			colour_data.push_back(materials[bufferColours[i]].colours.z);
+			spec_data.push_back(materials[bufferColours[i]].specStrength.x);
+			spec_data.push_back(materials[bufferColours[i]].specStrength.y);
+			spec_data.push_back(materials[bufferColours[i]].specStrength.z);
 		}
 		if (usingTexture) {
-			interleaved.push_back(UV[bufferUV[i]].x);
-			interleaved.push_back(UV[bufferUV[i]].y);
+			UV_data.push_back(UV[bufferUV[i]].x);
+			UV_data.push_back(UV[bufferUV[i]].y);
+			UV_data.push_back(0.f);
 		}
-		interleaved.push_back(normals[bufferNormals[i]].x);
-		interleaved.push_back(normals[bufferNormals[i]].y);
-		interleaved.push_back(normals[bufferNormals[i]].z);
+		normal_data.push_back(normals[bufferNormals[i]].x);
+		normal_data.push_back(normals[bufferNormals[i]].y);
+		normal_data.push_back(normals[bufferNormals[i]].z);
 	}
 
-	VertexBuffer::sptr interleaved_vbo = VertexBuffer::Create();
-	interleaved_vbo->LoadData(interleaved.data(), interleaved.size());
 
 	//change this once UVs are added
 	if (usingTexture) {
-		size_t stride = sizeof(float) * 14;
-		//m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
-		m_models[ind].vao->AddVertexBuffer(interleaved_vbo, {
-			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
-			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3),
-			BufferAttribute(4, 3, GL_FLOAT, false, stride, sizeof(float) * 6),
-			BufferAttribute(2, 2, GL_FLOAT, false, stride, sizeof(float) * 9),
-			BufferAttribute(3, 3, GL_FLOAT, false, stride, sizeof(float) * 11)
-			});
+		VertexBuffer::sptr position_vbo = VertexBuffer::Create();
+		position_vbo->LoadData(position_data.data(), position_data.size());
+		VertexBuffer::sptr colour_vbo = VertexBuffer::Create();
+		colour_vbo->LoadData(colour_data.data(), colour_data.size());
+		VertexBuffer::sptr spec_vbo = VertexBuffer::Create();
+		spec_vbo->LoadData(spec_data.data(), spec_data.size());
+		VertexBuffer::sptr UV_vbo = VertexBuffer::Create();
+		UV_vbo->LoadData(UV_data.data(), UV_data.size());
+		VertexBuffer::sptr normal_vbo = VertexBuffer::Create();
+		normal_vbo->LoadData(normal_data.data(), normal_data.size());
+
+
+		m_models[ind].vao->AddVertexBuffer(position_vbo, {
+			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(colour_vbo, {
+			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(UV_vbo, {
+			BufferAttribute(2, 2, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
+			BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(spec_vbo, {
+			BufferAttribute(4, 3, GL_FLOAT, false, 0, 0) });
 	}
 	else if (usingMaterial) {
-		size_t stride = sizeof(float) * 12;
-		//m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
-		m_models[ind].vao->AddVertexBuffer(interleaved_vbo, {
-			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
-			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3),
-			BufferAttribute(3, 3, GL_FLOAT, false, stride, sizeof(float) * 6),
-			BufferAttribute(2, 3, GL_FLOAT, false, stride, sizeof(float) * 9)
-			});
+		VertexBuffer::sptr position_vbo = VertexBuffer::Create();
+		position_vbo->LoadData(position_data.data(), position_data.size());
+		VertexBuffer::sptr colour_vbo = VertexBuffer::Create();
+		colour_vbo->LoadData(colour_data.data(), colour_data.size());
+		VertexBuffer::sptr spec_vbo = VertexBuffer::Create();
+		spec_vbo->LoadData(spec_data.data(), spec_data.size());
+		VertexBuffer::sptr normal_vbo = VertexBuffer::Create();
+		normal_vbo->LoadData(normal_data.data(), normal_data.size());
+
+
+		m_models[ind].vao->AddVertexBuffer(position_vbo, {
+			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(colour_vbo, {
+			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
+			BufferAttribute(2, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(spec_vbo, {
+			BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) });
 	}
 	else {
-		size_t stride = sizeof(float) * 6;
-		//m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
-		m_models[ind].vao->AddVertexBuffer(interleaved_vbo, {
-			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
-			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3)
-			});
+		VertexBuffer::sptr position_vbo = VertexBuffer::Create();
+		position_vbo->LoadData(position_data.data(), position_data.size());
+		VertexBuffer::sptr normal_vbo = VertexBuffer::Create();
+		normal_vbo->LoadData(normal_data.data(), normal_data.size());
+
+
+		m_models[ind].vao->AddVertexBuffer(position_vbo, {
+			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
+			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
 	}
 
 	m_index = ind;
@@ -460,18 +495,20 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 void ObjLoader::Init()
 {
 	m_matShader = Shader::Create();
-	m_matShader->LoadShaderPartFromFile("shaders/mat_vertex_shader.glsl", GL_VERTEX_SHADER);
-	m_matShader->LoadShaderPartFromFile("shaders/mat_frag_shader.glsl", GL_FRAGMENT_SHADER);
+	m_matShader->LoadShaderPartFromFile("shaders/vert_mat.glsl", GL_VERTEX_SHADER);
+	m_matShader->LoadShaderPartFromFile("shaders/frag_mat.glsl", GL_FRAGMENT_SHADER);
 	m_matShader->Link();
 
 	m_texShader = Shader::Create();
-	m_texShader->LoadShaderPartFromFile("shaders/tex_vertex_shader.glsl", GL_VERTEX_SHADER);
-	m_texShader->LoadShaderPartFromFile("shaders/tex_frag_shader.glsl", GL_FRAGMENT_SHADER);
+	m_texShader->LoadShaderPartFromFile("shaders/vert_tex.glsl", GL_VERTEX_SHADER);
+	m_texShader->LoadShaderPartFromFile("shaders/frag_tex.glsl", GL_FRAGMENT_SHADER);
 	m_texShader->Link();
 
+	m_texShader->SetUniform("s_texture", 0);
+
 	m_shader = Shader::Create();
-	m_shader->LoadShaderPartFromFile("shaders/vertex_shader.glsl", GL_VERTEX_SHADER);
-	m_shader->LoadShaderPartFromFile("shaders/frag_shader.glsl", GL_FRAGMENT_SHADER);
+	m_shader->LoadShaderPartFromFile("shaders/vert_none.glsl", GL_VERTEX_SHADER);
+	m_shader->LoadShaderPartFromFile("shaders/frag_none.glsl", GL_FRAGMENT_SHADER);
 	m_shader->Link();
 
 	m_matQueue.clear();
@@ -555,6 +592,7 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 
 			m_models[m_defaultQueue[i].modelIndex].vao->Render();
 		}
+		Shader::UnBind();
 	}
 
 	if (m_texQueue.size() != 0) {
@@ -569,8 +607,6 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 		m_texShader->SetUniform("ambientColour", ambientColour);
 		m_texShader->SetUniform("ambientStrength", ambientStrength);
 
-		m_texShader->SetUniform("s_texture", 0);
-
 		for (int i(0); i < m_texQueue.size(); ++i) {
 			m_texShader->SetUniformMatrix("MVP", VP * m_texQueue[i].model);
 			m_texShader->SetUniformMatrix("transform", m_texQueue[i].model);
@@ -579,6 +615,7 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 
 			m_models[m_texQueue[i].modelIndex].vao->Render();
 		}
+		Shader::UnBind();
 	}
 
 	if (m_matQueue.size() != 0) {
@@ -600,8 +637,6 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 
 			m_models[m_matQueue[i].modelIndex].vao->Render();
 		}
+		Shader::UnBind();
 	}
-
-	Shader::UnBind();
-	VertexArrayObject::UnBind();
 }

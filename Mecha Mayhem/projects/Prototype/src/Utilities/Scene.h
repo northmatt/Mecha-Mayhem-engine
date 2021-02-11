@@ -2,7 +2,8 @@
 #include "Rendering.h"
 #include "Time.h"
 #include "Input.h"
-#include <SoundSystem.h>
+#include <AudioEngine.h>
+#include "Effects/Post/SepiaEffect.h"
 
 class Scene
 {
@@ -35,6 +36,7 @@ protected:
 	std::string m_name;
 	short m_camCount = 1;
 	int m_nextScene = -1;
+	int maxEffectCount = 1;
 	bool m_paused = false;
 	bool m_exitGame = false;
 
@@ -43,6 +45,7 @@ protected:
 	HitboxGen m_colliders;
 	Effects m_effects;
 	Sprite m_pauseSprite;
+	FrameEffects m_frameEffects;
 
 	btDbvtBroadphase *_broadphase = new btDbvtBroadphase();
 	btCollisionConfiguration *_collisionConfiguration = new btDefaultCollisionConfiguration();

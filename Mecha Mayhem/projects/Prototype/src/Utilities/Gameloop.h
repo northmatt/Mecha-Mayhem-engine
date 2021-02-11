@@ -9,7 +9,9 @@ namespace Gameloop
 		srand(time(0));
 		// We'll borrow the logger from the toolkit, but we need to initialize it
 		Logger::Init();
-		SoundManager::init("./sounds/", 50);
+		AudioEngine& engine = AudioEngine::Instance();
+		engine.Init();
+		//engine.LoadBank("Master");
 
 		GLFWwindow* window = BackEnd::Init("Mecha Mayhem", width, height);
 		if (!window)	return nullptr;
@@ -26,6 +28,8 @@ namespace Gameloop
 		Effects::Init();
 		Player::Init(width, height);
 		Rendering::Init(width, height);
+		Framebuffer::InitFullscreenQuad();
+		FrameEffects::Init();
 
 		return window;
 	}
@@ -69,7 +73,7 @@ namespace Gameloop
 		//Keybored
 		Input::Update();
 		//lowercase lol, sound stuff yea
-		SoundManager::update();
+		AudioEngine::Instance().Update();
 		//Controller Checks n stuff
 		ControllerInput::ControllerUpdate();
 		//update the static dt
@@ -89,10 +93,12 @@ namespace Gameloop
 		Sprite::Unload();
 		Effects::Unload();
 
+		FrameEffects::Unload();
+
 		if (usingImGui)	BackEnd::CloseImGui();
 		BackEnd::Unload();
 
-		SoundManager::stopEverything();
+		AudioEngine::Instance().Shutdown();
 
 		// Clean up the toolkit logger so we don't leak memory
 		Logger::Uninitialize();

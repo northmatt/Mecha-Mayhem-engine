@@ -1,4 +1,5 @@
 #include "BackEnd.h"
+#include "Utilities/Rendering.h"
 
 #define LOG_GL_NOTIFICATIONS
 
@@ -51,6 +52,7 @@ void BackEnd::GlfwWindowResizedCallback(GLFWwindow* window, int width, int heigh
 		_lastWidth = width / 2;
 	}
 
+	Rendering::frameEffects->Resize(_lastWidth * 2, _lastHeight * 2);
 }
 
 void BackEnd::GlfwWindowFocusCallback(GLFWwindow* window, int result)

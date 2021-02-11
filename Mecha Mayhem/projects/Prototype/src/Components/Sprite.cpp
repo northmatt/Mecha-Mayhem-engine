@@ -93,7 +93,6 @@ void Sprite::DrawSingle(const glm::mat4& VP, const glm::mat4& model)
 	m_square->Render();
 
 	Shader::UnBind();
-	VertexArrayObject::UnBind();
 }
 
 void Sprite::PerformDraw()
@@ -110,15 +109,14 @@ void Sprite::PerformDraw()
 		}
 
 		Shader::UnBind();
-		VertexArrayObject::UnBind();
 	}
 }
 
 void Sprite::Init()
 {
 	m_shader = Shader::Create();
-	m_shader->LoadShaderPartFromFile("shaders/sprite_vertex_shader.glsl", GL_VERTEX_SHADER);
-	m_shader->LoadShaderPartFromFile("shaders/sprite_frag_shader.glsl", GL_FRAGMENT_SHADER);
+	m_shader->LoadShaderPartFromFile("shaders/vert_sprite.glsl", GL_VERTEX_SHADER);
+	m_shader->LoadShaderPartFromFile("shaders/frag_sprite.glsl", GL_FRAGMENT_SHADER);
 	m_shader->Link();
 
 	std::vector<float> interleaved = {

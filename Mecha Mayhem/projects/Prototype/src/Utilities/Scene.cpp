@@ -15,6 +15,7 @@ Scene::~Scene()
 {
 	Rendering::hitboxes = nullptr;
 	Rendering::effects = nullptr;
+	Rendering::frameEffects = nullptr;
 	if (m_world != nullptr)
 	delete m_world;
 }
@@ -39,6 +40,7 @@ void Scene::Init(int windowWidth, int windowHeight)
 		if (!m_colliders.Init(m_world, "maps/map1"))
 			std::cout << "map1 failed to load, no collision boxes loaded\n";
 	}
+	m_frameEffects.Init(windowWidth, windowHeight);
 
 	// for multi cam setup, change the m_camCount variable, and also spawn in reverse order (aka player 1 last)
 	auto cameraEnt = ECS::CreateEntity();
@@ -55,9 +57,12 @@ Scene* Scene::Reattach()
 		Rendering::hitboxes = &m_colliders;
 	}
 
-	SoundManager::stopEverything();
+	AudioEngine::Instance().StopAllSounds();
+
+	m_frameEffects.Resize(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
 
 	Rendering::effects = &m_effects;
+	Rendering::frameEffects = &m_frameEffects;
 
 	return this;
 }
@@ -85,11 +90,15 @@ void Scene::BackEndUpdate()
 		m_camCount = 1;
 	else if (m_camCount > 4)
 		m_camCount = 4;
+
 	Rendering::Update(&m_reg, m_camCount, m_paused);
 
 	if (m_paused)   if (m_pauseSprite.IsValid()) {
 		Rendering::DrawPauseScreen(m_pauseSprite);
 	}
+
+	m_frameEffects.UnBind();
+	m_frameEffects.Draw();
 }
 
 int Scene::ChangeScene(int sceneCount)

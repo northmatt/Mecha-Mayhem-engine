@@ -23,13 +23,6 @@ float Player::m_dashDistance = 7.5f;
 glm::vec3 Player::m_skyPos = glm::vec3(0, 50, 0);
 
 Camera Player::m_orthoCam = {};
-Sound2D Player::m_shootLaser = {};
-Sound2D Player::m_hitSound = {};
-Sound2D Player::m_deathSound = {};
-Sound2D Player::m_swapWeapon = {};
-Sound2D Player::m_walk[5] = {};
-Sound2D Player::m_wiff = {};
-Sound2D Player::m_punch = {};
 Sprite Player::m_healthBarOutline = {};
 Sprite Player::m_healthBar = {};
 Sprite Player::m_healthBarBack = {};
@@ -63,7 +56,7 @@ void Player::Init(int width, int height)
 	m_heliDrone.LoadMeshs("drone/Heli", true);
 	m_healPack.LoadMeshs("healing", true);
 
-	m_shootLaser = { "laser.mp3", "shooting" };
+	/*m_shootLaser = { "laser.mp3", "shooting" };
 	m_shootLaser.setGroupVolume(0.5f);
 	m_hitSound = { "oof.mp4.mp3", "sfx" };
 	m_deathSound = { "oof.mp4.mp3", "death" };
@@ -76,7 +69,7 @@ void Player::Init(int width, int height)
 	m_walk[4] = { "MetalFloor/5StepNoise.mp3", "walking" };
 	m_walk[0].setGroupVolume(0.25f);
 	m_wiff = { "PunchWiff.mp3", "sfx" };
-	m_punch = { "MetalFloor/3StepNoise.mp3", "sfx" };
+	m_punch = { "MetalFloor/3StepNoise.mp3", "sfx" };*/
 
 	m_healthBarOutline = { "healthbar.png", 15.96f, 1.5f };
 	m_healthBar = { glm::vec4(0, 0, 1, 1.f), 14.95f, 0.9f };
@@ -279,7 +272,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 			m_charModel.BlendTo(m_charModelIndex + "/idle");
 			m_punched = false;
 		}
-		else						return;
+		else	return;
 	}
 
 	//controls
@@ -311,7 +304,9 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 						BlendTo(m_charModelIndex + "/walk");
 					if (m_charModel.Getp0() == 0 || m_charModel.Getp0() == 4) {
 						if (!m_stepped) {
-							m_walk[rand() % 5].play();
+							
+							//m_walk[rand() % 5].play();
+
 							m_stepped = true;
 						}
 					}
@@ -448,7 +443,8 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 		{
 			short damage = 3;
 			m_weaponCooldown = 0.25f;
-			m_shootLaser.play();
+
+			//m_shootLaser.play();
 
 			glm::quat offsetQuat = glm::angleAxis(offset, BLM::GLMup);
 
@@ -483,7 +479,8 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 
 void Player::SwapWeapon(bool outOfAmmo)
 {
-	m_swapWeapon.play();
+	//m_swapWeapon.play();
+
 	WEAPON tempWeap = m_currWeapon;
 	m_currWeapon = m_secWeapon;
 
@@ -502,14 +499,18 @@ void Player::UseHeal()
 
 	if (m_offhand == OFFHAND::HEALPACK1) {
 		m_health += 3;
-		m_swapWeapon.play();
+
+		//m_swapWeapon.play();
+
 		if (m_health > m_maxHealth)
 			m_health = m_maxHealth;
 		m_offhand = OFFHAND::EMPTY;
 	}
 	if (m_offhand == OFFHAND::HEALPACK2) {
 		m_health += 3;
-		m_swapWeapon.play();
+
+		//m_swapWeapon.play();
+
 		if (m_health > m_maxHealth)
 			m_health = m_maxHealth;
 		m_offhand = OFFHAND::HEALPACK1;
@@ -532,8 +533,8 @@ btVector3 Player::Melee(const glm::vec3& pos)
 		}
 	);
 
-	if (hit)	m_punch.play();
-	else		m_wiff.play();
+	//if (hit)	m_punch.play();
+	//else		m_wiff.play();
 
 	return BLM::BTzero;
 }
@@ -546,7 +547,9 @@ bool Player::PickUpWeapon(WEAPON pickup)
 		m_currWeaponAmmo = 20;
 		if (pickup == WEAPON::MACHINEGUN)
 			m_currWeaponAmmo = 100;
-		m_swapWeapon.play();
+
+		//m_swapWeapon.play();
+
 		return true;
 	}
 	if (m_secWeapon == WEAPON::FIST) {
@@ -558,7 +561,8 @@ bool Player::PickUpWeapon(WEAPON pickup)
 		if (pickup == WEAPON::MACHINEGUN)
 			m_secWeaponAmmo = 100;
 
-		m_swapWeapon.play();
+		//m_swapWeapon.play();
+
 		return true;
 	}
 	return false;

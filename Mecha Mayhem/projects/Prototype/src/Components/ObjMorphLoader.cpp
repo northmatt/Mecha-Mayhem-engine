@@ -168,9 +168,9 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 			stringTrimming::ltrim(matLine);
 			if (matLine.substr(0, 6) == "newmtl")
 			{
+				matIndex = materials.size();
 				materials.push_back({ matLine.substr(7), glm::vec3(1.f), glm::vec3(1.f) });
-				tempExponent = tempTrans = 1;
-				matIndex = materials.size() - 1;
+				tempExponent = tempTrans = 1.f;
 			}
 			else if (matLine.substr(0, 6) == "map_Kd")
 			{
@@ -570,18 +570,20 @@ void ObjMorphLoader::BlendTo(const std::string& baseFileName, float delay, int f
 void ObjMorphLoader::Init()
 {
 	m_matShader = Shader::Create();
-	m_matShader->LoadShaderPartFromFile("shaders/mat_morph_vert.glsl", GL_VERTEX_SHADER);
-	m_matShader->LoadShaderPartFromFile("shaders/mat_morph_frag.glsl", GL_FRAGMENT_SHADER);
+	m_matShader->LoadShaderPartFromFile("shaders/vert_mat_morph.glsl", GL_VERTEX_SHADER);
+	m_matShader->LoadShaderPartFromFile("shaders/frag_mat.glsl", GL_FRAGMENT_SHADER);
 	m_matShader->Link();
 
 	m_texShader = Shader::Create();
-	m_texShader->LoadShaderPartFromFile("shaders/tex_morph_vert.glsl", GL_VERTEX_SHADER);
-	m_texShader->LoadShaderPartFromFile("shaders/tex_morph_frag.glsl", GL_FRAGMENT_SHADER);
+	m_texShader->LoadShaderPartFromFile("shaders/vert_tex_morph.glsl", GL_VERTEX_SHADER);
+	m_texShader->LoadShaderPartFromFile("shaders/frag_tex.glsl", GL_FRAGMENT_SHADER);
 	m_texShader->Link();
 
+	m_texShader->SetUniform("s_texture", 0);
+
 	m_shader = Shader::Create();
-	m_shader->LoadShaderPartFromFile("shaders/morph_vert.glsl", GL_VERTEX_SHADER);
-	m_shader->LoadShaderPartFromFile("shaders/morph_frag.glsl", GL_FRAGMENT_SHADER);
+	m_shader->LoadShaderPartFromFile("shaders/vert_none_morph.glsl", GL_VERTEX_SHADER);
+	m_shader->LoadShaderPartFromFile("shaders/frag_none.glsl", GL_FRAGMENT_SHADER);
 	m_shader->Link();
 
 	pos1Buff =  { BufferAttribute(0, 3, GL_FLOAT, false, NULL, NULL) };
@@ -882,8 +884,10 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 			m_shader->SetUniformMatrix("MVP", VP * m_defaultQueue[i].model);
 			m_shader->SetUniformMatrix("transform", m_defaultQueue[i].model);
 			m_shader->SetUniform("t", m_defaultQueue[i].t);
+
 			m_defaultQueue[i].vao->Render();
 		}
+		Shader::UnBind();
 	}
 
 	if (m_texQueue.size() != 0) {
@@ -899,8 +903,6 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 		m_texShader->SetUniform("ambientColour", ambientColour);
 		m_texShader->SetUniform("ambientStrength", ambientStrength);
 
-		m_texShader->SetUniform("s_texture", 0);
-
 		for (int i(0); i < m_texQueue.size(); ++i) {
 			m_texShader->SetUniformMatrix("MVP", VP * m_texQueue[i].model);
 			m_texShader->SetUniformMatrix("transform", m_texQueue[i].model);
@@ -910,6 +912,7 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 
 			m_texQueue[i].vao->Render();
 		}
+		Shader::UnBind();
 	}
 
 	if (m_matQueue.size() != 0) {
@@ -929,10 +932,9 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 			m_matShader->SetUniformMatrix("MVP", VP * m_matQueue[i].model);
 			m_matShader->SetUniformMatrix("transform", m_matQueue[i].model);
 			m_matShader->SetUniform("t", m_matQueue[i].t);
+
 			m_matQueue[i].vao->Render();
 		}
+		Shader::UnBind();
 	}
-
-	Shader::UnBind();
-	VertexArrayObject::UnBind();
 }

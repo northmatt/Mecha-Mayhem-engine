@@ -2,7 +2,7 @@
 #include "Utilities/ControllerInput.h"
 #include "PhysBody.h"
 #include "ObjMorphLoader.h"
-#include "SoundSystem.h"
+#include <AudioEngine.h>
 
 class Player
 {
@@ -80,7 +80,9 @@ public:
 		if ((m_health -= dmg) <= 0) {
 			m_health = 0;
 			m_respawnTimer = m_respawnDelay;
-			m_deathSound.play();
+			
+			//m_deathSound.play();
+
 			m_currWeapon = WEAPON::FIST;
 			m_secWeapon = WEAPON::FIST;
 			m_currWeaponAmmo = 0;
@@ -88,7 +90,9 @@ public:
 			m_offhand = OFFHAND::EMPTY;
 			return true;
 		}
-		m_hitSound.play();
+
+		//m_hitSound.play();
+
 		return false;
 	}
 
@@ -128,14 +132,6 @@ private:
 	static Camera m_orthoCam;
 	static float m_camDistance;
 	static float m_dashDistance;
-
-	static Sound2D m_shootLaser;
-	static Sound2D m_hitSound;
-	static Sound2D m_deathSound;
-	static Sound2D m_swapWeapon;
-	static Sound2D m_walk[5];
-	static Sound2D m_wiff;
-	static Sound2D m_punch;
 
 	static Sprite m_healthBarOutline;
 	static Sprite m_healthBar;
