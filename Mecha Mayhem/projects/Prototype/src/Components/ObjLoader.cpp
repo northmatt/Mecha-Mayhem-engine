@@ -442,12 +442,12 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
 		m_models[ind].vao->AddVertexBuffer(colour_vbo, {
 			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(spec_vbo, {
-			BufferAttribute(4, 3, GL_FLOAT, false, 0, 0) });
 		m_models[ind].vao->AddVertexBuffer(UV_vbo, {
 			BufferAttribute(2, 2, GL_FLOAT, false, 0, 0) });
 		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
 			BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(spec_vbo, {
+			BufferAttribute(4, 3, GL_FLOAT, false, 0, 0) });
 	}
 	else if (usingMaterial) {
 		VertexBuffer::sptr position_vbo = VertexBuffer::Create();
@@ -464,10 +464,10 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
 		m_models[ind].vao->AddVertexBuffer(colour_vbo, {
 			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(spec_vbo, {
-			BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) });
 		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
 			BufferAttribute(2, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(spec_vbo, {
+			BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) });
 	}
 	else {
 		VertexBuffer::sptr position_vbo = VertexBuffer::Create();
