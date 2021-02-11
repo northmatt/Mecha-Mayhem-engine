@@ -17,7 +17,7 @@ int main() {
 		scenes.push_back(new MainMenu("Mecha Mayhem"));
 		scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0)));
 		scenes.push_back(new DemoScene("MM Demo", glm::vec3(0, -100, 0)));
-		scenes.push_back(new LeaderBoard("THe Winner is..."));
+		scenes.push_back(new LeaderBoard("The Winner is..."));
  		 
 		scenes[0]->Init(width, height);
 		scenes[1]->Init(width, height);
@@ -39,7 +39,7 @@ int main() {
 
 			if (!BackEnd::HasFocus()) {
 				if (!paused) {
-					SoundManager::PauseEverything();
+					AudioEngine::Instance().PauseEverything();
 					paused = true;
 				}
 				if (usingImGui)
@@ -47,7 +47,7 @@ int main() {
 				continue;
 			}
 			else if (paused) {
-				SoundManager::PlayEverything();
+				AudioEngine::Instance().UnPauseEverything();
 				paused = false;
 			}
 

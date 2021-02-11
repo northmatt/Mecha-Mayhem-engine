@@ -395,71 +395,97 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 
 	file.close();
 
-	std::vector<float> interleaved;
+	std::vector<float> position_data = {};
+	std::vector<float> colour_data = {};
+	std::vector<float> spec_data = {};
+	std::vector<float> UV_data = {};
+	std::vector<float> normal_data = {};
 
 	for (size_t i = 0; i < bufferVertex.size(); ++i) {
-		interleaved.push_back(vertex[bufferVertex[i]].x);
-		interleaved.push_back(vertex[bufferVertex[i]].y);
-		interleaved.push_back(vertex[bufferVertex[i]].z);
+		position_data.push_back(vertex[bufferVertex[i]].x);
+		position_data.push_back(vertex[bufferVertex[i]].y);
+		position_data.push_back(vertex[bufferVertex[i]].z);
 		if (usingMaterial) {
-			interleaved.push_back(materials[bufferColours[i]].colours.x);
-			interleaved.push_back(materials[bufferColours[i]].colours.y);
-			interleaved.push_back(materials[bufferColours[i]].colours.z);
-			interleaved.push_back(materials[bufferColours[i]].specStrength.x);
-			interleaved.push_back(materials[bufferColours[i]].specStrength.y);
-			interleaved.push_back(materials[bufferColours[i]].specStrength.z);
+			colour_data.push_back(materials[bufferColours[i]].colours.x);
+			colour_data.push_back(materials[bufferColours[i]].colours.y);
+			colour_data.push_back(materials[bufferColours[i]].colours.z);
+			spec_data.push_back(materials[bufferColours[i]].specStrength.x);
+			spec_data.push_back(materials[bufferColours[i]].specStrength.y);
+			spec_data.push_back(materials[bufferColours[i]].specStrength.z);
 		}
 		if (usingTexture) {
-			interleaved.push_back(UV[bufferUV[i]].x);
-			interleaved.push_back(UV[bufferUV[i]].y);
+			UV_data.push_back(UV[bufferUV[i]].x);
+			UV_data.push_back(UV[bufferUV[i]].y);
+			UV_data.push_back(0.f);
 		}
-		interleaved.push_back(normals[bufferNormals[i]].x);
-		interleaved.push_back(normals[bufferNormals[i]].y);
-		interleaved.push_back(normals[bufferNormals[i]].z);
+		normal_data.push_back(normals[bufferNormals[i]].x);
+		normal_data.push_back(normals[bufferNormals[i]].y);
+		normal_data.push_back(normals[bufferNormals[i]].z);
 	}
 
-	VertexBuffer::sptr interleaved_vbo = VertexBuffer::Create();
-	interleaved_vbo->LoadData(interleaved.data(), interleaved.size());
 
 	//change this once UVs are added
 	if (usingTexture) {
-		size_t stride = sizeof(float) * 14;
-		//m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
-		m_models[ind].vao->AddVertexBuffer(interleaved_vbo, {
-			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
-			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3),
-			BufferAttribute(4, 3, GL_FLOAT, false, stride, sizeof(float) * 6),
-			BufferAttribute(2, 2, GL_FLOAT, false, stride, sizeof(float) * 9),
-			BufferAttribute(3, 3, GL_FLOAT, false, stride, sizeof(float) * 11)
-			});
+		VertexBuffer::sptr position_vbo = VertexBuffer::Create();
+		position_vbo->LoadData(position_data.data(), position_data.size());
+		VertexBuffer::sptr colour_vbo = VertexBuffer::Create();
+		colour_vbo->LoadData(colour_data.data(), colour_data.size());
+		VertexBuffer::sptr spec_vbo = VertexBuffer::Create();
+		spec_vbo->LoadData(spec_data.data(), spec_data.size());
+		VertexBuffer::sptr UV_vbo = VertexBuffer::Create();
+		UV_vbo->LoadData(UV_data.data(), UV_data.size());
+		VertexBuffer::sptr normal_vbo = VertexBuffer::Create();
+		normal_vbo->LoadData(normal_data.data(), normal_data.size());
+
+
+		m_models[ind].vao->AddVertexBuffer(position_vbo, {
+			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(colour_vbo, {
+			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(spec_vbo, {
+			BufferAttribute(4, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(UV_vbo, {
+			BufferAttribute(2, 2, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
+			BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) });
 	}
 	else if (usingMaterial) {
-		size_t stride = sizeof(float) * 12;
-		//m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
-		m_models[ind].vao->AddVertexBuffer(interleaved_vbo, {
-			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
-			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3),
-			BufferAttribute(3, 3, GL_FLOAT, false, stride, sizeof(float) * 6),
-			BufferAttribute(2, 3, GL_FLOAT, false, stride, sizeof(float) * 9)
-			});
+		VertexBuffer::sptr position_vbo = VertexBuffer::Create();
+		position_vbo->LoadData(position_data.data(), position_data.size());
+		VertexBuffer::sptr colour_vbo = VertexBuffer::Create();
+		colour_vbo->LoadData(colour_data.data(), colour_data.size());
+		VertexBuffer::sptr spec_vbo = VertexBuffer::Create();
+		spec_vbo->LoadData(spec_data.data(), spec_data.size());
+		VertexBuffer::sptr normal_vbo = VertexBuffer::Create();
+		normal_vbo->LoadData(normal_data.data(), normal_data.size());
+
+
+		m_models[ind].vao->AddVertexBuffer(position_vbo, {
+			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(colour_vbo, {
+			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(spec_vbo, {
+			BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
+			BufferAttribute(2, 3, GL_FLOAT, false, 0, 0) });
 	}
 	else {
-		size_t stride = sizeof(float) * 6;
-		//m_models[ind].vao[vectorIndex - 1]->AddVertexBuffer(interleaved_vbo, {
-		m_models[ind].vao->AddVertexBuffer(interleaved_vbo, {
-			BufferAttribute(0, 3, GL_FLOAT, false, stride, 0),
-			BufferAttribute(1, 3, GL_FLOAT, false, stride, sizeof(float) * 3)
-			});
+		VertexBuffer::sptr position_vbo = VertexBuffer::Create();
+		position_vbo->LoadData(position_data.data(), position_data.size());
+		VertexBuffer::sptr normal_vbo = VertexBuffer::Create();
+		normal_vbo->LoadData(normal_data.data(), normal_data.size());
+
+
+		m_models[ind].vao->AddVertexBuffer(position_vbo, {
+			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
+			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
 	}
 
 	m_index = ind;
 
 	return *this;
 }
-
-LUT3D ObjLoader::warm{};
-LUT3D ObjLoader::cold{};
-LUT3D ObjLoader::custom{};
 
 void ObjLoader::Init()
 {
@@ -473,6 +499,8 @@ void ObjLoader::Init()
 	m_texShader->LoadShaderPartFromFile("shaders/tex_frag_shader.glsl", GL_FRAGMENT_SHADER);
 	m_texShader->Link();
 
+	m_texShader->SetUniform("s_texture", 0);
+
 	m_shader = Shader::Create();
 	m_shader->LoadShaderPartFromFile("shaders/vertex_shader.glsl", GL_VERTEX_SHADER);
 	m_shader->LoadShaderPartFromFile("shaders/frag_shader.glsl", GL_FRAGMENT_SHADER);
@@ -481,21 +509,6 @@ void ObjLoader::Init()
 	m_matQueue.clear();
 	m_texQueue.clear();
 	m_defaultQueue.clear();
-
-	warm.loadFromFile("postEffects/warm.cube");
-	cold.loadFromFile("postEffects/cool.cube");
-	custom.loadFromFile("postEffects/custom.cube");
-
-	diffuseRamp = Texture2D::LoadFromFile("postEffects/diffuseRamp.png");
-	diffuseRamp->SetWrapS(WrapMode::ClampToEdge);
-	diffuseRamp->SetWrapT(WrapMode::ClampToEdge);
-	diffuseRamp->SetMagFilter(MagFilter::Nearest);
-	diffuseRamp->SetMinFilter(MinFilter::Nearest);
-	specularRamp = Texture2D::LoadFromFile("postEffects/specularRamp.png");
-	specularRamp->SetWrapS(WrapMode::ClampToEdge);
-	specularRamp->SetWrapT(WrapMode::ClampToEdge);
-	specularRamp->SetMagFilter(MagFilter::Nearest);
-	specularRamp->SetMinFilter(MinFilter::Nearest);
 }
 
 void ObjLoader::Unload()
@@ -537,17 +550,6 @@ void ObjLoader::Draw(const glm::mat4& model)
 	return;
 }
 
-bool ObjLoader::usingAmbient = true;
-bool ObjLoader::usingSpecular = true;
-bool ObjLoader::usingDiffuse = true;
-bool ObjLoader::noLighting = false;
-bool ObjLoader::toonShading = false;
-bool ObjLoader::usingDiffuseRamp = false;
-bool ObjLoader::usingSpecularRamp = false;
-
-Texture2D::sptr ObjLoader::diffuseRamp = nullptr;
-Texture2D::sptr ObjLoader::specularRamp = nullptr;
-
 void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour, const std::array<glm::vec3, MAX_LIGHTS>& lightPos, const std::array<glm::vec3, MAX_LIGHTS>& lightColour, const int& lightCount,
 	float specularStrength, float shininess,
 	float ambientLightStrength, const glm::vec3& ambientColour, float ambientStrength)
@@ -579,22 +581,9 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 		m_shader->SetUniform("ambientColour", ambientColour);
 		m_shader->SetUniform("ambientStrength", ambientStrength);
 
-		m_shader->SetUniform("usingAmbient", int(ObjLoader::usingAmbient));
-		m_shader->SetUniform("usingDiffuse", int(ObjLoader::usingDiffuse));
-		m_shader->SetUniform("usingSpecular", int(ObjLoader::usingSpecular));
-		m_shader->SetUniform("noLighting", int(ObjLoader::noLighting));
-		m_shader->SetUniform("toonShading", int(ObjLoader::toonShading));
-		m_shader->SetUniform("usingDiffuseRamp", int(ObjLoader::usingDiffuseRamp));
-		m_shader->SetUniform("usingSpecularRamp", int(ObjLoader::usingSpecularRamp));
-
-		m_shader->SetUniform("diffuseRamp", 1);
-		m_shader->SetUniform("specularRamp", 2);
-
 		for (int i(0); i < m_defaultQueue.size(); ++i) {
 			m_shader->SetUniformMatrix("MVP", VP * m_defaultQueue[i].model);
 			m_shader->SetUniformMatrix("transform", m_defaultQueue[i].model);
-			ObjLoader::diffuseRamp->Bind(1);
-			ObjLoader::specularRamp->Bind(2);
 
 			m_models[m_defaultQueue[i].modelIndex].vao->Render();
 		}
@@ -613,25 +602,11 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 		m_texShader->SetUniform("ambientColour", ambientColour);
 		m_texShader->SetUniform("ambientStrength", ambientStrength);
 
-		m_texShader->SetUniform("usingAmbient", int(ObjLoader::usingAmbient));
-		m_texShader->SetUniform("usingDiffuse", int(ObjLoader::usingDiffuse));
-		m_texShader->SetUniform("usingSpecular", int(ObjLoader::usingSpecular));
-		m_texShader->SetUniform("noLighting", int(ObjLoader::noLighting));
-		m_texShader->SetUniform("toonShading", int(ObjLoader::toonShading));
-		m_texShader->SetUniform("usingDiffuseRamp", int(ObjLoader::usingDiffuseRamp));
-		m_texShader->SetUniform("usingSpecularRamp", int(ObjLoader::usingSpecularRamp));
-
-		m_texShader->SetUniform("diffuseRamp", 1);
-		m_texShader->SetUniform("specularRamp", 2);
-		m_texShader->SetUniform("s_texture", 0);
-
 		for (int i(0); i < m_texQueue.size(); ++i) {
 			m_texShader->SetUniformMatrix("MVP", VP * m_texQueue[i].model);
 			m_texShader->SetUniformMatrix("transform", m_texQueue[i].model);
 
 			Sprite::m_textures[m_models[m_texQueue[i].modelIndex].texture].texture->Bind(0);
-			ObjLoader::diffuseRamp->Bind(1);
-			ObjLoader::specularRamp->Bind(2);
 
 			m_models[m_texQueue[i].modelIndex].vao->Render();
 		}
@@ -651,22 +626,9 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 		m_matShader->SetUniform("ambientColour", ambientColour);
 		m_matShader->SetUniform("ambientStrength", ambientStrength);
 
-		m_matShader->SetUniform("usingAmbient", int(ObjLoader::usingAmbient));
-		m_matShader->SetUniform("usingDiffuse", int(ObjLoader::usingDiffuse));
-		m_matShader->SetUniform("usingSpecular", int(ObjLoader::usingSpecular));
-		m_matShader->SetUniform("noLighting", int(ObjLoader::noLighting));
-		m_matShader->SetUniform("toonShading", int(ObjLoader::toonShading));
-		m_matShader->SetUniform("usingDiffuseRamp", int(ObjLoader::usingDiffuseRamp));
-		m_matShader->SetUniform("usingSpecularRamp", int(ObjLoader::usingSpecularRamp));
-
-		m_matShader->SetUniform("diffuseRamp", 1);
-		m_matShader->SetUniform("specularRamp", 2);
-
 		for (int i(0); i < m_matQueue.size(); ++i) {
 			m_matShader->SetUniformMatrix("MVP", VP * m_matQueue[i].model);
 			m_matShader->SetUniformMatrix("transform", m_matQueue[i].model);
-			ObjLoader::diffuseRamp->Bind(1);
-			ObjLoader::specularRamp->Bind(2);
 
 			m_models[m_matQueue[i].modelIndex].vao->Render();
 		}

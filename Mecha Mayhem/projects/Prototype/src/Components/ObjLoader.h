@@ -1,6 +1,5 @@
 #pragma once
 #include "Sprite.h"
-#include "Effects/Post/ColourCorrectionEffect.h"
 
 class ObjLoader
 {
@@ -27,21 +26,6 @@ public:
 	void Enable() { m_enabled = true; }
 	void Disable() { m_enabled = false; }
 	bool GetEnabled() { return m_enabled; }
-
-	static bool usingAmbient;
-	static bool usingSpecular;
-	static bool usingDiffuse;
-	static bool noLighting;
-	static bool toonShading;
-	static bool usingDiffuseRamp;
-	static bool usingSpecularRamp;
-
-	static Texture2D::sptr diffuseRamp;
-	static Texture2D::sptr specularRamp;
-
-	static LUT3D warm;
-	static LUT3D cold;
-	static LUT3D custom;
 
 private:
 

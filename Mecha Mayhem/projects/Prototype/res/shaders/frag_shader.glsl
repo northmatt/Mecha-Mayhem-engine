@@ -17,69 +17,24 @@ uniform float ambientStrength;
 uniform float specularStrength;
 uniform float shininess;
 
-uniform bool usingAmbient;
-uniform bool usingSpecular;
-uniform bool usingDiffuse;
-uniform bool noLighting;
-uniform bool toonShading;
-
-uniform bool usingDiffuseRamp;
-uniform bool usingSpecularRamp;
-
-uniform sampler2D diffuseRamp;
-uniform sampler2D specularRamp;
-
-
-const float bands = 5.0;
-const float fix = 1.0 / bands;
-
 out vec4 frag_color;
 
 void main() {
-
-	if(noLighting)
-	{	
-		frag_color = vec4(colour, 1);
-		return;
-	}
 	
 	//optimized for less garbage collection and memory mangement
 	vec3 N = normalize(inNormal);
 	vec3 camDir = normalize(camPos - inPos);
 	vec3 lightDir = vec3(0.0, 0.0, 0.0);
 	vec3 total = vec3(0.0, 0.0, 0.0);
-	float hold = 0;
 
 	for(int i = 0; i < lightCount; ++i) {
 		lightDir = normalize(lightsPos[i] - inPos);
-		hold = 0;
-
-		if(usingAmbient)
-			hold += ambientLightStrength;
-
-		if(usingDiffuse)
-		{
-			if (usingDiffuseRamp)
-				hold += texture(diffuseRamp, vec2(max(dot(N, lightDir), 0.0) / length(lightsPos[i] - inPos), 0.0)).r;
-			else
-				hold += max(dot(N, lightDir), 0.0) / length(lightsPos[i] - inPos);
-		}
-		if(usingSpecular)
-		{
-			if(usingSpecularRamp)
-				hold += texture(specularRamp, vec2(specularStrength * pow(max(dot(N, normalize(camDir + lightDir)), 0.0), shininess), 0.0)).r;
-			else
-				hold += specularStrength * pow(max(dot(N, normalize(camDir + lightDir)), 0.0), shininess);
-		}
-		//toon shading here
-		if(toonShading)
-			hold = floor(hold * bands) * fix;
-
-		total += hold * lightsColour[i];
+		
+		total += (ambientLightStrength
+			+ max(dot(N, lightDir), 0.0) / length(lightsPos[i] - inPos)
+			+ specularStrength * pow(max(dot(N, normalize(camDir + lightDir)), 0.0), shininess))
+			* lightsColour[i];
 	}
 	
-	if (usingAmbient)
-		frag_color = vec4(total * colour, 1);
-	else
-		frag_color = vec4((ambientColour * ambientStrength + total) * colour, 1);
+	frag_color = vec4((ambientColour * ambientStrength + total) * colour, 1);
 }

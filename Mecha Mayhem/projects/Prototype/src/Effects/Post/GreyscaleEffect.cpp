@@ -3,21 +3,18 @@
 void GreyscaleEffect::Init(unsigned width, unsigned height)
 {
 	int index = int(_buffers.size());
-	_buffers.push_back(new Framebuffer());
-	_buffers[index]->AddColorTarget(GL_RGBA8);
-	_buffers[index]->Init(width, height);
+	if (index == 0) {
+		_buffers.push_back(new Framebuffer());
+		_buffers[index]->AddColorTarget(GL_RGBA8);
+		_buffers[index]->Init(width, height);
+	}
 
 	//Loads the shaders
 	index = int(_shaders.size());
-	_shaders.push_back(Shader::Create());
-	_shaders[index]->LoadShaderPartFromFile("shaders/Post/passthrough_vert.glsl", GL_VERTEX_SHADER);
-	_shaders[index]->LoadShaderPartFromFile("shaders/Post/passthrough_frag.glsl", GL_FRAGMENT_SHADER);
-	_shaders[index]->Link();
-	index = int(_shaders.size());
-	_shaders.push_back(Shader::Create());
-	_shaders[index]->LoadShaderPartFromFile("shaders/Post/passthrough_vert.glsl", GL_VERTEX_SHADER);
-	_shaders[index]->LoadShaderPartFromFile("shaders/Post/greyscale_frag.glsl", GL_FRAGMENT_SHADER);
-	_shaders[index]->Link();
+	if (index == 0) {
+		_shaders.push_back(GetShader("shaders/Post/passthrough_frag.glsl"));
+		_shaders.push_back(GetShader("shaders/Post/greyscale_frag.glsl"));
+	}
 }
 
 void GreyscaleEffect::ApplyEffect(PostEffect* buffer)

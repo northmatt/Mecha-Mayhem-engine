@@ -3,6 +3,19 @@
 
 FrameEffects::FrameEffects() { }
 
+void FrameEffects::Init()
+{
+	PostEffect::Init("shaders/Post/passthrough_frag.glsl");
+	PostEffect::Init("shaders/Post/color_correction_frag.glsl");
+	PostEffect::Init("shaders/Post/greyscale_frag.glsl");
+	PostEffect::Init("shaders/Post/sepia_frag.glsl");
+}
+
+void FrameEffects::Unload()
+{
+	PostEffect::UnloadShaders();
+}
+
 void FrameEffects::Init(unsigned width, unsigned height)
 {
 	while (layersOfEffects.size() > 0) {
@@ -31,8 +44,8 @@ void FrameEffects::RemoveEffect(int slot)
 	if (layersOfEffects.size() <= slot || slot < 0)	return;
 
 	if (layersOfEffects[slot] != nullptr) {
-		layersOfEffects[slot]->Unload();
 
+		layersOfEffects[slot]->Unload();
 		delete layersOfEffects[slot];
 		layersOfEffects[slot] = nullptr;
 	}

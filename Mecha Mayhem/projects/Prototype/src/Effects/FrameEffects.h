@@ -6,6 +6,11 @@ class FrameEffects
 public:
 	FrameEffects();
 
+	//for all effects (put static inits here)
+	static void Init();
+	//same as the init, but for unloading
+	static void Unload();
+
 	//change the buffers
 	void Init(unsigned width, unsigned height);
 	void Resize(unsigned width, unsigned height);

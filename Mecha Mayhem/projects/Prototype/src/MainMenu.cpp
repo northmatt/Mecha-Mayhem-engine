@@ -58,8 +58,6 @@ void MainMenu::Init(int windowWidth, int windowHeight)
 
 void MainMenu::Update()
 {
-	m_bg.loop();
-
 	if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER::ONE)) {
 		if (ControllerInput::GetButton(BUTTON::RB, CONUSER::ONE)) {
 			if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);

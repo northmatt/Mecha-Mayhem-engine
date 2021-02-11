@@ -1,8 +1,34 @@
 #include "PostEffect.h"
 
+std::vector<PostEffect::PPShader> PostEffect::shaderCache = {};
+
 PostEffect::~PostEffect()
 {
 	Unload();
+}
+
+void PostEffect::Init(std::string frag)
+{
+	if (GetShader(frag) != nullptr) return;
+	int index = int(shaderCache.size());
+	shaderCache.push_back({ frag, Shader::Create() });
+	shaderCache[index].shaderProgram->LoadShaderPartFromFile("shaders/Post/passthrough_vert.glsl", GL_VERTEX_SHADER);
+	shaderCache[index].shaderProgram->LoadShaderPartFromFile(frag.c_str(), GL_FRAGMENT_SHADER);
+	shaderCache[index].shaderProgram->Link();
+}
+
+void PostEffect::UnloadShaders()
+{
+	shaderCache.clear();
+}
+
+Shader::sptr PostEffect::GetShader(std::string frag)
+{
+	for (int i(0); i < shaderCache.size(); ++i) {
+		if (shaderCache[i].fragShader == frag)
+			return shaderCache[i].shaderProgram;
+	}
+	return nullptr;
 }
 
 void PostEffect::Init(unsigned width, unsigned height)
@@ -18,10 +44,7 @@ void PostEffect::Init(unsigned width, unsigned height)
 
 	index = int(_shaders.size());
 	if (index == 0) {
-		_shaders.push_back(Shader::Create());
-		_shaders[index]->LoadShaderPartFromFile("shaders/Post/passthrough_vert.glsl", GL_VERTEX_SHADER);
-		_shaders[index]->LoadShaderPartFromFile("shaders/Post/passthrough_frag.glsl", GL_FRAGMENT_SHADER);
-		_shaders[index]->Link();
+		_shaders.push_back(GetShader("shaders/Post/passthrough_frag.glsl"));
 	}
 }
 
@@ -40,7 +63,7 @@ void PostEffect::ApplyEffect(PostEffect* previousBuffer)
 
 void PostEffect::DrawToScreen()
 {
-	BindShader(0);
+	PostEffect::BindShader(0);
 
 	BindColorAsTexture(0, 0, 0);
 
@@ -48,7 +71,7 @@ void PostEffect::DrawToScreen()
 
 	UnbindTexture(0);
 
-	UnbindShader();
+	PostEffect::UnbindShader();
 }
 
 void PostEffect::Reshape(unsigned width, unsigned height)
@@ -80,7 +103,7 @@ void PostEffect::Unload()
 	}
 	_buffers.clear();
 
-	_shaders.clear();
+	//_shaders.clear();
 }
 
 void PostEffect::BindBuffer(int index)

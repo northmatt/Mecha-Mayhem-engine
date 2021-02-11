@@ -8,6 +8,11 @@ class PostEffect
 public:
 	~PostEffect();
 
+	static void Init(std::string frag);
+	static void UnloadShaders();
+
+	static Shader::sptr GetShader(std::string frag);
+
 	//Initialize this effect (will be overriden in each derived class)
 	virtual void Init(unsigned width, unsigned height);
 
@@ -22,7 +27,7 @@ public:
 	void Clear();
 
 	//Unloads all the buffers
-	void Unload();
+	virtual void Unload();
 
 	//Binds buffers
 	void BindBuffer(int index);
@@ -48,4 +53,11 @@ protected:
 
 	//Holds all our shaders for the effects
 	std::vector<Shader::sptr> _shaders;
+
+	struct PPShader {
+		std::string fragShader;
+		Shader::sptr shaderProgram;
+	};
+
+	static std::vector<PPShader> shaderCache;
 };

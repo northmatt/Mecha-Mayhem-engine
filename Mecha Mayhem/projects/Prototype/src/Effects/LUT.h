@@ -12,6 +12,12 @@ public:
 	~LUT3D();
 	LUT3D();
 	LUT3D(std::string path);
+
+	//unload handle
+	void Unload();
+	//clear vector
+	void Clear();
+
 	void loadFromFile(std::string path);
 	void bind();
 	void unbind();

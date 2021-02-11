@@ -1,8 +1,9 @@
 #include "LUT.h"
+#include <iostream>
 #pragma warning(disable : 4996)
 LUT3D::~LUT3D()
 {
-	data.clear();
+	Clear();
 }
 LUT3D::LUT3D()
 {
@@ -11,6 +12,20 @@ LUT3D::LUT3D()
 LUT3D::LUT3D(std::string path)
 {
 	loadFromFile(path);
+}
+
+void LUT3D::Unload()
+{
+	if (_handle != 0) {
+		glDeleteTextures(1, &_handle);
+		_handle = 0;
+	}
+	Clear();
+}
+
+void LUT3D::Clear()
+{
+	data.clear();
 }
 
 void LUT3D::loadFromFile(std::string path)

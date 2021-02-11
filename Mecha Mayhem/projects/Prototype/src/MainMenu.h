@@ -13,7 +13,7 @@ public:
 	virtual void Exit() override;
 
 	virtual Scene* Reattach() override {
-		m_bg.play();
+		//AudioEngine::Instance().CreateEventW("music", "blah").Play();
 
 		return Scene::Reattach();
 	}
@@ -30,8 +30,6 @@ private:
 	float zoomTime = 1;
 	float m_exitHoldTimer = 0;
 	float m_confirmTimer = 1.f;
-
-	Sound2D m_bg = { "MainMenu.mp3", "BG" };
 
 	CatmullFollower cameraPath{ 1, {
 		glm::vec3(-2.5f, 2.5f, 12.5f),

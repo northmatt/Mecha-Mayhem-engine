@@ -5,6 +5,7 @@
 class GreyscaleEffect : public PostEffect
 {
 public:
+
 	//Initializes framebuffer
 	//Overrides post effect Init
 	void Init(unsigned width, unsigned height) override;

@@ -292,7 +292,7 @@ Scene* Tutorial::Reattach() {
 		Rendering::hitboxes = &m_colliders;
 	}
 
-	SoundManager::stopEverything();
+	AudioEngine::Instance().StopAllSounds();
 
 	m_frameEffects.Resize(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
 

@@ -14,9 +14,11 @@ public:
 	//passes the previous framebuffer with the texture to apply as parameter
 	void ApplyEffect(PostEffect* buffer) override;
 
-	void SetCube(LUT3D cube);
+	void Unload() override;
+
+	void SetCube(LUT3D &cube);
 	LUT3D GetCube() const;
 
 private:
-	LUT3D _cube;
+	LUT3D *_cube;
 };
