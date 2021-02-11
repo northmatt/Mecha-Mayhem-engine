@@ -570,20 +570,20 @@ void ObjMorphLoader::BlendTo(const std::string& baseFileName, float delay, int f
 void ObjMorphLoader::Init()
 {
 	m_matShader = Shader::Create();
-	m_matShader->LoadShaderPartFromFile("shaders/mat_morph_vert.glsl", GL_VERTEX_SHADER);
-	m_matShader->LoadShaderPartFromFile("shaders/mat_frag_shader.glsl", GL_FRAGMENT_SHADER);
+	m_matShader->LoadShaderPartFromFile("shaders/vert_mat_morph.glsl", GL_VERTEX_SHADER);
+	m_matShader->LoadShaderPartFromFile("shaders/frag_mat.glsl", GL_FRAGMENT_SHADER);
 	m_matShader->Link();
 
 	m_texShader = Shader::Create();
-	m_texShader->LoadShaderPartFromFile("shaders/tex_morph_vert.glsl", GL_VERTEX_SHADER);
-	m_texShader->LoadShaderPartFromFile("shaders/tex_frag_shader.glsl", GL_FRAGMENT_SHADER);
+	m_texShader->LoadShaderPartFromFile("shaders/vert_tex_morph.glsl", GL_VERTEX_SHADER);
+	m_texShader->LoadShaderPartFromFile("shaders/frag_tex.glsl", GL_FRAGMENT_SHADER);
 	m_texShader->Link();
 
 	m_texShader->SetUniform("s_texture", 0);
 
 	m_shader = Shader::Create();
-	m_shader->LoadShaderPartFromFile("shaders/morph_vert.glsl", GL_VERTEX_SHADER);
-	m_shader->LoadShaderPartFromFile("shaders/frag_shader.glsl", GL_FRAGMENT_SHADER);
+	m_shader->LoadShaderPartFromFile("shaders/vert_none_morph.glsl", GL_VERTEX_SHADER);
+	m_shader->LoadShaderPartFromFile("shaders/frag_none.glsl", GL_FRAGMENT_SHADER);
 	m_shader->Link();
 
 	pos1Buff =  { BufferAttribute(0, 3, GL_FLOAT, false, NULL, NULL) };

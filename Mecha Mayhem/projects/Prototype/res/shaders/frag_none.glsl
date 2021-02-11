@@ -20,21 +20,34 @@ uniform float shininess;
 out vec4 frag_color;
 
 void main() {
-	
 	//optimized for less garbage collection and memory mangement
+
+	//spec = floor(spec * 5) * 0.2;
+	//	if (spec < 0.25)
+	//		spec = 0;
+	//	else if (spec < 0.5)
+	//		spec = 0.25;
+	//	else if (spec < 0.75)
+	//		spec = 0.5;
+	//	else if (spec < 1)
+	//		spec = 0.75;
+
 	vec3 N = normalize(inNormal);
 	vec3 camDir = normalize(camPos - inPos);
 	vec3 lightDir = vec3(0.0, 0.0, 0.0);
+	float lightDistSq = 0.0;
 	vec3 total = vec3(0.0, 0.0, 0.0);
-
-	for(int i = 0; i < lightCount; ++i) {
-		lightDir = normalize(lightsPos[i] - inPos);
-		
-		total += (ambientLightStrength
-			+ max(dot(N, lightDir), 0.0) / length(lightsPos[i] - inPos)
-			+ specularStrength * pow(max(dot(N, normalize(camDir + lightDir)), 0.0), shininess))
-			* lightsColour[i];
-	}
 	
-	frag_color = vec4((ambientColour * ambientStrength + total) * colour, 1);
+	for(int i = 0; i < lightCount; ++i) {
+		lightDir = lightsPos[i] - inPos;
+		lightDistSq = dot(lightDir, lightDir);
+		lightDir = normalize(lightDir);
+
+		//								 diffuse					  SpecStrength													 ShininessCoefficient
+		total += (ambientLightStrength + max(dot(N, lightDir), 0.0) + specularStrength * pow(max(dot(N, normalize(camDir + lightDir)), 0.0), shininess)) / lightDistSq * lightsColour[i];
+	}
+
+	vec3 result = (ambientColour * ambientStrength + total) * colour;
+
+	frag_color = vec4(result, 1);
 }

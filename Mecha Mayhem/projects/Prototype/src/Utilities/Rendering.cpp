@@ -106,10 +106,10 @@ namespace Rendering {
             //do all the draws
             ObjLoader::PerformDraw(view, camCam,
                 DefaultColour, LightsPos, LightsColour, LightCount,
-                1, 4, 0.5f);
+                1, 4, 0.0f, AmbientColour, AmbientStrength);
             ObjMorphLoader::PerformDraw(view, camCam,
                 DefaultColour, LightsPos, LightsColour, LightCount,
-                1, 4, 0.5f);
+                1, 4, 0.0f, AmbientColour, AmbientStrength);
             Sprite::PerformDraw();
 
             //exit even if some cams haven't been checked, because only the amount specified should render
@@ -139,18 +139,20 @@ namespace Rendering {
 
     glm::vec4 BackColour = { 0.2f, 0.2f, 0.2f, 1.f };
     std::array<glm::vec3, MAX_LIGHTS> LightsColour = {
-        glm::vec3(1.f),
-        glm::vec3(0.5f, 0.f, 0.f),
-        glm::vec3(0.5f), glm::vec3(0.5f), glm::vec3(0.5f), glm::vec3(0.5f),
-        glm::vec3(0.5f), glm::vec3(0.5f), glm::vec3(0.5f), glm::vec3(0.5f)
+       glm::vec3(200.f),
+       glm::vec3(15.f, 15.f, 0.f),
+       glm::vec3(.15f), glm::vec3(.15f), glm::vec3(.5f), glm::vec3(.5f),
+       glm::vec3(.5f), glm::vec3(.5f), glm::vec3(.5f), glm::vec3(.5f)
     };
     std::array<glm::vec3, MAX_LIGHTS> LightsPos = {
-        glm::vec3(0.f, 50.f, 0.f), glm::vec3(0.f, 0.f, 0.f),
+        glm::vec3(0.f, 10.f, 0.f), glm::vec3(0.f),
         glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f),
         glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f)
     };
     glm::vec3 DefaultColour = glm::vec3(1.f);
     size_t LightCount = 6;
+    glm::vec3 AmbientColour = glm::vec3(1.f);
+    glm::float32 AmbientStrength = 1.f;
 
     HitboxGen* hitboxes = nullptr;
     Effects* effects = nullptr;

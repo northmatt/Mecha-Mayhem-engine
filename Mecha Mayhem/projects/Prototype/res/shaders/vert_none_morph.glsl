@@ -17,7 +17,6 @@ void main() {
 	vec3 pos = mix(inPos1, inPos2, t);
 
 	outPosition = (transform * vec4(pos, 1)).xyz;
-	
 	outNormal = mat3(transform) * mix(inNorm1, inNorm2, t);
 
 	gl_Position = MVP * vec4(pos, 1);
