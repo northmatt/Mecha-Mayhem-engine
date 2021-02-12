@@ -10,16 +10,15 @@ void ColCor::Init(unsigned width, unsigned height, LUT3D cube) {
 	_shaders.push_back(Shader::Create());
 	_shaders[index]->LoadShaderPartFromFile("shaders/passthrough_vert.glsl", GL_VERTEX_SHADER);
 	_shaders[index]->LoadShaderPartFromFile("shaders/color_correction_frag.glsl", GL_FRAGMENT_SHADER);
+	_shaders[index]->Link();
 
 	_cube = cube;
 
-	_shaders[index]->Link();
 	PostEffect::Init(width, height);
 }
 
 void ColCor::ApplyAffects(PostEffect* buffer) {
 	BindShader(0);
-	_shaders[0]->SetUniform("u_TexColorGrade", 30);
 	buffer->BindColourAsTexture(0, 0, 0);
 	_cube.bind(30);
 

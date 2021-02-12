@@ -2,7 +2,7 @@
 
 void PostEffect::Init(unsigned width, unsigned height) {
 	size_t index = 0;
-	if (!_shaders.size() > 0) {
+	if (_shaders.size() == 0) {
 		index = _buffers.size();
 		_buffers.push_back(new Framebuffer());
 		_buffers[index]->AddColorTarget(GL_RGBA8);
@@ -18,7 +18,7 @@ void PostEffect::Init(unsigned width, unsigned height) {
 }
 
 void PostEffect::ApplyAffects(PostEffect* previousBuffer) {
-	BindShader(0);
+	BindShader(_shaders.size() - 1);
 	previousBuffer->BindColourAsTexture(0, 0, 0);
 
 	_buffers[0]->RenderToFSQ();
@@ -28,7 +28,7 @@ void PostEffect::ApplyAffects(PostEffect* previousBuffer) {
 }
 
 void PostEffect::DrawToScreen() {
-	BindShader(0);
+	BindShader(_shaders.size() - 1);
 	BindColourAsTexture(0, 0, 0);
 
 	_buffers[0]->DrawFullscreenQuad();
