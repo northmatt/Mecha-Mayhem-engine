@@ -11,7 +11,7 @@ namespace Gameloop
 		Logger::Init();
 		AudioEngine& engine = AudioEngine::Instance();
 		engine.Init();
-		//engine.LoadBank("Master");
+		//engine.LoadBankWithString("Master");
 
 		GLFWwindow* window = BackEnd::Init("Mecha Mayhem", width, height);
 		if (!window)	return nullptr;
@@ -27,6 +27,7 @@ namespace Gameloop
 		HitboxGen::Init();
 		Effects::Init();
 		Player::Init(width, height);
+
 		Rendering::Init(width, height);
 		Framebuffer::InitFullscreenQuad();
 		FrameEffects::Init();

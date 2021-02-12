@@ -182,12 +182,13 @@ public:
 
 	//// Banks ////
 	void LoadBank(const std::string& strBankName, FMOD_STUDIO_LOAD_BANK_FLAGS flags = FMOD_STUDIO_LOAD_BANK_NORMAL);
+	void LoadBankWithString(const std::string& strBankName, FMOD_STUDIO_LOAD_BANK_FLAGS flags = FMOD_STUDIO_LOAD_BANK_NORMAL);
 
 	//// Listener ////
 	AudioListener& GetListener();
 
 	//// Events ////
-	AudioEvent& CreateEvent(const std::string& strEventName, const std::string& GUID);
+	AudioEvent& CreateMusicEvent(const std::string& strEventName, const std::string& GUID);
 	AudioEvent& GetEvent(const std::string& strEventName);
 
 	//// Global Parameters ////

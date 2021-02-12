@@ -160,9 +160,9 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 		m_models[ind].mat = false;
 	}
 
-	std::vector<glm::vec3> vertex = { glm::vec3() };
+	std::vector<glm::vec3> vertex = { glm::vec3(0.f) };
 	std::vector<glm::vec2> UV = { glm::vec2(0.f) };
-	std::vector<glm::vec3> normals = { glm::vec3() };
+	std::vector<glm::vec3> normals = { glm::vec3(0.f) };
 
 	std::vector<size_t> bufferVertex = {};
 	std::vector<size_t> bufferUV = {};
@@ -428,63 +428,34 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 		normal_data.push_back(normals[bufferNormals[i]].z);
 	}
 
+	VertexBuffer::sptr position_vbo = VertexBuffer::Create();
+	position_vbo->LoadData(position_data.data(), position_data.size());
+	VertexBuffer::sptr normal_vbo = VertexBuffer::Create();
+	normal_vbo->LoadData(normal_data.data(), normal_data.size());
 
-	//change this once UVs are added
-	if (usingTexture) {
-		VertexBuffer::sptr position_vbo = VertexBuffer::Create();
-		position_vbo->LoadData(position_data.data(), position_data.size());
+	m_models[ind].vao->AddVertexBuffer(position_vbo, {
+		BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
+	m_models[ind].vao->AddVertexBuffer(normal_vbo, {
+		BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
+
+	if (usingMaterial) {
 		VertexBuffer::sptr colour_vbo = VertexBuffer::Create();
 		colour_vbo->LoadData(colour_data.data(), colour_data.size());
 		VertexBuffer::sptr spec_vbo = VertexBuffer::Create();
 		spec_vbo->LoadData(spec_data.data(), spec_data.size());
-		VertexBuffer::sptr UV_vbo = VertexBuffer::Create();
-		UV_vbo->LoadData(UV_data.data(), UV_data.size());
-		VertexBuffer::sptr normal_vbo = VertexBuffer::Create();
-		normal_vbo->LoadData(normal_data.data(), normal_data.size());
 
-
-		m_models[ind].vao->AddVertexBuffer(position_vbo, {
-			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
 		m_models[ind].vao->AddVertexBuffer(colour_vbo, {
-			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(UV_vbo, {
-			BufferAttribute(2, 2, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
-			BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(spec_vbo, {
-			BufferAttribute(4, 3, GL_FLOAT, false, 0, 0) });
-	}
-	else if (usingMaterial) {
-		VertexBuffer::sptr position_vbo = VertexBuffer::Create();
-		position_vbo->LoadData(position_data.data(), position_data.size());
-		VertexBuffer::sptr colour_vbo = VertexBuffer::Create();
-		colour_vbo->LoadData(colour_data.data(), colour_data.size());
-		VertexBuffer::sptr spec_vbo = VertexBuffer::Create();
-		spec_vbo->LoadData(spec_data.data(), spec_data.size());
-		VertexBuffer::sptr normal_vbo = VertexBuffer::Create();
-		normal_vbo->LoadData(normal_data.data(), normal_data.size());
-
-
-		m_models[ind].vao->AddVertexBuffer(position_vbo, {
-			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(colour_vbo, {
-			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
 			BufferAttribute(2, 3, GL_FLOAT, false, 0, 0) });
 		m_models[ind].vao->AddVertexBuffer(spec_vbo, {
 			BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) });
-	}
-	else {
-		VertexBuffer::sptr position_vbo = VertexBuffer::Create();
-		position_vbo->LoadData(position_data.data(), position_data.size());
-		VertexBuffer::sptr normal_vbo = VertexBuffer::Create();
-		normal_vbo->LoadData(normal_data.data(), normal_data.size());
 
+		if (usingTexture) {
+			VertexBuffer::sptr UV_vbo = VertexBuffer::Create();
+			UV_vbo->LoadData(UV_data.data(), UV_data.size());
 
-		m_models[ind].vao->AddVertexBuffer(position_vbo, {
-			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
-			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
+			m_models[ind].vao->AddVertexBuffer(UV_vbo, {
+				BufferAttribute(4, 3, GL_FLOAT, false, 0, 0) });
+		}
 	}
 
 	m_index = ind;
