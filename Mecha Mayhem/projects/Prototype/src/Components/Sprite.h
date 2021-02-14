@@ -40,7 +40,7 @@ public:
 	void Draw(const glm::mat4& VP, const glm::mat4& model);
 	void DrawSingle(const glm::mat4& VP, const glm::mat4& model);
 
-	static void PerformDraw();
+	static void PerformDraw(bool doTex = true);
 
 	void SetScale(float scl) { m_scale = scl; }
 	void SetWidth(float width) { m_width = width; }

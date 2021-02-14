@@ -22,39 +22,65 @@ public:
 
 	virtual void ImGuiFunc() {
 		if (ImGui::Button("Ambient Toggle", ImVec2(140.0f, 20.0f))) {
-			doAmbient = !doAmbient;
+			Rendering::doAmbient = !Rendering::doAmbient;
 		}
 		
 		if (ImGui::Button("Diffuse Toggle", ImVec2(140.0f, 20.0f))) {
-			doDiffuse = !doDiffuse;
+			Rendering::doDiffuse = !Rendering::doDiffuse;
 		}
 		
 		if (ImGui::Button("Spec Toggle", ImVec2(140.0f, 20.0f))) {
-			doSpecular = !doSpecular;
+			Rendering::doSpecular = !Rendering::doSpecular;
 		}
 
-		if (ImGui::Button("Multi Light Toggle", ImVec2(140.0f, 20.0f))) {
-			doMultiLight = !doMultiLight;
+		if (ImGui::Button("Tex Toggle", ImVec2(140.0f, 20.0f))) {
+			Rendering::doTex = !Rendering::doTex;
 		}
 
-		if (ImGui::Button("Diffuse Ramp Toggle", ImVec2(140.0f, 20.0f))) {
-			doDiffuseRamp = !doDiffuseRamp;
+		if (ImGui::Button("LUT Toggle", ImVec2(140.0f, 20.0f))) {
+			doCol = !doCol;
 		}
 
-		if (ImGui::Button("Spec Ramp Toggle", ImVec2(140.0f, 20.0f))) {
-			doSpecularRamp = !doSpecularRamp;
+		if (ImGui::Button("Bloom Toggle", ImVec2(140.0f, 20.0f))) {
+			doBloom = !doBloom;
 		}
 
-		if (ImGui::Button("Warm LUT Toggle", ImVec2(140.0f, 20.0f))) {
-			doWarmCol = !doWarmCol;
+		float *downscale = new float();
+		float *threshold = new float();
+		int *passes = new int();
+		bool changeBloom = false;
+
+		auto Blooms = _activeScene->GetRegistry()->view<BloomEffect>();
+		Blooms.each([=](BloomEffect& buf) {
+			*downscale = buf.GetDownscale();
+			*threshold = buf.GetThreshold();
+			*passes = buf.GetPasses();
+		});
+
+		if (ImGui::InputFloat("Bloom Downscale", downscale)) {
+			if (*downscale < 0)
+				*downscale = 0;
+			changeBloom = true;
 		}
 
-		if (ImGui::Button("Cold LUT Toggle", ImVec2(140.0f, 20.0f))) {
-			doColdCol = !doColdCol;
+		if (ImGui::InputFloat("Bloom Threshold", threshold)) {
+			if (*threshold < 0)
+				*threshold = 0;
+			changeBloom = true;
 		}
 
-		if (ImGui::Button("Custom LUT Toggle", ImVec2(140.0f, 20.0f))) {
-			doCustomCol = !doCustomCol;
+		if (ImGui::InputInt("Bloom Passes", passes)) {
+			if (*passes < 0)
+				*passes = 0;
+			changeBloom = true;
+		}
+
+		if (changeBloom) {
+			Blooms.each([=](BloomEffect& buf) {
+				buf.SetDownscale(*downscale);
+				buf.SetThreshold(*threshold);
+				buf.SetPasses(*passes);
+			});
 		}
 	};
 
@@ -73,15 +99,8 @@ protected:
 	bool m_paused = false;
 	bool m_exitGame = false;
 
-	bool doAmbient = true;
-	bool doDiffuse = true;
-	bool doSpecular = true;
-	bool doMultiLight = true;
-	bool doDiffuseRamp = false;
-	bool doSpecularRamp = false;
-	bool doWarmCol = false;
-	bool doColdCol = false;
-	bool doCustomCol = false;
+	bool doCol = false;
+	bool doBloom = true;
 
 	entt::registry m_reg;
 	btDiscreteDynamicsWorld *m_world = nullptr;

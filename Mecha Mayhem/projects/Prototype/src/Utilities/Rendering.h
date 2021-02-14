@@ -6,8 +6,7 @@
 #include "Utilities/HitboxReader.h"
 #include "Effects.h"
 
-namespace Rendering
-{
+namespace Rendering {
 	//sets up the VP
 	void Init(int width, int height);
 
@@ -25,5 +24,10 @@ namespace Rendering
 	extern HitboxGen* hitboxes;
 	extern Effects* effects;
 	extern Camera orthoVP;
+
+	extern bool doAmbient;
+	extern bool doDiffuse;
+	extern bool doSpecular;
+	extern bool doTex;
 };
 

@@ -15,6 +15,10 @@ uniform float ambientLightStrength;
 uniform vec3  ambientColour;
 uniform float ambientStrength;
 
+uniform bool doAmbient;
+uniform bool doDiffuse;
+uniform bool doSpecular;
+
 out vec4 frag_color;
 
 void main() {
@@ -24,15 +28,31 @@ void main() {
 	vec3 lightDir = vec3(0.0, 0.0, 0.0);
 	float lightDistSq = 0.0;
 	vec3 total = vec3(0.0, 0.0, 0.0);
+	
+	float test = 0.0;
 
 	for(int i = 0; i < lightCount; ++i) {
 		lightDir = lightsPos[i] - inPos;
 		lightDistSq = dot(lightDir, lightDir);
 		lightDir = normalize(lightDir);
+		test = 0.0;
 
-		//								 diffuse					  SpecStrength													 ShininessCoefficient
-		total += (ambientLightStrength + max(dot(N, lightDir), 0.0) + inSpec.x * pow(max(dot(N, normalize(camDir + lightDir)), 0.0), inSpec.y)) / lightDistSq * lightsColour[i];
+		//diffuse
+		if (doDiffuse)
+			test += max(dot(N, lightDir), 0.0);
+
+		//spec		SpecStrength													 ShininessCoefficient
+		if (doSpecular)
+			test += inSpec.x * pow(max(dot(N, normalize(camDir + lightDir)), 0.0), inSpec.y);
+
+		total += (ambientLightStrength + test) / lightDistSq * lightsColour[i];
 	}
 
-	frag_color = vec4((ambientColour * ambientStrength + total) * inColour, inSpec.z);
+	float testAmbientStrength = 0.0;
+	if (doAmbient)
+		testAmbientStrength = ambientStrength;
+	else
+		testAmbientStrength = 0.0;
+
+	frag_color = vec4((ambientColour * testAmbientStrength + total) * inColour, inSpec.z);
 }

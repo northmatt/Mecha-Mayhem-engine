@@ -39,39 +39,28 @@ void BackEnd::GlfwWindowResizedCallback(GLFWwindow* window, int width, int heigh
 	//force window back to right ratio
 	if (_lastHeight != height / 2) {
 		int wide = height * _aspect;
-		glfwSetWindowSize(window, wide, height);
-		//glViewport(0, 0, wide, height);
 		_lastHeight = height / 2;
 		_lastWidth = wide / 2;
-
-		Scene::_activeScene->GetRegistry()->view<Framebuffer>().each([=](Framebuffer& buf) {
-			buf.Reshape(wide, height);
-		});
-		Scene::_activeScene->GetRegistry()->view<PostEffect>().each([=](PostEffect& buf) {
-			buf.Reshape(wide, height);
-		});
-		Scene::_activeScene->GetRegistry()->view<ColCor>().each([=](ColCor& buf) {
-			buf.Reshape(wide, height);
-		});
-	}
+	} 
 	else {
 		int high = width * _aspect2;
-		glfwSetWindowSize(window, width, high);
-		//glViewport(0, 0, width / 2, high / 2);
 		_lastHeight = high / 2;
 		_lastWidth = width / 2;
-
-		Scene::_activeScene->GetRegistry()->view<Framebuffer>().each([=](Framebuffer& buf) {
-			buf.Reshape(width, high);
-		});
-		Scene::_activeScene->GetRegistry()->view<PostEffect>().each([=](PostEffect& buf) {
-			buf.Reshape(width, high);
-		});
-		Scene::_activeScene->GetRegistry()->view<ColCor>().each([=](ColCor& buf) {
-			buf.Reshape(width, high);
-		});
 	}
 
+	glfwSetWindowSize(window, _lastWidth * 2, _lastHeight * 2);
+	Scene::_activeScene->GetRegistry()->view<Framebuffer>().each([=](Framebuffer& buf) {
+		buf.Reshape(_lastWidth * 2, _lastHeight * 2);
+	});
+	Scene::_activeScene->GetRegistry()->view<PostEffect>().each([=](PostEffect& buf) {
+		buf.Reshape(_lastWidth * 2, _lastHeight * 2);
+	});
+	Scene::_activeScene->GetRegistry()->view<ColCor>().each([=](ColCor& buf) {
+		buf.Reshape(_lastWidth * 2, _lastHeight * 2);
+	});
+	Scene::_activeScene->GetRegistry()->view<BloomEffect>().each([=](BloomEffect& buf) {
+		buf.Reshape(_lastWidth * 2, _lastHeight * 2);
+	});
 }
 
 void BackEnd::GlfwWindowFocusCallback(GLFWwindow* window, int result)
@@ -148,7 +137,7 @@ void BackEnd::InitImGui()
 	// Allow docking to our window
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	// Allow multiple viewports (so we can drag ImGui off our window)
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	// Allow our viewports to use transparent backbuffers
 	io.ConfigFlags |= ImGuiConfigFlags_TransparentBackbuffers;
 

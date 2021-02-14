@@ -53,16 +53,6 @@ void Player::Init(int width, int height)
 	m_orthoCam.SetOrthoHeight(10).SetPosition(BLM::GLMzero).SetNear(-10).Setfar(10)
 		.SetIsOrtho(true).ResizeWindow(width, height);
 
-	m_pistol.LoadMesh("models/Pistol.obj", true);
-	m_canon.LoadMesh("models/MissileLauncher.obj", true);
-	m_rifle.LoadMesh("models/Rifle.obj", true);
-	m_machineGun.LoadMesh("models/MachineGun.obj", true);
-	m_shotgun.LoadMesh("models/Shotgun.obj", true);
-	m_sword.LoadMesh("models/Sword.obj", true);
-
-	m_heliDrone.LoadMeshs("drone/Heli", true);
-	m_healPack.LoadMeshs("healing", true);
-
 	m_shootLaser = { "laser.mp3", "shooting" };
 	m_shootLaser.setGroupVolume(0.5f);
 	m_hitSound = { "oof.mp4.mp3", "sfx" };
@@ -89,26 +79,11 @@ void Player::Init(int width, int height)
 	m_reticle = { "reticle.png", 1.f, 1.f };
 	m_scoreBack = { "ScoreBox.png", 3.f, 3.223f };
 	for (int i(0); i < 10; ++i)	m_digits[i] = { "num/" + std::to_string(i) +".png", 1.25f, 1.6667f };
-
-	ObjMorphLoader("dummy/idle", true).LoadMeshs("dummy/death", true);
-	ObjMorphLoader("char/idle", true).LoadMeshs("char/walk", true)
-		.LoadMeshs("char/air", true).LoadMeshs("char/death", true)
-			.LoadMeshs("char/punch", true);
-	ObjMorphLoader("char2/idle", true).LoadMeshs("char2/walk", true)
-		.LoadMeshs("char2/air", true).LoadMeshs("char2/death", true)
-			.LoadMeshs("char2/punch", true);
-	ObjMorphLoader("char3/idle", true).LoadMeshs("char3/walk", true)
-		.LoadMeshs("char3/air", true).LoadMeshs("char3/death", true)
-			.LoadMeshs("char3/punch", true);
-	ObjMorphLoader("char4/idle", true).LoadMeshs("char4/walk", true)
-		.LoadMeshs("char4/air", true).LoadMeshs("char4/death", true)
-			.LoadMeshs("char4/punch", true);
 }
 
 void Player::Update()
 {
-	m_heliDrone.Update(Time::dt);
-	m_healPack.Update(Time::dt);
+
 }
 
 void Player::SetUIAspect(int width, int height)

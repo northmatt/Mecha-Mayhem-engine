@@ -857,7 +857,7 @@ void ObjMorphLoader::Draw(const glm::mat4& model)
 
 void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour,
 	const std::array<glm::vec3, MAX_LIGHTS>& lightPos, const std::array<glm::vec3, MAX_LIGHTS>& lightColour, const int& lightCount, float specularStrength, float shininess,
-	float ambientLightStrength, const glm::vec3& ambientColour, float ambientStrength)
+	float ambientLightStrength, const glm::vec3& ambientColour, float ambientStrength, bool doAmbient, bool doDiffuse, bool doSpecular, bool doTex)
 {
 	glm::mat4 VP = camera.GetProjection() * view;
 
@@ -877,6 +877,10 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 		m_shader->SetUniform("ambientLightStrength", ambientLightStrength);
 		m_shader->SetUniform("ambientColour", ambientColour);
 		m_shader->SetUniform("ambientStrength", ambientStrength);
+
+		m_shader->SetUniform("doAmbient", (int)doAmbient);
+		m_shader->SetUniform("doDiffuse", (int)doDiffuse);
+		m_shader->SetUniform("doSpecular", (int)doSpecular);
 
 		for (int i(0); i < m_defaultQueue.size(); ++i) {
 			m_shader->SetUniformMatrix("MVP", VP * m_defaultQueue[i].model);
@@ -900,6 +904,11 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 		m_texShader->SetUniform("ambientLightStrength", ambientLightStrength);
 		m_texShader->SetUniform("ambientColour", ambientColour);
 		m_texShader->SetUniform("ambientStrength", ambientStrength);
+
+		m_texShader->SetUniform("doAmbient", (int)doAmbient);
+		m_texShader->SetUniform("doDiffuse", (int)doDiffuse);
+		m_texShader->SetUniform("doSpecular", (int)doSpecular);
+		m_texShader->SetUniform("doTex", (int)doTex);
 
 		m_texShader->SetUniform("s_texture", 0);
 
@@ -928,6 +937,10 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 		m_matShader->SetUniform("ambientLightStrength", ambientLightStrength);
 		m_matShader->SetUniform("ambientColour", ambientColour);
 		m_matShader->SetUniform("ambientStrength", ambientStrength);
+
+		m_matShader->SetUniform("doAmbient", (int)doAmbient);
+		m_matShader->SetUniform("doDiffuse", (int)doDiffuse);
+		m_matShader->SetUniform("doSpecular", (int)doSpecular);
 
 		for (int i(0); i < m_matQueue.size(); ++i) {
 			m_matShader->SetUniformMatrix("MVP", VP * m_matQueue[i].model);

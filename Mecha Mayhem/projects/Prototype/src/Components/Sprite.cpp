@@ -96,11 +96,12 @@ void Sprite::DrawSingle(const glm::mat4& VP, const glm::mat4& model)
 	VertexArrayObject::UnBind();
 }
 
-void Sprite::PerformDraw()
+void Sprite::PerformDraw(bool doTex)
 {
 	if (m_Queue.size() != 0) {
 		m_shader->Bind();
 		m_shader->SetUniform("s_texture", 0);
+		m_shader->SetUniform("doTex", (int)doTex);
 
 		for (int i(0); i < m_Queue.size(); ++i) {
 			m_shader->SetUniformMatrix("MVP", m_Queue[i].MVP);

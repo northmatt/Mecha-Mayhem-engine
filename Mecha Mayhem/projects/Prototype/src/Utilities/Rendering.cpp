@@ -12,8 +12,7 @@ namespace Rendering {
             .SetIsOrtho(true).ResizeWindow(width, height).SetPosition(BLM::GLMzero);
     }
 
-    void Update(entt::registry* reg, int numOfCams, bool paused, PostEffect* PE)
-    {
+    void Update(entt::registry* reg, int numOfCams, bool paused, PostEffect* PE) {
         glClearColor(BackColour.x, BackColour.y, BackColour.z, BackColour.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -31,11 +30,7 @@ namespace Rendering {
         int width = BackEnd::GetHalfWidth();
 
         short count = 0;
-        for (auto cam : cameraView)
-        {
-            //glViewport((count % 2 == 0 ? width : 0), ((count < 3) && (numOfCams > 2) ? height : 0),
-            //    width * (numOfCams == 1 ? 2 : 1), height * (numOfCams > 2 ? 1 : 2));
-
+        for (auto cam : cameraView) {
             if (numOfCams > 2)
                 glViewport(((count % 2) * width), (count < 2 ? height : 0), width, height);
             else if (numOfCams == 2)
@@ -105,18 +100,16 @@ namespace Rendering {
             //do all the draws
             ObjLoader::PerformDraw(view, camCam,
                 DefaultColour, LightsPos, LightsColour, LightCount,
-                1, 4, 0.0f, AmbientColour, AmbientStrength);
+                1, 4, 0.0f, AmbientColour, AmbientStrength, doAmbient, doDiffuse, doSpecular, doTex);
             ObjMorphLoader::PerformDraw(view, camCam,
                 DefaultColour, LightsPos, LightsColour, LightCount,
-                1, 4, 0.0f, AmbientColour, AmbientStrength);
-            Sprite::PerformDraw();
+                1, 4, 0.0f, AmbientColour, AmbientStrength, doAmbient, doDiffuse, doSpecular, doTex);
+            Sprite::PerformDraw(doTex);
 
             //exit even if some cams haven't been checked, because only the amount specified should render
             if (++count >= numOfCams)
                 break;
         }
-
-        glViewport(0, 0, width * 2, height * 2);
     }
 
     void DrawPauseScreen(Sprite image)
@@ -137,25 +130,30 @@ namespace Rendering {
         ));
         Sprite::PerformDraw();
     }
-
-    glm::vec4 BackColour = { 0.2f, 0.2f, 0.2f, 1.f };
+     
+    glm::vec4 BackColour = { 0.2f, 0.2f, 0.5f, 1.f };
     std::array<glm::vec3, MAX_LIGHTS> LightsColour = {
-       glm::vec3(200.f),
-       glm::vec3(15.f, 15.f, 0.f),
+       glm::vec3(100.f),
+       glm::vec3(2.5f, 2.5f, 0.f),
        glm::vec3(.15f), glm::vec3(.15f), glm::vec3(.5f), glm::vec3(.5f),
        glm::vec3(.5f), glm::vec3(.5f), glm::vec3(.5f), glm::vec3(.5f)
     };
     std::array<glm::vec3, MAX_LIGHTS> LightsPos = {
-        glm::vec3(0.f, 10.f, 0.f), glm::vec3(0.f),
+        glm::vec3(0.f, 10.f, 0.f), glm::vec3(-2.5f, -5.f, 2.5f),
         glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f),
         glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f)
     };
     glm::vec3 DefaultColour = glm::vec3(1.f);
-    size_t LightCount = 6;
-    glm::vec3 AmbientColour = glm::vec3(1.f);
+    size_t LightCount = 1;
+    glm::vec3 AmbientColour = glm::vec3(0.75f);
     glm::float32 AmbientStrength = 1.f;
 
     HitboxGen* hitboxes = nullptr;
     Effects* effects = nullptr;
     Camera orthoVP;
+
+    bool doAmbient = true;
+    bool doDiffuse = true;
+    bool doSpecular = true;
+    bool doTex = true;
 }

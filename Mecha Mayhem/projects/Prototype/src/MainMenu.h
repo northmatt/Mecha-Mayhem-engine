@@ -21,9 +21,7 @@ public:
 
 private:
 	bool m_exit = false;
-	bool playerSwapped[4] = {};
 
-	int m_scenePos = 0;
 	int width = 10;
 	int height = 10;
 	const int maxSelect = 4;
@@ -33,27 +31,20 @@ private:
 	float m_confirmTimer = 1.f;
 
 	Sound2D m_bg = { "MainMenu.mp3", "BG" };
-
+	 
 	CatmullFollower cameraPath{ 1, {
-		glm::vec3(-2.5f, 2.5f, 12.5f),
-		glm::vec3(12.5f, 0.f, 12.5f),
-		glm::vec3(12.5f, 2.5f, -2.5f),
-		glm::vec3(-2.5f, 0.f, -2.5f)
+		glm::vec3(-2.5f, -4.0f, 2.5f),
+		glm::vec3(2.5f, -2.9f, 2.5f),
+		glm::vec3(2.5f, -3.0f, -0.5f),
+		glm::vec3(-1.5f, -2.8f, -2.5f)
 	}, 8 };
 
 	entt::entity camera = entt::null;
-	entt::entity title = entt::null;
-	entt::entity text = entt::null;
-	entt::entity charSelect = entt::null;
+	entt::entity ship = entt::null;
 	entt::entity backGround = entt::null;
-	entt::entity models[4] = {
-		entt::null,
-		entt::null,
-		entt::null,
-		entt::null
-	};
 
 	PostEffect* simplePPEffect;
 	ColCor* simpleCCEffect;
+	BloomEffect* simpleBEffect;
 };
 

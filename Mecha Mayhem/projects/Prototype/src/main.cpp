@@ -6,9 +6,9 @@
 
 int main() {
 	int width = 1280, height = 720;
-	const bool usingImGui = false;
+	const bool usingImGui = true;
 	bool imGuiClosed = true;
-
+	  
 	GLFWwindow* window = Gameloop::Start("Mecha Mayhem", width, height, usingImGui);
 	if (!window)	return 1;
 
@@ -18,14 +18,8 @@ int main() {
 		// Creating demo scenes
 		std::vector<Scene*> scenes;
 		scenes.push_back(new MainMenu("Mecha Mayhem"));
-		scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0)));
-		scenes.push_back(new DemoScene("MM Demo", glm::vec3(0, -100, 0)));
-		scenes.push_back(new LeaderBoard("THe Winner is..."));
  		 
 		scenes[0]->Init(width, height);
-		scenes[1]->Init(width, height);
-		scenes[2]->Init(width, height);
-		scenes[3]->Init(width, height);
 
 		int currScene = 0, count = scenes.size();
 		Scene* activeScene = scenes[0]->Reattach();
@@ -41,7 +35,7 @@ int main() {
 				break;
 			}
 
-			if (!BackEnd::HasFocus()) {
+			/*if (!BackEnd::HasFocus()) {
 				if (!paused) {
 					SoundManager::PauseEverything();
 					paused = true;
@@ -51,7 +45,7 @@ int main() {
 			else if (paused) {
 				SoundManager::PlayEverything();
 				paused = false;
-			}
+			}*/
 
 			ControllerInput::ControllerRefresh();
 

@@ -20,6 +20,7 @@
 #include "Engine/VertexArrayObject.h"
 #include "Engine/IndexBuffer.h"
 #include "Graphics/Post/ColCor.h"
+#include "Graphics/Post/BloomEffect.h"
 
 class BackEnd abstract
 {
