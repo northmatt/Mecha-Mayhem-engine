@@ -306,6 +306,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 						if (!m_stepped) {
 							
 							//m_walk[rand() % 5].play();
+							AudioEngine::Instance().GetEvent("step").Restart();
 
 							m_stepped = true;
 						}
@@ -445,6 +446,8 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 			m_weaponCooldown = 0.25f;
 
 			//m_shootLaser.play();
+			AudioEngine::Instance().GetEvent("shoot").Restart();
+
 
 			glm::quat offsetQuat = glm::angleAxis(offset, BLM::GLMup);
 
@@ -480,7 +483,8 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 void Player::SwapWeapon(bool outOfAmmo)
 {
 	//m_swapWeapon.play();
-
+	AudioEngine::Instance().GetEvent("reload").Restart();
+	
 	WEAPON tempWeap = m_currWeapon;
 	m_currWeapon = m_secWeapon;
 
@@ -501,6 +505,7 @@ void Player::UseHeal()
 		m_health += 3;
 
 		//m_swapWeapon.play();
+		AudioEngine::Instance().GetEvent("reload").Restart();
 
 		if (m_health > m_maxHealth)
 			m_health = m_maxHealth;
@@ -510,6 +515,7 @@ void Player::UseHeal()
 		m_health += 3;
 
 		//m_swapWeapon.play();
+		AudioEngine::Instance().GetEvent("reload").Restart();
 
 		if (m_health > m_maxHealth)
 			m_health = m_maxHealth;
@@ -535,6 +541,9 @@ btVector3 Player::Melee(const glm::vec3& pos)
 
 	//if (hit)	m_punch.play();
 	//else		m_wiff.play();
+	AudioEvent& evnt = AudioEngine::Instance().GetEvent("hit");
+	evnt.SetParameter("punchHit", hit);
+	evnt.Restart();
 
 	return BLM::BTzero;
 }
@@ -549,6 +558,7 @@ bool Player::PickUpWeapon(WEAPON pickup)
 			m_currWeaponAmmo = 100;
 
 		//m_swapWeapon.play();
+		AudioEngine::Instance().GetEvent("pickup").Restart();
 
 		return true;
 	}
@@ -562,6 +572,7 @@ bool Player::PickUpWeapon(WEAPON pickup)
 			m_secWeaponAmmo = 100;
 
 		//m_swapWeapon.play();
+		AudioEngine::Instance().GetEvent("pickup").Restart();
 
 		return true;
 	}

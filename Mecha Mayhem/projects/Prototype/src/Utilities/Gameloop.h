@@ -11,7 +11,17 @@ namespace Gameloop
 		Logger::Init();
 		AudioEngine& engine = AudioEngine::Instance();
 		engine.Init();
-		//engine.LoadBankWithString("Master");
+		engine.LoadBankWithString("Master");
+		engine.LoadBus("Music", "bus:/Music");
+		engine.LoadBus("SFX", "bus:/SFX");
+		engine.CreateSoundEvent("MainMenu", "event:/Main Menu");
+		engine.CreateSoundEvent("hit", "event:/punch");
+		engine.CreateSoundEvent("reload", "event:/reload");
+		engine.CreateSoundEvent("step", "event:/steps");
+		engine.CreateSoundEvent("shoot", "event:/Pew");
+		engine.CreateSoundEvent("pickup", "event:/pickup");
+
+		engine.GetListener().SetPosition(glm::vec3(0, 0, 0));
 
 		GLFWwindow* window = BackEnd::Init("Mecha Mayhem", width, height);
 		if (!window)	return nullptr;

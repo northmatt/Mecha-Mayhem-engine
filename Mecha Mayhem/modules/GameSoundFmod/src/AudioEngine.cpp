@@ -378,7 +378,7 @@ void AudioEngine::LoadBank(const std::string& bankName, FMOD_STUDIO_LOAD_BANK_FL
 	FMOD::Studio::Bank *newBank;
 
 	// Load the bank with FMOD
-	ErrorCheck(m_StudioSystem->loadBankFile(("sounds/" + bankName + ".bank").c_str(), flags, &newBank));
+	ErrorCheck(m_StudioSystem->loadBankFile(("sounds/bank/" + bankName + ".bank").c_str(), flags, &newBank));
 
 
 	// Store the bank in our map so we can use it later
@@ -399,7 +399,7 @@ AudioListener& AudioEngine::GetListener()
 	return m_Listener;
 }
 
-AudioEvent& AudioEngine::CreateMusicEvent(const std::string& eventName, const std::string& GUID)
+AudioEvent& AudioEngine::CreateSoundEvent(const std::string& eventName, const std::string& GUID)
 {
 	// Get find event in file
 	FMOD::Studio::EventDescription* eventDescription = NULL;

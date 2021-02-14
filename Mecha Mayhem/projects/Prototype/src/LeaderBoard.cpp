@@ -64,4 +64,10 @@ void LeaderBoard::Update()
 
 void LeaderBoard::Exit()
 {
+	Scene::Exit();
+}
+
+Scene* LeaderBoard::Reattach()
+{
+	return Scene::Reattach();
 }

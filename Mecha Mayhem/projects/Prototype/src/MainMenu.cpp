@@ -246,4 +246,12 @@ void MainMenu::Update()
 
 void MainMenu::Exit()
 {
+	Scene::Exit();
+}
+
+Scene* MainMenu::Reattach()
+{
+	AudioEngine::Instance().GetEvent("MainMenu").Restart();
+
+	return Scene::Reattach();
 }

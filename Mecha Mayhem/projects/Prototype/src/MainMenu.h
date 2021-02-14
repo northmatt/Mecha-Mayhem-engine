@@ -12,11 +12,7 @@ public:
 	virtual void Update() override;
 	virtual void Exit() override;
 
-	virtual Scene* Reattach() override {
-		//AudioEngine::Instance().CreateEventW("music", "blah").Play();
-
-		return Scene::Reattach();
-	}
+	virtual Scene* Reattach() override;
 
 private:
 	bool m_exit = false;

@@ -1,6 +1,7 @@
 #pragma once
 #include "Post/PostEffect.h"
 
+//aka the PP wrapper
 class FrameEffects
 {
 public:

@@ -19,7 +19,9 @@ public:
 	virtual Scene* Reattach();
 
 	virtual void Update() {}
-	virtual void Exit() {}
+	virtual void Exit() {
+		AudioEngine::Instance().StopAllSounds();
+	}
 
 	virtual void ImGuiFunc() {
 		ImGui::SetWindowSize(ImVec2(150, 50));
