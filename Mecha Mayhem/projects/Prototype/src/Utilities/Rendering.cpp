@@ -134,7 +134,7 @@ namespace Rendering {
     glm::vec4 BackColour = { 0.2f, 0.2f, 0.5f, 1.f };
     std::array<glm::vec3, MAX_LIGHTS> LightsColour = {
        glm::vec3(100.f),
-       glm::vec3(2.5f, 2.5f, 0.f),
+       glm::vec3(.5f),
        glm::vec3(.15f), glm::vec3(.15f), glm::vec3(.5f), glm::vec3(.5f),
        glm::vec3(.5f), glm::vec3(.5f), glm::vec3(.5f), glm::vec3(.5f)
     };
@@ -144,7 +144,7 @@ namespace Rendering {
         glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f)
     };
     glm::vec3 DefaultColour = glm::vec3(1.f);
-    size_t LightCount = 1;
+    size_t LightCount = 2;
     glm::vec3 AmbientColour = glm::vec3(0.75f);
     glm::float32 AmbientStrength = 1.f;
 
