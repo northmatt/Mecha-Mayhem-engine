@@ -66,6 +66,7 @@ void BloomEffect::ApplyAffects(PostEffect * buffer) {
 
 
 	//Performs high pass on the first render target
+	//Basically culls unwanted info
 	BindShader(1);
 	BindColourAsTexture(0, 0, 0);
 	_shaders[1]->SetUniform("uThreshold", _threshold);
