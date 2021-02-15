@@ -440,36 +440,15 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 		break;
 	default:	//break;	for demo, all guns do the same
 	//case WEAPON::PISTOL:
-		//shoot
 		{
-			short damage = 3;
 			m_weaponCooldown = 0.25f;
 
 			//m_shootLaser.play();
 			AudioEngine::Instance().GetEvent("shoot").Restart();
 
-
 			glm::quat offsetQuat = glm::angleAxis(offset, BLM::GLMup);
-
-			glm::vec3 rayPos = head.GetGlobalPosition();
-			glm::vec3 forwards = glm::rotate(offsetQuat, -head.GetForwards());
-			RayResult p = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos),
-				BLM::GLMtoBT(forwards * 2000.f));
-			if (p.hasHit())
-			{
-				entt::entity playerIdTest = p.m_collisionObject->getUserIndex();
-				if (ECS::Exists(playerIdTest)) {
-					if (ECS::HasComponent<Player>(playerIdTest)) {
-						if (ECS::GetComponent<Player>(playerIdTest).TakeDamage(damage))
-							++m_killCount;
-					}
-				}
-				Rendering::effects->ShootLaser(head.GetGlobalRotation() * offsetQuat, rayPos,
-					glm::length(BLM::BTtoGLM(p.m_hitPointWorld) - rayPos));
-			}
-			else {
-				Rendering::effects->ShootLaser(head.GetGlobalRotation() * offsetQuat, rayPos, 2000.f);
-			}
+			ShootLazer(offsetQuat, head.GetGlobalRotation(), head.GetGlobalPosition(), 
+				glm::rotate(offsetQuat, -head.GetForwards()), 3);
 
 			//deal with ammo here
 			if (--m_currWeaponAmmo <= 0) {
@@ -520,6 +499,27 @@ void Player::UseHeal()
 		if (m_health > m_maxHealth)
 			m_health = m_maxHealth;
 		m_offhand = OFFHAND::HEALPACK1;
+	}
+}
+
+void Player::ShootLazer(glm::quat offsetQuat, glm::quat rotation, glm::vec3 rayPos, glm::vec3 forwards, short damage)
+{
+	RayResult p = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos),
+		BLM::GLMtoBT(forwards * 2000.f));
+	if (p.hasHit())
+	{
+		entt::entity playerIdTest = p.m_collisionObject->getUserIndex();
+		if (ECS::Exists(playerIdTest)) {
+			if (ECS::HasComponent<Player>(playerIdTest)) {
+				if (ECS::GetComponent<Player>(playerIdTest).TakeDamage(damage))
+					++m_killCount;
+			}
+		}
+		Rendering::effects->ShootLaser(rotation * offsetQuat, rayPos,
+			glm::length(BLM::BTtoGLM(p.m_hitPointWorld) - rayPos));
+	}
+	else {
+		Rendering::effects->ShootLaser(rotation * offsetQuat, rayPos, 2000.f);
 	}
 }
 

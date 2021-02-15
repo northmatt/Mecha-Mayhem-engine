@@ -111,6 +111,7 @@ private:
 	void UseWeapon(PhysBody& body, Transform& head, float offset);
 	void SwapWeapon(bool outOfAmmo = false);
 	void UseHeal();
+	void ShootLazer(glm::quat offsetQuat, glm::quat rotation, glm::vec3 rayPos, glm::vec3 forwards, short damage);
 	btVector3 Melee(const glm::vec3& pos);
 
 	//digit 1 is first digit
