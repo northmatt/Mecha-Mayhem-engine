@@ -124,7 +124,7 @@ void DemoScene::Update()
 	/// start of loop
 
 	if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER::ONE)) {
-		m_nextScene = 0;
+		QueueSceneChange(0);
 		return;
 	}
 

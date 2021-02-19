@@ -57,7 +57,7 @@ void LeaderBoard::Update()
 		ControllerInput::GetButtonDown(BUTTON::A, CONUSER::THREE) ||
 		ControllerInput::GetButtonDown(BUTTON::A, CONUSER::FOUR)) {
 
-		m_nextScene = 0;
+		QueueSceneChange(0);
 	}
 
 }
