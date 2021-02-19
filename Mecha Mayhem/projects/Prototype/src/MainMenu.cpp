@@ -226,7 +226,7 @@ void MainMenu::Update()
 		if (allHolding == playerCount && playerCount > 0) {
 			m_confirmTimer -= Time::dt;
 			if (m_confirmTimer <= 0) {
-				m_nextScene = 1;
+				QueueSceneChange(1);
 				m_scenePos = 0;
 				m_exitHoldTimer = 1.f;
 

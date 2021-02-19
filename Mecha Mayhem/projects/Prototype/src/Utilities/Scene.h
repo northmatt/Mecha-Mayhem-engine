@@ -29,18 +29,25 @@ public:
 	};
 
 	virtual void BackEndUpdate() final;
-	virtual int ChangeScene(int sceneCount) final;
-	virtual bool ExitTest() final {
+	static bool GetExit() {
 		return m_exitGame;
 	}
+
+	static void QueueSceneChange(size_t index);
+	static void doSceneChange(GLFWwindow* window);
+
+	static std::vector<Scene*> m_scenes;
+	static Scene* m_activeScene;
 
 protected:
 	std::string m_name;
 	short m_camCount = 1;
-	int m_nextScene = -1;
 	int maxEffectCount = 1;
 	bool m_paused = false;
-	bool m_exitGame = false;
+
+	static size_t m_nextScene;
+	static bool m_doSceneChange;
+	static bool m_exitGame;
 
 	entt::registry m_reg;
 	btDiscreteDynamicsWorld *m_world = nullptr;
