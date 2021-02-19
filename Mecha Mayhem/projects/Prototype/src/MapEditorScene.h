@@ -10,19 +10,22 @@ public:
 	virtual void Init(int windowWidth, int windowHeight) override;
 	virtual void Update() override;
 	virtual void Exit() override;
-	/*virtual Scene* Reattach() override {
-
-		return Scene::Reattach();
-	}*/
+	virtual Scene* Reattach() override;
+	virtual void ImGuiFunc() override;
 
 private:
 	int width = 0;
 	int height = 0;
 
-	bool saveOnExit = false;
+	float speed = 5;
+	float rotSpeed = 2.5f;
+	std::string debugText = "";
+	glm::vec2 rot = glm::vec2(0, 0);
 
-	entt::entity bodyEnt1 = entt::null;
-	entt::entity Head1 = entt::null;
-	entt::entity cameraEnt1 = entt::null;
+	bool saveOnExit = false;
+	bool showRay = false;
+
+	entt::entity rayPosEnt = entt::null;
+	entt::entity cameraEnt = entt::null;
 };
 

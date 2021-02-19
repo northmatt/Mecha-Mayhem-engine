@@ -8,9 +8,11 @@ public:
 	HitboxGen() {}
 	~HitboxGen() { m_world = nullptr; }
 
-	void ToggleDraw() {
+	bool ToggleDraw() {
 		if (m_draw = !m_draw)		std::cout << "drawing hitboxes    \r";
 		else						std::cout << "not drawing hitboxes\r";
+
+		return m_draw;
 	}
 
 	//gets the physicsworld and reads/create the file.
@@ -43,7 +45,7 @@ public:
 	//[] to move the floor up and down
 	// -LCTRL to slow down
 	//TAB to slow everything down
-	void Update(float dt);
+	void Update(float dt, entt::entity cameraEnt = entt::null);
 
 	void Clear() {
 		m_draw = false;
@@ -58,14 +60,18 @@ public:
 
 	//init things
 	static void Init() {
-		m_cube.LoadMesh("models/GodHimself.obj");
-		m_cubeCurrent.LoadMesh("models/GodHimself.obj", true);
+		m_cube.LoadMesh("maps/GodHimself.obj");
+		m_cylinder.LoadMesh("maps/Pillar.obj");
+		m_cubeCurrent.LoadMesh("maps/GodHimself.obj", true);
+		m_cylinderCurrent.LoadMesh("maps/Pillar.obj", true);
 		m_planeShape = new btStaticPlaneShape(btVector3(0, 1, 0), 0);
 	}
 
 private:
 	static ObjLoader m_cube;
+	static ObjLoader m_cylinder;
 	static ObjLoader m_cubeCurrent;
+	static ObjLoader m_cylinderCurrent;
 	static btCollisionShape* m_planeShape;
 	static Transform m_defaultTrans;
 
@@ -75,13 +81,14 @@ private:
 
 	btDiscreteDynamicsWorld *m_world = nullptr;
 
-	struct Box
+	struct Shape
 	{
 		Transform trans;
 		btRigidBody* body;
+		std::string type = "box";
 	};
 
-	std::vector<Box> m_objects = {};
+	std::vector<Shape> m_objects = {};
 	btRigidBody* m_floor = nullptr;
 	btAlignedObjectArray<btCollisionShape*> m_boxShape;
 };
