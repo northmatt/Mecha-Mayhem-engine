@@ -6,7 +6,9 @@
 
 int main() {
 	int width = 1280, height = 720;
-	GLFWwindow* window = Gameloop::Start("Mecha Mayhem", width, height);
+	const bool usingImGui = true;
+
+	GLFWwindow* window = Gameloop::Start("Mecha Mayhem", width, height, usingImGui);
 	if (!window)	return 1;
 
 	{
@@ -15,7 +17,7 @@ int main() {
 		scenes.push_back(new MainMenu("Mecha Mayhem"));
 		scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0)));
 		scenes.push_back(new DemoScene("MM Demo", glm::vec3(0, -100, 0)));
-		scenes.push_back(new LeaderBoard("THe Winner is..."));
+		scenes.push_back(new LeaderBoard("The Winner is..."));
  		 
 		scenes[0]->Init(width, height);
 		scenes[1]->Init(width, height);
@@ -37,13 +39,15 @@ int main() {
 
 			if (!BackEnd::HasFocus()) {
 				if (!paused) {
-					SoundManager::PauseEverything();
+					AudioEngine::Instance().PauseEverything();
 					paused = true;
 				}
+				if (usingImGui)
+					Gameloop::ImGuiWindow(window, activeScene);
 				continue;
 			}
 			else if (paused) {
-				SoundManager::PlayEverything();
+				AudioEngine::Instance().UnPauseEverything();
 				paused = false;
 			}
 
@@ -59,6 +63,8 @@ int main() {
 			//do not touch plz
 			activeScene->BackEndUpdate();
 			Gameloop::Update();
+			if (usingImGui)
+				Gameloop::ImGuiWindow(window, activeScene);
 
 			glfwSwapBuffers(window);
 		}
@@ -66,6 +72,6 @@ int main() {
 		activeScene->Exit();
 	}
 
-	Gameloop::Stop();
+	Gameloop::Stop(usingImGui);
 	return 0;
 }

@@ -18,6 +18,10 @@ void LeaderBoard::Init(int windowWidth, int windowHeight)
 	text = ECS::CreateEntity();
 	ECS::AttachComponent<Sprite>(text).Init("CharSelect.png", -4, 1).SetScale(0.075f);
 	ECS::GetComponent<Transform>(text).SetPosition(glm::vec3(0.f, -0.1f, -0.35f)).ChildTo(camera);
+	
+	Rendering::frameEffects = &m_frameEffects;
+
+	m_frameEffects.Init(width, height);
 }
 
 void LeaderBoard::Update()
@@ -60,4 +64,10 @@ void LeaderBoard::Update()
 
 void LeaderBoard::Exit()
 {
+	Scene::Exit();
+}
+
+Scene* LeaderBoard::Reattach()
+{
+	return Scene::Reattach();
 }

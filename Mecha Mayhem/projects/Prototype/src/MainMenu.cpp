@@ -50,12 +50,14 @@ void MainMenu::Init(int windowWidth, int windowHeight)
 	backGround = ECS::CreateEntity();
 	ECS::AttachComponent<Sprite>(backGround).Init(glm::vec4(0.5f, 0.5f, 1.f, 1.f), -19, 10);
 	ECS::GetComponent<Transform>(backGround).SetPosition(glm::vec3(0, 100, -10));
+
+	Rendering::frameEffects = &m_frameEffects;
+
+	m_frameEffects.Init(width, height);
 }
 
 void MainMenu::Update()
 {
-	m_bg.loop();
-
 	if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER::ONE)) {
 		if (ControllerInput::GetButton(BUTTON::RB, CONUSER::ONE)) {
 			if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
@@ -244,4 +246,12 @@ void MainMenu::Update()
 
 void MainMenu::Exit()
 {
+	Scene::Exit();
+}
+
+Scene* MainMenu::Reattach()
+{
+	AudioEngine::Instance().GetEvent("MainMenu").Restart();
+
+	return Scene::Reattach();
 }

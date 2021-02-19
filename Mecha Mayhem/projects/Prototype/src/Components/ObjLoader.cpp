@@ -160,9 +160,9 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 		m_models[ind].mat = false;
 	}
 
-	std::vector<glm::vec3> vertex = { glm::vec3() };
+	std::vector<glm::vec3> vertex = { glm::vec3(0.f) };
 	std::vector<glm::vec2> UV = { glm::vec2(0.f) };
-	std::vector<glm::vec3> normals = { glm::vec3() };
+	std::vector<glm::vec3> normals = { glm::vec3(0.f) };
 
 	std::vector<size_t> bufferVertex = {};
 	std::vector<size_t> bufferUV = {};
@@ -400,67 +400,62 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	std::vector<float> specStre;
 	std::vector<float> uvv;
 
+	std::vector<float> position_data = {};
+	std::vector<float> colour_data = {};
+	std::vector<float> spec_data = {};
+	std::vector<float> UV_data = {};
+	std::vector<float> normal_data = {};
+
 	for (size_t i = 0; i < bufferVertex.size(); ++i) {
-		position.push_back(vertex[bufferVertex[i]].x);
-		position.push_back(vertex[bufferVertex[i]].y);
-		position.push_back(vertex[bufferVertex[i]].z);
-		normal.push_back(normals[bufferNormals[i]].x);
-		normal.push_back(normals[bufferNormals[i]].y);
-		normal.push_back(normals[bufferNormals[i]].z);
+		position_data.push_back(vertex[bufferVertex[i]].x);
+		position_data.push_back(vertex[bufferVertex[i]].y);
+		position_data.push_back(vertex[bufferVertex[i]].z);
 		if (usingMaterial) {
-			colours.push_back(materials[bufferColours[i]].colours.x);
-			colours.push_back(materials[bufferColours[i]].colours.y);
-			colours.push_back(materials[bufferColours[i]].colours.z);
-			specStre.push_back(materials[bufferColours[i]].specStrength.x);
-			specStre.push_back(materials[bufferColours[i]].specStrength.y);
-			specStre.push_back(materials[bufferColours[i]].specStrength.z);
+			colour_data.push_back(materials[bufferColours[i]].colours.x);
+			colour_data.push_back(materials[bufferColours[i]].colours.y);
+			colour_data.push_back(materials[bufferColours[i]].colours.z);
+			spec_data.push_back(materials[bufferColours[i]].specStrength.x);
+			spec_data.push_back(materials[bufferColours[i]].specStrength.y);
+			spec_data.push_back(materials[bufferColours[i]].specStrength.z);
 		}
 		if (usingTexture) {
-			uvv.push_back(UV[bufferUV[i]].x);
-			uvv.push_back(UV[bufferUV[i]].y);
-			uvv.push_back(0.f);
+			UV_data.push_back(UV[bufferUV[i]].x);
+			UV_data.push_back(UV[bufferUV[i]].y);
+			UV_data.push_back(0.f);
 		}
+		normal_data.push_back(normals[bufferNormals[i]].x);
+		normal_data.push_back(normals[bufferNormals[i]].y);
+		normal_data.push_back(normals[bufferNormals[i]].z);
 	}
 
-	VertexBuffer::sptr pos_vbo = VertexBuffer::Create();
-	pos_vbo->LoadData(position.data(), position.size());
-	VertexBuffer::sptr colours_vbo = VertexBuffer::Create();
-	colours_vbo->LoadData(colours.data(), colours.size());
-	VertexBuffer::sptr specStre_vbo = VertexBuffer::Create();
-	specStre_vbo->LoadData(specStre.data(), specStre.size());
+	VertexBuffer::sptr position_vbo = VertexBuffer::Create();
+	position_vbo->LoadData(position_data.data(), position_data.size());
 	VertexBuffer::sptr normal_vbo = VertexBuffer::Create();
-	normal_vbo->LoadData(normal.data(), normal.size());
-	VertexBuffer::sptr uvv_vbo = VertexBuffer::Create();
-	uvv_vbo->LoadData(uvv.data(), uvv.size());
+	normal_vbo->LoadData(normal_data.data(), normal_data.size());
 
-	//change this once UVs are added
-	if (usingTexture) {
-		m_models[ind].vao->AddVertexBuffer(pos_vbo, {
-			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
-			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(colours_vbo, {
+	m_models[ind].vao->AddVertexBuffer(position_vbo, {
+		BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
+	m_models[ind].vao->AddVertexBuffer(normal_vbo, {
+		BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
+
+	if (usingMaterial) {
+		VertexBuffer::sptr colour_vbo = VertexBuffer::Create();
+		colour_vbo->LoadData(colour_data.data(), colour_data.size());
+		VertexBuffer::sptr spec_vbo = VertexBuffer::Create();
+		spec_vbo->LoadData(spec_data.data(), spec_data.size());
+
+		m_models[ind].vao->AddVertexBuffer(colour_vbo, {
 			BufferAttribute(2, 3, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(specStre_vbo, {
+		m_models[ind].vao->AddVertexBuffer(spec_vbo, {
 			BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(uvv_vbo, {
-			BufferAttribute(4, 3, GL_FLOAT, false, 0, 0) });
-	}
-	else if (usingMaterial) {
-		m_models[ind].vao->AddVertexBuffer(pos_vbo, {
-			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
-			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(colours_vbo, {
-			BufferAttribute(2, 3, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(specStre_vbo, {
-			BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) });
-	}
-	else {
-		m_models[ind].vao->AddVertexBuffer(pos_vbo, {
-			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(normal_vbo, {
-			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
+
+		if (usingTexture) {
+			VertexBuffer::sptr UV_vbo = VertexBuffer::Create();
+			UV_vbo->LoadData(UV_data.data(), UV_data.size());
+
+			m_models[ind].vao->AddVertexBuffer(UV_vbo, {
+				BufferAttribute(4, 3, GL_FLOAT, false, 0, 0) });
+		}
 	}
 
 	m_index = ind;
@@ -479,6 +474,8 @@ void ObjLoader::Init()
 	m_texShader->LoadShaderPartFromFile("shaders/vert_tex.glsl", GL_VERTEX_SHADER);
 	m_texShader->LoadShaderPartFromFile("shaders/frag_tex.glsl", GL_FRAGMENT_SHADER);
 	m_texShader->Link();
+
+	m_texShader->SetUniform("s_texture", 0);
 
 	m_shader = Shader::Create();
 	m_shader->LoadShaderPartFromFile("shaders/vert_none.glsl", GL_VERTEX_SHADER);
@@ -580,8 +577,6 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 		m_texShader->SetUniform("ambientLightStrength", ambientLightStrength);
 		m_texShader->SetUniform("ambientColour", ambientColour);
 		m_texShader->SetUniform("ambientStrength", ambientStrength);
-
-		m_texShader->SetUniform("s_texture", 0);
 
 		for (int i(0); i < m_texQueue.size(); ++i) {
 			m_texShader->SetUniformMatrix("MVP", VP * m_texQueue[i].model);

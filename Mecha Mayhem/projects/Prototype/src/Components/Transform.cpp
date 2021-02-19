@@ -29,11 +29,10 @@ Transform::Transform(const glm::vec3& pos, const glm::quat& rot, const glm::vec3
 	m_dirty = true;
 }
 
-Transform& Transform::ChildTo(unsigned index)
+Transform& Transform::ChildTo(entt::entity index)
 {
 	//check if it exists
 	if (ECS::GetRegistry()->valid(index)) {
-		m_hasParent = true;
 		m_parent = index;
 	}
 
@@ -42,8 +41,7 @@ Transform& Transform::ChildTo(unsigned index)
 
 Transform& Transform::UnChild()
 {
-	m_hasParent = false;
-	m_parent = 0;
+	m_parent = entt::null;
 	m_dirty = true;
 
 	return *this;
@@ -60,7 +58,7 @@ Transform& Transform::SetUsingParentScale(bool yes)
 Transform& Transform::ComputeGlobal()
 {
 	//parent stuff
-	if (m_hasParent) {
+	if (m_parent != entt::null) {
 		//check if the parent exists, just in case
 		if (ECS::GetRegistry()->valid(m_parent)) {
 			if (m_usingParentScale)
@@ -85,7 +83,7 @@ Transform& Transform::ComputeGlobal()
 Transform& Transform::ComputeScalessGlobal()
 {
 	//parent stuff
-	if (m_hasParent) {
+	if (m_parent != entt::null) {
 		//check if the parent exists, just in case
 		if (ECS::GetRegistry()->valid(m_parent)) {
 			m_global = ECS::GetComponent<Transform>(m_parent).GetScalessModel();
@@ -105,8 +103,8 @@ Transform& Transform::ComputeScalessGlobal()
 
 glm::mat4 Transform::GetModel()
 {
-	if (m_hasParent)	m_dirty = true;
-	if (m_dirty)		ComputeGlobal();
+	if (m_parent != entt::null)	m_dirty = true;
+	if (m_dirty)				ComputeGlobal();
 
 	return m_global;
 }
@@ -115,7 +113,7 @@ glm::mat4 Transform::GetScalessModel()
 {
 	glm::mat4 temp = one;
 	//parent stuff
-	if (m_hasParent) {
+	if (m_parent != entt::null) {
 		//check if the parent exists, just in case
 		if (ECS::GetRegistry()->valid(m_parent)) {
 			temp = ECS::GetComponent<Transform>(m_parent).GetScalessModel();
@@ -159,7 +157,7 @@ glm::vec3 Transform::GetLocalPosition()
 
 glm::vec3 Transform::GetGlobalPosition()
 {
-	if (m_hasParent)	m_dirty = true;
+	if (m_parent != entt::null)	m_dirty = true;
 	if (m_dirty)		ComputeGlobal();
 
 	return glm::vec3(m_global[3]);
@@ -222,7 +220,7 @@ glm::quat Transform::GetLocalRotation()
 
 glm::quat Transform::GetGlobalRotation()
 {
-	if (m_hasParent)	m_dirty = true;
+	if (m_parent != entt::null)	m_dirty = true;
 	if (m_dirty)		ComputeGlobal();
 
 	return glm::mat3(m_global);
@@ -235,18 +233,18 @@ glm::mat3 Transform::GetLocalRotationM3()
 
 glm::mat3 Transform::GetGlobalRotationM3()
 {
-	if (m_hasParent)	m_dirty = true;
-	if (m_dirty)		ComputeGlobal();
+	if (m_parent != entt::null)	m_dirty = true;
+	if (m_dirty)				ComputeGlobal();
 
 	return glm::mat3(m_global);
 }
 
 glm::vec3 Transform::GetForwards()
 {
-	if (m_hasParent)	m_dirty = true;
-	if (m_dirty)		ComputeGlobal();
+	if (m_parent != entt::null)	m_dirty = true;
+	if (m_dirty)				ComputeGlobal();
 
-	return glm::vec3(m_global[2][0], m_global[2][1], m_global[2][2]);
+	return glm::normalize(glm::vec3(m_global[2][0], m_global[2][1], m_global[2][2]));
 }
 
 Transform& Transform::LookAt(const glm::vec3 pos)

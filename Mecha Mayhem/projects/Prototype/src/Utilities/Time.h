@@ -9,7 +9,7 @@ public:
 		dt = currClock - m_lastClock;
 		if (dt > tooLong)
 			dt = tooLong;
-		m_lastClock = currClock;
+		m_lastClock = glfwGetTime();
 	}
 
 private:
@@ -19,4 +19,4 @@ private:
 //Delta Time
 inline float Time::dt = 0;
 inline float Time::m_lastClock = 0;
-inline const float Time::tooLong = 1 / 20.f;
+inline const float Time::tooLong = 1.f;
