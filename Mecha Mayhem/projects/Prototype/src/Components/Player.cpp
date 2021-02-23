@@ -98,6 +98,12 @@ void Player::Init(int width, int height)
 			.LoadMeshs("char4/punch", true);
 }
 
+void Player::Unload()
+{
+	m_heliDrone.Destroy();
+	m_healPack.Destroy();
+}
+
 void Player::Update()
 {
 	m_heliDrone.Update(Time::dt);
@@ -109,7 +115,7 @@ void Player::SetUIAspect(int width, int height)
 	m_orthoCam.ResizeWindow(width, height);
 }
 
-Player& Player::Init(CONUSER user, int characterModel)
+Player& Player::Init(CONUSER user, int characterModel, int camPos)
 {
 	m_user = user;
 	switch (characterModel) {
@@ -125,12 +131,15 @@ Player& Player::Init(CONUSER user, int characterModel)
 	case 4:		m_charModelIndex = "char4";	m_charModel.LoadMeshs("char4/idle", true);	break;
 	}
 
+	if (camPos < 4 && camPos >= 0)
+		m_camPos = camPos;
+
 	return *this;
 }
 
 void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool paused)
 {
-	if (short(m_user) == camNum) {
+	if (m_camPos == camNum) {
 		//draw ui
 		float healthPercent = float(m_health) / m_maxHealth;
 		float dashPercent = float(m_dashTimer) / m_dashDelay;

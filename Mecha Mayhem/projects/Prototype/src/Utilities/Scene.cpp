@@ -120,5 +120,14 @@ void Scene::doSceneChange(GLFWwindow* window) {
 	m_doSceneChange = false;
 	m_activeScene->Exit();
 	m_activeScene = m_scenes[m_nextScene]->Reattach();
-	glfwSetWindowTitle(window, Scene::m_activeScene->GetName().c_str());
+	glfwSetWindowTitle(window, m_activeScene->GetName().c_str());
+}
+
+void Scene::UnloadScenes()
+{
+	m_activeScene = nullptr;
+	while (m_scenes.size()) {
+		delete m_scenes[m_scenes.size() - 1];
+		m_scenes.pop_back();
+	}
 }

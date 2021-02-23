@@ -81,7 +81,7 @@ MultiTextObj& MultiTextObj::LoadMesh(const std::string& fileName)
 			{
 				if (matIndex > 0) if (materials[matIndex].isText == false)
 					throw std::runtime_error("we don't do no texture in multitexture");
-				++matIndex;
+				matIndex = materials.size();
 				materials.push_back({ matLine.substr(7), glm::vec3(1.f), glm::vec3(1.f) });
 				tempExponent = tempTrans = 1;
 			}

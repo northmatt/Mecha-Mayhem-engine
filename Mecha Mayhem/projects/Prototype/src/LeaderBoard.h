@@ -20,7 +20,7 @@ public:
 		int score = 0;
 	};
 
-	static std::vector<PlayerChoice> players;
+	static PlayerChoice players[4];
 	static int playerCount;
 
 private:
@@ -34,7 +34,7 @@ private:
 	entt::entity text = entt::null;
 };
 
-inline std::vector<LeaderBoard::PlayerChoice> LeaderBoard::players = {
+inline LeaderBoard::PlayerChoice LeaderBoard::players[4] = {
 	{}, {}, {}, {}
 };
 inline int LeaderBoard::playerCount = 0;

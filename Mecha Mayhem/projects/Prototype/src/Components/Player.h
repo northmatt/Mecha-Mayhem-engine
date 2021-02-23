@@ -54,7 +54,7 @@ public:
 	3 = Ryan's
 	4 = Bag
 	*/
-	Player& Init(CONUSER user, int characterModel);
+	Player& Init(CONUSER user, int characterModel, int camPos = 10);
 
 	//in radians
 	Player& SetRotation(float y, float x) { m_rot = glm::vec2(x, y); return *this; }
@@ -165,6 +165,7 @@ private:
 	bool m_punched = false;
 	bool m_stepped = false;
 
+	short m_camPos = 10;
 	short m_maxHealth = 20;
 	short m_health = m_maxHealth;
 	short m_killCount = 0;

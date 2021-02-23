@@ -39,7 +39,13 @@ void MapEditor::Init(int windowWidth, int windowHeight)
 	Rendering::LightsColour[0] = glm::vec3(20.f);
 
 	m_frameEffects.Init(width, height);
+	{
+		_bloomEffect = new BloomEffect();
 
+		_bloomEffect->Init(width, height);
+
+		m_frameEffects.AddEffect(_bloomEffect);
+	}
 	Player::SetUIAspect(width, height);
 	Player::SetSkyPos(glm::vec3(0, 50, 0));
 }
@@ -128,6 +134,18 @@ void MapEditor::ImGuiFunc()
 	ImGui::Checkbox("Save on exit", &saveOnExit);
 	if (ImGui::Checkbox("Shoot ray from camera", &showRay)) {
 		Rendering::LightCount = size_t(1) + size_t(showRay);
+	}
+
+	{
+		int blurCount = _bloomEffect->GetBlurCount();
+		if (ImGui::SliderInt("Blur Count", &blurCount, 0, 16))
+			_bloomEffect->SetBlurCount(blurCount);
+		float radius = _bloomEffect->GetRadius();
+		if (ImGui::SliderFloat("Radius", &radius, 0, 16))
+			_bloomEffect->SetRadius(radius);
+		float threshold = _bloomEffect->GetTreshold();
+		if (ImGui::SliderFloat("Threshold", &threshold, 0, 1))
+			_bloomEffect->SetTreshold(threshold);
 	}
 
 	if (ImGui::Button("Toggle render hitboxes") || Input::GetKeyDown(KEY::FSLASH)) {

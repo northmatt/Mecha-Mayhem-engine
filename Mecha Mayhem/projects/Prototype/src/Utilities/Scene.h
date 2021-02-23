@@ -36,6 +36,8 @@ public:
 	static void QueueSceneChange(size_t index);
 	static void doSceneChange(GLFWwindow* window);
 
+	static void UnloadScenes();
+
 	static std::vector<Scene*> m_scenes;
 	static Scene* m_activeScene;
 

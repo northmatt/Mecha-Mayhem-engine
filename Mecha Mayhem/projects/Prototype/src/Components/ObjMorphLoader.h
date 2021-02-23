@@ -77,6 +77,9 @@ public:
 	void Disable() { m_enabled = false; }
 	bool GetEnabled() { return m_enabled; }
 
+	//deletes teh vao;
+	void Destroy() { m_vao = nullptr; }
+
 private:
 	struct Frames {
 		VertexBuffer::sptr pos;

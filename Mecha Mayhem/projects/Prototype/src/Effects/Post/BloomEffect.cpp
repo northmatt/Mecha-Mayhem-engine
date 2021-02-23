@@ -1,5 +1,5 @@
 #include "BloomEffect.h"
-#include "Utilities/BackendHandler.h"
+#include "Engine/BackEnd.h"
 
 void BloomEffect::Init(unsigned width, unsigned height)
 {
@@ -48,10 +48,7 @@ void BloomEffect::ApplyEffect(PostEffect* buffer)
 
 	UnbindShader();
 
-	glm::vec2 pixelSize = glm::vec2(1.f / BackendHandler::width, 1.f / BackendHandler::height);
-	_shaders[2]->SetUniform("u_TexelSize", pixelSize.x);
 	_shaders[2]->SetUniform("u_Spread", _radius);
-	_shaders[3]->SetUniform("u_TexelSize", pixelSize.y);
 	_shaders[3]->SetUniform("u_Spread", _radius);
 
 	for (int i(0); i < _blurCount; ++i) {
@@ -96,6 +93,9 @@ void BloomEffect::Reshape(unsigned width, unsigned height)
 	_buffers[0]->Reshape(width, height);
 	_buffers[1]->Reshape(width / _scalar, height / _scalar);
 	_buffers[2]->Reshape(width / _scalar, height / _scalar);
+
+	_shaders[2]->SetUniform("u_TexelSize", 1.f / width);
+	_shaders[3]->SetUniform("u_TexelSize", 1.f / height);
 }
 
 void BloomEffect::SetTreshold(float threshold)
@@ -240,7 +240,7 @@ void PixelEffect::Reshape(unsigned width, unsigned height)
 void PixelEffect::SetPixelCount(int amt)
 {
 	_pixelCount = amt;
-	Reshape(BackendHandler::width, BackendHandler::height);
+	Reshape(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
 }
 
 int PixelEffect::GetPixelCount() const

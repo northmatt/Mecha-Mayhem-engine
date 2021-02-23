@@ -69,5 +69,11 @@ void LeaderBoard::Exit()
 
 Scene* LeaderBoard::Reattach()
 {
+	for (int i(0); i < playerCount; ++i) {
+		if (players[i].user != CONUSER::NONE) {
+			std::cout << "Player " << (int(players[i].user) + 1) << ": " << players[i].score << '\n';
+			players[i].score = 0;
+		}
+	}
 	return Scene::Reattach();
 }

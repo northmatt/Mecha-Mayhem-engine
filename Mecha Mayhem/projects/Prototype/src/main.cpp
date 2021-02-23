@@ -14,7 +14,7 @@ int main() {
 
 	{
 		// Creating demo scenes
-		scenes.push_back(new MapEditor("uh, not for playing"));
+		//Scene::m_scenes.push_back(new MapEditor("uh, not for playing"));
 		Scene::m_scenes.push_back(new MainMenu("Mecha Mayhem"));
 		Scene::m_scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0)));
 		Scene::m_scenes.push_back(new DemoScene("MM Demo", glm::vec3(0, -100, 0)));
@@ -46,15 +46,15 @@ int main() {
 					Gameloop::ImGuiWindow(window, Scene::m_activeScene);
 				continue;
 			}
-			else if (paused) {
+			if (paused) {
 				AudioEngine::Instance().UnPauseEverything();
 				paused = false;
 			}
 
 			ControllerInput::ControllerRefresh();
+			Scene::doSceneChange(window);
 
 			Scene::m_activeScene->Update();
-			Scene::doSceneChange(window);
 
 			//do not touch plz
 			Scene::m_activeScene->BackEndUpdate();

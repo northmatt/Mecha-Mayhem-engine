@@ -99,8 +99,8 @@ void MainMenu::Update()
 				ECS::GetComponent<Transform>(camera).SetPosition(glm::vec3(0, 100, 0)).SetRotation(BLM::GLMQuat);
 				ECS::GetComponent<Transform>(text).SetScale(1.f);
 
-				ECS::GetComponent<Transform>(title).SetRotation(BLM::GLMQuat).UnChild();
-				ECS::GetComponent<Transform>(text).SetRotation(BLM::GLMQuat).UnChild();
+				ECS::GetComponent<Transform>(title).SetRotation(BLM::GLMQuat).UnChild(false);
+				ECS::GetComponent<Transform>(text).SetRotation(BLM::GLMQuat).UnChild(false);
 
 				cameraPath.SetSpeed(1);
 				m_exit = false;

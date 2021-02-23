@@ -17,63 +17,8 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	m_camCount = 4;
 
 	/// Creating Entities
-	cameraEnt4 = ECS::CreateEntity();
-	ECS::AttachComponent<Camera>(cameraEnt4).SetFovDegrees(60.f).ResizeWindow(width, height);
-
-	cameraEnt3 = ECS::CreateEntity();
-	ECS::AttachComponent<Camera>(cameraEnt3).SetFovDegrees(60.f).ResizeWindow(width, height);
-
-	cameraEnt2 = ECS::CreateEntity();
-	ECS::AttachComponent<Camera>(cameraEnt2).SetFovDegrees(60.f).ResizeWindow(width, height);
-
-	cameraEnt1 = ECS::CreateEntity();
-	ECS::AttachComponent<Camera>(cameraEnt1).SetFovDegrees(60.f).ResizeWindow(width, height);
-
-
-	bodyEnt1 = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt1).CreatePlayer(bodyEnt1, startQuat, glm::vec3(0, 1.5f, 0));
-	ECS::AttachComponent<Player>(bodyEnt1).Init(CONUSER::ONE, 1).SetRotation(glm::radians(180.f), 0);
-
-	Head1 = ECS::CreateEntity();
-	ECS::GetComponent<Transform>(Head1).SetPosition(glm::vec3(0, 0.75f, 0)).
-		ChildTo(bodyEnt1).SetUsingParentScale(false);
-	ECS::GetComponent<Transform>(cameraEnt1).SetPosition(glm::vec3(0, 0, camDistance)).
-		ChildTo(Head1).SetUsingParentScale(false);
-
-
-
-	bodyEnt2 = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt2).CreatePlayer(bodyEnt2, startQuat, glm::vec3(0, 1.5f, 0));
-	ECS::AttachComponent<Player>(bodyEnt2).Init(CONUSER::TWO, 2).SetRotation(glm::radians(180.f), 0);
-
-	Head2 = ECS::CreateEntity();
-	ECS::GetComponent<Transform>(Head2).SetPosition(glm::vec3(0, 0.75f, 0)).
-		ChildTo(bodyEnt2).SetUsingParentScale(false);
-	ECS::GetComponent<Transform>(cameraEnt2).SetPosition(glm::vec3(0, 0, camDistance)).
-		ChildTo(Head2).SetUsingParentScale(false);
-
-
-	bodyEnt3 = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt3).CreatePlayer(bodyEnt3, startQuat, glm::vec3(0, 1.5f, 0));
-	ECS::AttachComponent<Player>(bodyEnt3).Init(CONUSER::THREE, 3).SetRotation(glm::radians(180.f), 0);
-
-	Head3 = ECS::CreateEntity();
-	ECS::GetComponent<Transform>(Head3).SetPosition(glm::vec3(0, 0.75f, 0)).
-		ChildTo(bodyEnt3).SetUsingParentScale(false);
-	ECS::GetComponent<Transform>(cameraEnt3).SetPosition(glm::vec3(0, 0, camDistance)).
-		ChildTo(Head3).SetUsingParentScale(false);
-
-
-
-	bodyEnt4 = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt4).CreatePlayer(bodyEnt4, startQuat, glm::vec3(0, 1.5f, 0));
-	ECS::AttachComponent<Player>(bodyEnt4).Init(CONUSER::FOUR, 4).SetRotation(glm::radians(180.f), 0);
-
-	Head4 = ECS::CreateEntity();
-	ECS::GetComponent<Transform>(Head4).SetPosition(glm::vec3(0, 0.75f, 0)).
-		ChildTo(bodyEnt4).SetUsingParentScale(false);
-	ECS::GetComponent<Transform>(cameraEnt4).SetPosition(glm::vec3(0, 0, camDistance)).
-		ChildTo(Head4).SetUsingParentScale(false);
+	/// 
+	/// //players created in reattach
 	
 	{
 		auto entity = ECS::CreateEntity();
@@ -175,19 +120,19 @@ void Tutorial::Update()
 			QueueSceneChange(2);
 			return;
 		}
-		else {
+		/*else {
 			if (++m_camCount > 4)	m_camCount = 1;
 			if (m_camCount == 2) {
-				ECS::GetComponent<Camera>(cameraEnt1).ResizeWindow(width / 2.f, height);
-				ECS::GetComponent<Camera>(cameraEnt2).ResizeWindow(width / 2.f, height);
+				ECS::GetComponent<Camera>(cameraEnt[0]).ResizeWindow(width / 2.f, height);
+				ECS::GetComponent<Camera>(cameraEnt[1]).ResizeWindow(width / 2.f, height);
 				Player::SetUIAspect(width / 2.f, height);
 			}
 			else {
-				ECS::GetComponent<Camera>(cameraEnt1).ResizeWindow(width, height);
-				ECS::GetComponent<Camera>(cameraEnt2).ResizeWindow(width, height);
+				ECS::GetComponent<Camera>(cameraEnt[0]).ResizeWindow(width, height);
+				ECS::GetComponent<Camera>(cameraEnt[1]).ResizeWindow(width, height);
 				Player::SetUIAspect(width, height);
 			}
-		}
+		}*/
 	}
 
 	if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER::ONE)) {
@@ -207,8 +152,7 @@ void Tutorial::Update()
 	if (m_paused)
 		return;
 
-
-	auto &p1 = ECS::GetComponent<Player>(bodyEnt1);
+	/*auto &p1 = ECS::GetComponent<Player>(bodyEnt1);
 	auto &p2 = ECS::GetComponent<Player>(bodyEnt2);
 	auto &p3 = ECS::GetComponent<Player>(bodyEnt3);
 	auto &p4 = ECS::GetComponent<Player>(bodyEnt4);
@@ -235,13 +179,30 @@ void Tutorial::Update()
 		ECS::GetComponent<PhysBody>(bodyEnt4),
 		ECS::GetComponent<Transform>(Head4),
 		ECS::GetComponent<Transform>(cameraEnt4)
-	);
+	);*/
 
-	if (p1.HasWon(killGoal) || p2.HasWon(killGoal) || p3.HasWon(killGoal) || p4.HasWon(killGoal)) {
-		LeaderBoard::players[0].score = ECS::GetComponent<Player>(bodyEnt1).GetScore();
-		LeaderBoard::players[1].score = ECS::GetComponent<Player>(bodyEnt2).GetScore();
+	bool winner = false;
+	for (int i(0); i < LeaderBoard::playerCount; ++i) {
+		auto& p = ECS::GetComponent<Player>(bodyEnt[i]);
+		p.GetInput(
+			ECS::GetComponent<PhysBody>(bodyEnt[i]),
+			ECS::GetComponent<Transform>(Head[i]),
+			ECS::GetComponent<Transform>(cameraEnt[i])
+		);
+		winner += (p.GetScore() >= killGoal);
+	}
+
+	if (winner) {
+		for (int i(0), temp(0); i < 4; ++i) {
+			if (LeaderBoard::players[i].user != CONUSER::NONE) {
+				LeaderBoard::players[temp].score = ECS::GetComponent<Player>(bodyEnt[temp]).GetScore();
+				bodyEnt[temp] = Head[temp] = cameraEnt[temp] = entt::null;
+				++temp;
+			}
+		}
+		/*LeaderBoard::players[1].score = ECS::GetComponent<Player>(bodyEnt2).GetScore();
 		LeaderBoard::players[2].score = ECS::GetComponent<Player>(bodyEnt3).GetScore();
-		LeaderBoard::players[3].score = ECS::GetComponent<Player>(bodyEnt4).GetScore();
+		LeaderBoard::players[3].score = ECS::GetComponent<Player>(bodyEnt4).GetScore();*/
 
 		m_reg = entt::registry();
 
@@ -296,21 +257,31 @@ Scene* Tutorial::Reattach() {
 	Rendering::effects = &m_effects;
 	Rendering::frameEffects = &m_frameEffects;
 
-	ECS::GetComponent<Player>(bodyEnt1).Init(LeaderBoard::players[0].user, LeaderBoard::players[0].model);
-	ECS::GetComponent<Player>(bodyEnt2).Init(LeaderBoard::players[1].user, LeaderBoard::players[1].model);
-	ECS::GetComponent<Player>(bodyEnt3).Init(LeaderBoard::players[2].user, LeaderBoard::players[2].model);
-	ECS::GetComponent<Player>(bodyEnt4).Init(LeaderBoard::players[3].user, LeaderBoard::players[3].model);
-
 	m_camCount = LeaderBoard::playerCount;
 
+	for (int i(LeaderBoard::playerCount - 1); i >= 0; --i) {
+		cameraEnt[i] = ECS::CreateEntity();
+		if (m_camCount == 2)
+			ECS::AttachComponent<Camera>(cameraEnt[i]).SetFovDegrees(60.f).ResizeWindow(width / 2, height);
+		else
+			ECS::AttachComponent<Camera>(cameraEnt[i]).SetFovDegrees(60.f).ResizeWindow(width, height);
+
+		bodyEnt[i] = ECS::CreateEntity();
+		ECS::AttachComponent<PhysBody>(bodyEnt[i]).CreatePlayer(bodyEnt[i], startQuat, glm::vec3(0, 1.5f, 0));
+		ECS::AttachComponent<Player>(bodyEnt[i]).Init(
+			LeaderBoard::players[i].user, LeaderBoard::players[i].model, i).SetRotation(glm::radians(180.f), 0);
+
+		Head[i] = ECS::CreateEntity();
+		ECS::GetComponent<Transform>(Head[i]).SetPosition(glm::vec3(0, 0.75f, 0)).
+			ChildTo(bodyEnt[i]).SetUsingParentScale(false);
+		ECS::GetComponent<Transform>(cameraEnt[i]).SetPosition(glm::vec3(0, 0, camDistance)).
+			ChildTo(Head[i]).SetUsingParentScale(false);
+	}
+
 	if (m_camCount == 2) {
-		ECS::GetComponent<Camera>(cameraEnt1).ResizeWindow(width / 2.f, height);
-		ECS::GetComponent<Camera>(cameraEnt2).ResizeWindow(width / 2.f, height);
-		Player::SetUIAspect(width / 2.f, height);
+		Player::SetUIAspect(width / 2, height);
 	}
 	else {
-		ECS::GetComponent<Camera>(cameraEnt1).ResizeWindow(width, height);
-		ECS::GetComponent<Camera>(cameraEnt2).ResizeWindow(width, height);
 		Player::SetUIAspect(width, height);
 	}
 

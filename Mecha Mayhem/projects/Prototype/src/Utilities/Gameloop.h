@@ -99,13 +99,15 @@ namespace Gameloop
 		Input::Unload();
 		PhysBody::Unload();
 		ECS::DettachRegistry();
+		Player::Unload();
 		ObjLoader::Unload();
 		MultiTextObj::Unload();
 		ObjMorphLoader::Unload();
 		Sprite::Unload();
 		Effects::Unload();
-
 		FrameEffects::Unload();
+
+		Scene::UnloadScenes();
 
 		if (usingImGui)	BackEnd::CloseImGui();
 		BackEnd::Unload();
