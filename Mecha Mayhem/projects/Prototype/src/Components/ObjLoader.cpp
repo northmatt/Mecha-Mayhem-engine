@@ -142,7 +142,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 					glm::vec3 colour;
 					ss >> colour.x >> colour.y >> colour.z;
 
-					materials[matIndex].specStrength = glm::vec3(colour.length(), tempExponent, tempTrans);
+					materials[matIndex].specStrength = glm::vec3(glm::length(colour), tempExponent, tempTrans);
 				}
 				else if (matLine[1] == 'a')
 				{
@@ -396,12 +396,6 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	}
 
 	file.close();
-	 
-	std::vector<float> position;
-	std::vector<float> normal;
-	std::vector<float> colours;
-	std::vector<float> specStre;
-	std::vector<float> uvv;
 
 	std::vector<float> position_data = {};
 	std::vector<float> colour_data = {};

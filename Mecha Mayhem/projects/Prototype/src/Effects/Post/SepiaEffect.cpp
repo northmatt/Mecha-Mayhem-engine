@@ -20,7 +20,7 @@ void SepiaEffect::Init(unsigned width, unsigned height)
 void SepiaEffect::ApplyEffect(PostEffect* buffer)
 {
 	BindShader(1);
-	_shaders[0]->SetUniform("u_Intensity", _intensity);
+	_shaders[1]->SetUniform("u_Intensity", _intensity);
 
 	buffer->BindColorAsTexture(0, 0, 0);
 

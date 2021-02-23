@@ -240,7 +240,7 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 					glm::vec3 colour;
 					ss >> colour.x >> colour.y >> colour.z;
 
-					materials[matIndex].specStrength = glm::vec3(colour.length(), tempExponent, tempTrans);
+					materials[matIndex].specStrength = glm::vec3(glm::length(colour), tempExponent, tempTrans);
 				}
 				else if (matLine[1] == 'a')
 				{

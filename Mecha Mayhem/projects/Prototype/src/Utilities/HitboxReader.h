@@ -32,7 +32,7 @@ public:
 	//all cubes are sent to OBJ draw queue if draw is true
 	void Render();
 
-	//reads inputs:
+	//reads inputs (depreciated):
 	//IJKL,. to move current (based on rotation),
 	// -LCTRL to speed up these inputs
 	//789 to scale (xyz) current (rgb coloured),
@@ -45,7 +45,9 @@ public:
 	//[] to move the floor up and down
 	// -LCTRL to slow down
 	//TAB to slow everything down
-	void Update(float dt, entt::entity cameraEnt = entt::null);
+
+	//Through ImGui
+	void Update(entt::entity cameraEnt = entt::null);
 
 	void Clear() {
 		m_draw = false;
@@ -68,6 +70,8 @@ public:
 	}
 
 private:
+	void ChangeCircularCount(int amt, bool init = false);
+
 	static ObjLoader m_cube;
 	static ObjLoader m_cylinder;
 	static ObjLoader m_cubeCurrent;
@@ -75,8 +79,17 @@ private:
 	static btCollisionShape* m_planeShape;
 	static Transform m_defaultTrans;
 
+	float m_speedModifier = 1.f;
+	float rotAmt = 45.f;
+	float circularRadius = 5.f;
+	float floorHeight[2] = { -40.f, 40.f };
+	float bound[2] = { -100.f, 100.f };
+	float bound2[2] = { 1.f, 100.f };
+	float bound3[2] = { 0.01f, 100.f };
 	bool m_draw = false;
-	size_t m_current = 0;
+	bool m_lookingAtSelected = false;
+	int m_current = 0;
+	int selectingScale = 0;
 	std::string m_filename;
 
 	btDiscreteDynamicsWorld *m_world = nullptr;
@@ -89,6 +102,7 @@ private:
 	};
 
 	std::vector<Shape> m_objects = {};
+	std::vector<Transform> m_tempObjects = {};
 	btRigidBody* m_floor = nullptr;
 	btAlignedObjectArray<btCollisionShape*> m_boxShape;
 };

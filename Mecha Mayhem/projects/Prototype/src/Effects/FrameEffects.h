@@ -28,6 +28,9 @@ public:
 	void Clear();
 	void Draw();
 
+	//removes all effects
+	void RemoveAllEffects();
+
 	//Get amount of effects
 	size_t size() { return layersOfEffects.size(); }
 
@@ -37,8 +40,11 @@ public:
 		return layersOfEffects[index];
 	}
 
+	static FrameEffects *Constant;
+
 private:
 	PostEffect baseEffect;
 	std::vector<PostEffect*> layersOfEffects = {};
 };
 
+inline FrameEffects *FrameEffects::Constant = nullptr;

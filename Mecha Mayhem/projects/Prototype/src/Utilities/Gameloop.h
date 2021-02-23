@@ -87,10 +87,10 @@ namespace Gameloop
 		AudioEngine::Instance().Update();
 		//Controller Checks n stuff
 		ControllerInput::ControllerUpdate();
-		//update the static dt
-		Time::Update(glfwGetTime());
 
 		Player::Update();
+		//update the static dt
+		Time::Update(glfwGetTime());
 	}
 
 	//stop everything (use at the end to avoid issues)
@@ -100,6 +100,7 @@ namespace Gameloop
 		PhysBody::Unload();
 		ECS::DettachRegistry();
 		ObjLoader::Unload();
+		MultiTextObj::Unload();
 		ObjMorphLoader::Unload();
 		Sprite::Unload();
 		Effects::Unload();

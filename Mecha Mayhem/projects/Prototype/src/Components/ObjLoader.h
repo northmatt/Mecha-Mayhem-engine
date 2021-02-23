@@ -3,6 +3,7 @@
 
 class ObjLoader
 {
+	friend class MultiTextObj;
 public:
 	//contructor
 	ObjLoader() {}

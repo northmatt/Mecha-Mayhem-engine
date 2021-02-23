@@ -21,11 +21,11 @@ void MapEditor::Init(int windowWidth, int windowHeight)
 	ECS::GetComponent<Transform>(cameraEnt).SetPosition(glm::vec3(0, 0, 0));
 
 	rayPosEnt = ECS::CreateEntity();
-	ECS::AttachComponent<ObjLoader>(rayPosEnt).LoadMesh("models/CameraDrone.obj", true);
+	ECS::AttachComponent<ObjLoader>(rayPosEnt).LoadMesh("models/GodHimself.obj");
 	ECS::GetComponent<Transform>(rayPosEnt).SetPosition(glm::vec3(0, 0.f, 0)).SetScale(0.5f);
 	{
 		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/Cringe4.5.obj", true);
+		ECS::AttachComponent<MultiTextObj>(entity).LoadMesh("maps/MapUntextured.obj");
 		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, -30.f, 0)).SetScale(4.f);
 	}
 
@@ -34,6 +34,9 @@ void MapEditor::Init(int windowWidth, int windowHeight)
 	Rendering::hitboxes = &m_colliders;
 	Rendering::effects = &m_effects;
 	Rendering::frameEffects = &m_frameEffects;
+	Rendering::LightCount = 1;
+	Rendering::LightsPos[0] = BLM::GLMzero;
+	Rendering::LightsColour[0] = glm::vec3(20.f);
 
 	m_frameEffects.Init(width, height);
 
@@ -71,7 +74,7 @@ void MapEditor::Update()
 			Input::GetKey(KEY::LCTRL))	{ change.y -= speed * Time::dt; }
 
 		if (change != BLM::GLMzero) {
-			change = glm::rotate(glm::angleAxis(rot.y, BLM::GLMup), change);
+			change = glm::rotate(camTrans.GetLocalRotation(), change);
 			camTrans.SetPosition(camTrans.GetLocalPosition() + change);
 		}
 
@@ -87,14 +90,16 @@ void MapEditor::Update()
 		}
 
 		if (showRay) {
-			btVector3 rayPos = PhysBody::GetRaycast(camTrans.GetGlobalPosition(), camTrans.GetForwards() * -10000.f);
+			btVector3 rayPos = PhysBody::GetRaycast(camTrans.GetLocalPosition(), camTrans.GetForwards() * -10000.f);
 			if (rayPos != btVector3()) {
-				ECS::GetComponent<Transform>(rayPosEnt).SetPosition(rayPos);
+				Rendering::LightsPos[1] = ECS::GetComponent<Transform>(rayPosEnt).SetPosition(rayPos).GetLocalPosition();
 			}
 		}
 		else {
 			ECS::GetComponent<Transform>(rayPosEnt).SetPosition(glm::vec3(0, 1000, 0));
 		}
+
+		Rendering::LightsPos[0] = camTrans.GetLocalPosition();
 	}
 
 	/// End of loop
@@ -121,33 +126,32 @@ void MapEditor::ImGuiFunc()
 	ImGui::SliderFloat("Camera rotation speed", &rotSpeed, 0, 5);
 
 	ImGui::Checkbox("Save on exit", &saveOnExit);
-	ImGui::Checkbox("Shoot ray from camera", &showRay);
+	if (ImGui::Checkbox("Shoot ray from camera", &showRay)) {
+		Rendering::LightCount = size_t(1) + size_t(showRay);
+	}
 
 	if (ImGui::Button("Toggle render hitboxes") || Input::GetKeyDown(KEY::FSLASH)) {
 		debugText = m_colliders.ToggleDraw() ? "drawing hitboxes" : "not drawing hitboxes";
 	}
 
-	m_colliders.Update(Time::dt, cameraEnt);
+	m_colliders.Update(cameraEnt);
 
 
 	if (ImGui::Button("Overwrite save")) {
-		if (m_colliders.SaveToFile()) {
+		if (m_colliders.SaveToFile())
 			std::cout << (debugText = "manual file overwrite success\n");
-		}
 		else
 			std::cout << (debugText = "manual file overwrite failed\n");
 	}
 	if (ImGui::Button("Save as new file")) {
-		if (m_colliders.SaveToFile(false)) {
+		if (m_colliders.SaveToFile(false))
 			std::cout << (debugText = "manual file save success\n");
-		}
 		else
 			std::cout << (debugText = "manual file save failed\n");
 	}
 	if (ImGui::Button("Load last save")) {
-		if (m_colliders.LoadFromFile()) {
+		if (m_colliders.LoadFromFile())
 			std::cout << (debugText = "manual file load success\n");
-		}
 		else
 			std::cout << (debugText = "manual file load failed\n");
 	}

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Effects/Post/PostEffect.h"
+#include "PostEffect.h"
 #include "Effects/LUT.h"
 
 class ColourCorrection : public PostEffect

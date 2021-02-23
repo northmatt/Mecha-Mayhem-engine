@@ -1,5 +1,5 @@
 #pragma once
-#include "ObjLoader.h"
+#include "MultiTextObj.h"
 
 class ObjMorphLoader
 {

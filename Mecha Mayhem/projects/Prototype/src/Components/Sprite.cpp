@@ -83,7 +83,6 @@ void Sprite::Draw(const glm::mat4& VP, const glm::mat4& model)
 void Sprite::DrawSingle(const glm::mat4& VP, const glm::mat4& model)
 {
 	m_shader->Bind();
-	m_shader->SetUniform("s_texture", 0);
 
 	m_shader->SetUniformMatrix("MVP",
 		VP * glm::scale(model, glm::vec3(m_width * m_scale, m_height * m_scale, 1))
@@ -99,7 +98,6 @@ void Sprite::PerformDraw()
 {
 	if (m_Queue.size() != 0) {
 		m_shader->Bind();
-		m_shader->SetUniform("s_texture", 0);
 
 		for (int i(0); i < m_Queue.size(); ++i) {
 			m_shader->SetUniformMatrix("MVP", m_Queue[i].MVP);
@@ -118,6 +116,8 @@ void Sprite::Init()
 	m_shader->LoadShaderPartFromFile("shaders/vert_sprite.glsl", GL_VERTEX_SHADER);
 	m_shader->LoadShaderPartFromFile("shaders/frag_sprite.glsl", GL_FRAGMENT_SHADER);
 	m_shader->Link();
+
+	m_shader->SetUniform("s_texture", 0);
 
 	std::vector<float> interleaved = {
 		-0.5f, -0.5f, 0.f, 1, 0,

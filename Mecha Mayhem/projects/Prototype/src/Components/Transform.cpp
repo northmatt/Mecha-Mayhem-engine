@@ -41,6 +41,9 @@ Transform& Transform::ChildTo(entt::entity index)
 
 Transform& Transform::UnChild()
 {
+	m_position = GetGlobalPosition();
+	m_rotation = GetGlobalRotation();
+	
 	m_parent = entt::null;
 	m_dirty = true;
 
@@ -51,6 +54,26 @@ Transform& Transform::SetUsingParentScale(bool yes)
 {
 	m_usingParentScale = yes;
 	m_dirty = true;
+
+	return *this;
+}
+
+Transform& Transform::UseAsParent(const Transform& other)
+{
+	m_global = other.m_global * GetModel();
+
+	m_position = GetGlobalPosition();
+	m_rotation = GetGlobalRotation();
+
+	return *this;
+}
+
+Transform& Transform::UseAsParent(const glm::mat4& model)
+{
+	m_global = model * GetModel();
+
+	m_position = GetGlobalPosition();
+	m_rotation = GetGlobalRotation();
 
 	return *this;
 }

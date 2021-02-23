@@ -1,14 +1,22 @@
 #include "FrameEffects.h"
-#include "Engine/BackEnd.h"
 
 FrameEffects::FrameEffects() { }
 
 void FrameEffects::Init()
 {
 	PostEffect::Init("shaders/Post/passthrough_frag.glsl");
-	PostEffect::Init("shaders/Post/color_correction_frag.glsl");
+
+	//bloom shaders
+	PostEffect::Init("shaders/Post/bloom_bright_pass.glsl");
+	PostEffect::Init("shaders/Post/bloom_horizontal_blur.glsl");
+	PostEffect::Init("shaders/Post/bloom_vertical_blur.glsl");
+	PostEffect::Init("shaders/Post/bloom_combine_pass.glsl");
+
+	//others
+	//PostEffect::Init("shaders/Post/color_correction_frag.glsl");
 	PostEffect::Init("shaders/Post/greyscale_frag.glsl");
 	PostEffect::Init("shaders/Post/sepia_frag.glsl");
+	PostEffect::Init("shaders/Post/toon_frag.glsl");
 }
 
 void FrameEffects::Unload()
@@ -18,9 +26,7 @@ void FrameEffects::Unload()
 
 void FrameEffects::Init(unsigned width, unsigned height)
 {
-	while (layersOfEffects.size() > 0) {
-		RemoveEffect(0);
-	}
+	RemoveAllEffects();
 
 	baseEffect.Init(width, height);
 }
@@ -77,6 +83,12 @@ void FrameEffects::Draw()
 		layersOfEffects[i]->ApplyEffect(prev);
 		prev = layersOfEffects[i];
 	}
-	glViewport(0, 0, BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
 	prev->DrawToScreen();
+}
+
+void FrameEffects::RemoveAllEffects()
+{
+	while (layersOfEffects.size()) {
+		RemoveEffect(0);
+	}
 }

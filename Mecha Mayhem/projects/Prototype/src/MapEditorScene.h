@@ -20,7 +20,7 @@ private:
 	float speed = 5;
 	float rotSpeed = 2.5f;
 	std::string debugText = "";
-	glm::vec2 rot = glm::vec2(0, 0);
+	glm::vec3 rot = glm::vec3(0.f);
 
 	bool saveOnExit = false;
 	bool showRay = false;

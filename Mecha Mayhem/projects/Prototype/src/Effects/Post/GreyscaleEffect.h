@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Effects/Post/PostEffect.h"
+#include "PostEffect.h"
 
 class GreyscaleEffect : public PostEffect
 {

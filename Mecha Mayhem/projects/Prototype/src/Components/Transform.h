@@ -18,6 +18,8 @@ public:
 
 	Transform& SetUsingParentScale(bool yes);
 	bool GetUsingParentScale() { return m_usingParentScale; }
+	Transform& UseAsParent(const Transform& other);
+	Transform& UseAsParent(const glm::mat4& model);
 
 	Transform& ComputeGlobal();
 	Transform& ComputeScalessGlobal();
