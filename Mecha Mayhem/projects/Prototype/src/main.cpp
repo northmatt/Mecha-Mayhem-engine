@@ -14,28 +14,26 @@ int main() {
 
 	{
 		// Creating demo scenes
-		std::vector<Scene*> scenes;
 		scenes.push_back(new MapEditor("uh, not for playing"));
-		/*scenes.push_back(new MainMenu("Mecha Mayhem"));
-		scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0)));
-		scenes.push_back(new DemoScene("MM Demo", glm::vec3(0, -100, 0)));
-		scenes.push_back(new LeaderBoard("The Winner is..."));*/
- 		 
-		scenes[0]->Init(width, height);
-		/*scenes[1]->Init(width, height);
-		scenes[2]->Init(width, height);
-		scenes[3]->Init(width, height);*/
+		Scene::m_scenes.push_back(new MainMenu("Mecha Mayhem"));
+		Scene::m_scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0)));
+		Scene::m_scenes.push_back(new DemoScene("MM Demo", glm::vec3(0, -100, 0)));
+		Scene::m_scenes.push_back(new LeaderBoard("The Winner is..."));
 
-		int currScene = 0, count = scenes.size();
-		Scene* activeScene = scenes[0]->Reattach();
-		glfwSetWindowTitle(window, activeScene->GetName().c_str());
+		Scene::m_scenes[0]->Init(width, height);
+		Scene::m_scenes[1]->Init(width, height);
+		Scene::m_scenes[2]->Init(width, height);
+		Scene::m_scenes[3]->Init(width, height);
+
+		Scene::m_activeScene = Scene::m_scenes[0]->Reattach();
+		glfwSetWindowTitle(window, Scene::m_activeScene->GetName().c_str());
 
 		bool paused = false;
 
 		while (!glfwWindowShouldClose(window)) {
 			glfwPollEvents();
 
-			if (activeScene->ExitTest()) {
+			if (Scene::GetExit()) {
 				break;
 			}
 
@@ -45,7 +43,7 @@ int main() {
 					paused = true;
 				}
 				if (usingImGui)
-					Gameloop::ImGuiWindow(window, activeScene);
+					Gameloop::ImGuiWindow(window, Scene::m_activeScene);
 				continue;
 			}
 			else if (paused) {
@@ -55,23 +53,19 @@ int main() {
 
 			ControllerInput::ControllerRefresh();
 
-			activeScene->Update();
-
-			if ((currScene = activeScene->ChangeScene(count)) > -1) {
-				activeScene->Exit();
-				glfwSetWindowTitle(window, (activeScene = scenes[currScene]->Reattach())->GetName().c_str());
-			}
+			Scene::m_activeScene->Update();
+			Scene::doSceneChange(window);
 
 			//do not touch plz
-			activeScene->BackEndUpdate();
+			Scene::m_activeScene->BackEndUpdate();
 			if (usingImGui)
-				Gameloop::ImGuiWindow(window, activeScene);
+				Gameloop::ImGuiWindow(window, Scene::m_activeScene);
 			Gameloop::Update();
 
 			glfwSwapBuffers(window);
 		}
 
-		activeScene->Exit();
+		Scene::m_activeScene->Exit();
 	}
 
 	Gameloop::Stop(usingImGui);

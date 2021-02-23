@@ -172,7 +172,7 @@ void Tutorial::Update()
 {
 	if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER::ONE)) {
 		if (ControllerInput::GetButton(BUTTON::RB, CONUSER::ONE)) {
-			m_nextScene = 2;
+			QueueSceneChange(2);
 			return;
 		}
 		else {
@@ -268,8 +268,7 @@ void Tutorial::Update()
 		height = BackEnd::GetHalfHeight() * 2;
 
 		Init(width, height);
-		m_nextScene = 3;
-
+		QueueSceneChange(3);
 	}
 
 	ECS::GetComponent<Transform>(lightDrone).SetPosition(dronePath.Update(Time::dt).GetPosition()).SetRotation(dronePath.GetLookingForwards(0.5f));

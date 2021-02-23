@@ -1,5 +1,11 @@
 #include "Scene.h"
 
+std::vector<Scene*> Scene::m_scenes;
+Scene* Scene::m_activeScene = nullptr;
+size_t Scene::m_nextScene = 0;
+bool Scene::m_doSceneChange = false;
+bool Scene::m_exitGame = false;
+
 Scene::Scene(const std::string& name, const glm::vec3& gravity, bool physics)
 	: m_name(name)
 {
@@ -99,13 +105,20 @@ void Scene::BackEndUpdate()
 	m_frameEffects.Draw();
 }
 
-int Scene::ChangeScene(int sceneCount)
-{
-	if (m_nextScene >= sceneCount)
-		return -1;
+void Scene::QueueSceneChange(size_t index) {
+	if (m_nextScene >= m_scenes.size())
+		return;
 
-	int nextScene = m_nextScene;
-	m_nextScene = -1;
+	m_nextScene = index;
+	m_doSceneChange = true;
+}
 
-	return nextScene;
+void Scene::doSceneChange(GLFWwindow* window) {
+	if (m_doSceneChange == false)
+		return;
+
+	m_doSceneChange = false;
+	m_activeScene->Exit();
+	m_activeScene = m_scenes[m_nextScene]->Reattach();
+	glfwSetWindowTitle(window, Scene::m_activeScene->GetName().c_str());
 }

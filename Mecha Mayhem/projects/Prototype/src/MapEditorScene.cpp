@@ -49,7 +49,7 @@ void MapEditor::Update()
 	/// start of loop
 
 	/*if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER::ONE)) {
-		m_nextScene = 1;
+		QueueSceneChange(0);
 		return;
 	}*/
 
