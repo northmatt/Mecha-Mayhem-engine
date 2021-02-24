@@ -170,7 +170,7 @@ void MainMenu::Update()
 
 			if (p.IsPlayer()) {
 				if (Rendering::LightsPos[2 + x] == BLM::GLMzero)
-					Rendering::LightsPos[2 + x] = (ECS::GetComponent<Transform>(models[x]).GetGlobalPosition() + glm::vec3(0, -1, 1.75f));
+					Rendering::LightsPos[2 + x] = (ECS::GetComponent<Transform>(models[x]).GetGlobalPosition() + glm::vec3(0, 0, 1.75f));
 
 				if (ControllerInput::GetButtonDown(BUTTON::B, CONUSER(x))) {
 					p.Init(LeaderBoard::players[x].user = CONUSER::NONE, 0);
