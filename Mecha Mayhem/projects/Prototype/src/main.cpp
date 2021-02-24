@@ -42,6 +42,8 @@ int main() {
 					AudioEngine::Instance().PauseEverything();
 					paused = true;
 				}
+				//has to update all the time
+				AudioEngine::Instance().Update();
 				if (usingImGui)
 					Gameloop::ImGuiWindow(window, Scene::m_activeScene);
 				continue;

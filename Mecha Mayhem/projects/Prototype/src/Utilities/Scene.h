@@ -58,9 +58,9 @@ protected:
 	Sprite m_pauseSprite;
 	FrameEffects m_frameEffects;
 
-	btDbvtBroadphase *_broadphase = new btDbvtBroadphase();
-	btCollisionConfiguration *_collisionConfiguration = new btDefaultCollisionConfiguration();
-	btCollisionDispatcher *_dispatcher = new btCollisionDispatcher(_collisionConfiguration);
-	btSequentialImpulseConstraintSolver *_solver = new btSequentialImpulseConstraintSolver();
+	btDbvtBroadphase *_broadphase = nullptr;
+	btCollisionConfiguration* _collisionConfiguration = nullptr;
+	btCollisionDispatcher* _dispatcher = nullptr;
+	btSequentialImpulseConstraintSolver* _solver = nullptr;
 };
 

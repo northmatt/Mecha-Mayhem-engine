@@ -15,7 +15,7 @@ public:
 
 	void Reshape(unsigned width, unsigned height) override;
 
-	void SetTreshold(float threshold);
+	void SetThreshold(float threshold);
 	float GetTreshold() const;
 
 	void SetRadius(float radius);

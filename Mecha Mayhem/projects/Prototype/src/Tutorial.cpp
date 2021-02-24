@@ -1,5 +1,6 @@
 #include "Tutorial.h"
 #include "LeaderBoard.h"
+#include "Effects/Post/BloomEffect.h"
 
 void Tutorial::Init(int windowWidth, int windowHeight)
 {
@@ -98,7 +99,12 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	}
 
 	/// End of creating entities
-	Rendering::DefaultColour = glm::vec4(1.f, 0.5f, 0.5f, 1.f);
+	Rendering::DefaultColour = glm::vec4(0.75f, 0.75f, 0.75f, 1.f);
+	Rendering::LightCount = 2;
+	Rendering::LightsColour[0] = glm::vec3(200.f);
+	Rendering::LightsPos[0] = glm::vec3(0, 10, -55);
+	Rendering::LightsPos[1] = glm::vec3(0, 2, 0);
+
 	Rendering::hitboxes = &m_colliders;
 	Rendering::effects = &m_effects;
 	Rendering::frameEffects = &m_frameEffects;
@@ -115,12 +121,12 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 
 void Tutorial::Update()
 {
-	if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER::ONE)) {
+	/*if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER::ONE)) {
 		if (ControllerInput::GetButton(BUTTON::RB, CONUSER::ONE)) {
 			QueueSceneChange(2);
 			return;
 		}
-		/*else {
+		else {
 			if (++m_camCount > 4)	m_camCount = 1;
 			if (m_camCount == 2) {
 				ECS::GetComponent<Camera>(cameraEnt[0]).ResizeWindow(width / 2.f, height);
@@ -132,20 +138,31 @@ void Tutorial::Update()
 				ECS::GetComponent<Camera>(cameraEnt[1]).ResizeWindow(width, height);
 				Player::SetUIAspect(width, height);
 			}
-		}*/
-	}
-
-	if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER::ONE)) {
-		if (ControllerInput::GetButton(BUTTON::RB, CONUSER::ONE)) {
-			if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
-			else							BackEnd::SetFullscreen();
 		}
-	}
+	}*/
 
 	for (size_t i(0); i < 4; ++i) {
 		if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(i))) {
-			m_paused = !m_paused;
-			return;
+			if (ControllerInput::GetButton(BUTTON::RB, CONUSER(i))) {
+				if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
+				else							BackEnd::SetFullscreen();
+			}
+			else {
+				if (m_paused) {
+					m_paused = false;
+					//remove effects or smt
+					m_frameEffects.RemoveEffect(0);
+				}
+				else {
+					m_paused = true;
+					//add effects or smt
+					if (m_frameEffects.size() == 0) {
+						m_frameEffects.AddEffect(new PixelEffect());
+						m_frameEffects[0]->Init(width, height);
+						((PixelEffect*)(m_frameEffects[0]))->SetPixelCount(64);
+					}
+				}
+			}
 		}
 	}
 
@@ -189,21 +206,22 @@ void Tutorial::Update()
 			ECS::GetComponent<Transform>(Head[i]),
 			ECS::GetComponent<Transform>(cameraEnt[i])
 		);
-		winner += (p.GetScore() >= killGoal);
+
+		if (p.GetScore() >= killGoal)
+			winner = true;
 	}
 
 	if (winner) {
 		for (int i(0), temp(0); i < 4; ++i) {
 			if (LeaderBoard::players[i].user != CONUSER::NONE) {
-				LeaderBoard::players[temp].score = ECS::GetComponent<Player>(bodyEnt[temp]).GetScore();
+				LeaderBoard::players[i].score = ECS::GetComponent<Player>(bodyEnt[temp]).GetScore();
 				bodyEnt[temp] = Head[temp] = cameraEnt[temp] = entt::null;
 				++temp;
 			}
 		}
-		/*LeaderBoard::players[1].score = ECS::GetComponent<Player>(bodyEnt2).GetScore();
-		LeaderBoard::players[2].score = ECS::GetComponent<Player>(bodyEnt3).GetScore();
-		LeaderBoard::players[3].score = ECS::GetComponent<Player>(bodyEnt4).GetScore();*/
 
+
+		//does the reset stuff here
 		m_reg = entt::registry();
 
 		btVector3 grav = m_world->getGravity();
@@ -225,10 +243,7 @@ void Tutorial::Update()
 
 		m_colliders.Clear();
 
-		width = BackEnd::GetHalfWidth() * 2;
-		height = BackEnd::GetHalfHeight() * 2;
-
-		Init(width, height);
+		Init(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
 		QueueSceneChange(3);
 	}
 
@@ -256,10 +271,20 @@ Scene* Tutorial::Reattach() {
 
 	Rendering::effects = &m_effects;
 	Rendering::frameEffects = &m_frameEffects;
+	Rendering::DefaultColour = glm::vec4(0.75f, 0.75f, 0.75f, 1.f);
+	Rendering::LightsColour[0] = glm::vec3(200.f);
+	Rendering::LightCount = 2;
+	Rendering::LightsPos[0] = glm::vec3(0, 10, -55);
+	Rendering::LightsPos[1] = glm::vec3(0, 2, 0);
+	Rendering::AmbientStrength = 1.f;
 
 	m_camCount = LeaderBoard::playerCount;
 
-	for (int i(LeaderBoard::playerCount - 1); i >= 0; --i) {
+	for (int temp(3), i(LeaderBoard::playerCount); temp >= 0; --temp) {
+		if (LeaderBoard::players[temp].user == CONUSER::NONE)
+			continue;
+
+		--i;
 		cameraEnt[i] = ECS::CreateEntity();
 		if (m_camCount == 2)
 			ECS::AttachComponent<Camera>(cameraEnt[i]).SetFovDegrees(60.f).ResizeWindow(width / 2, height);
@@ -269,7 +294,7 @@ Scene* Tutorial::Reattach() {
 		bodyEnt[i] = ECS::CreateEntity();
 		ECS::AttachComponent<PhysBody>(bodyEnt[i]).CreatePlayer(bodyEnt[i], startQuat, glm::vec3(0, 1.5f, 0));
 		ECS::AttachComponent<Player>(bodyEnt[i]).Init(
-			LeaderBoard::players[i].user, LeaderBoard::players[i].model, i).SetRotation(glm::radians(180.f), 0);
+			LeaderBoard::players[temp].user, LeaderBoard::players[temp].model, i).SetRotation(glm::radians(180.f), 0);
 
 		Head[i] = ECS::CreateEntity();
 		ECS::GetComponent<Transform>(Head[i]).SetPosition(glm::vec3(0, 0.75f, 0)).
@@ -278,12 +303,10 @@ Scene* Tutorial::Reattach() {
 			ChildTo(Head[i]).SetUsingParentScale(false);
 	}
 
-	if (m_camCount == 2) {
+	if (m_camCount == 2)
 		Player::SetUIAspect(width / 2, height);
-	}
-	else {
+	else
 		Player::SetUIAspect(width, height);
-	}
 
 	Player::SetCamDistance(camDistance);
 	Player::SetSkyPos(glm::vec3(0, 50, -45));

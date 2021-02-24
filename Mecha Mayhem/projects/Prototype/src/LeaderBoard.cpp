@@ -20,6 +20,7 @@ void LeaderBoard::Init(int windowWidth, int windowHeight)
 	ECS::GetComponent<Transform>(text).SetPosition(glm::vec3(0.f, -0.1f, -0.35f)).ChildTo(camera);
 	
 	Rendering::frameEffects = &m_frameEffects;
+	Rendering::LightCount = 0;
 
 	m_frameEffects.Init(width, height);
 }
@@ -75,5 +76,7 @@ Scene* LeaderBoard::Reattach()
 			players[i].score = 0;
 		}
 	}
+	Rendering::LightCount = 0;
+
 	return Scene::Reattach();
 }

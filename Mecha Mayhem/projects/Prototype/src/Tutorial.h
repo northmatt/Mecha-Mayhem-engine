@@ -11,6 +11,13 @@ public:
 	virtual void Init(int windowWidth, int windowHeight) override;
 	virtual void Update() override;
 	virtual Scene* Reattach() override;
+	/*virtual void ImGuiFunc() override
+	{
+		if (ImGui::Button("Draw")) {
+			m_colliders.ToggleDraw();
+		}
+		m_colliders.Update();
+	};*/
 
 private:
 

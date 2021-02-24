@@ -1,5 +1,6 @@
 #include "MainMenu.h"
 #include "LeaderBoard.h"
+#include "Effects/Post/BloomEffect.h"
 
 void MainMenu::Init(int windowWidth, int windowHeight)
 {
@@ -52,43 +53,54 @@ void MainMenu::Init(int windowWidth, int windowHeight)
 	ECS::GetComponent<Transform>(backGround).SetPosition(glm::vec3(0, 100, -10));
 
 	Rendering::frameEffects = &m_frameEffects;
+	Rendering::DefaultColour = glm::vec4(1.f, 0.5f, 0.5f, 1.f);
+	Rendering::LightCount = 6;
+	Rendering::LightsColour[0] = glm::vec3(3.f);
+	Rendering::LightsPos[2] = BLM::GLMzero;
+	Rendering::LightsPos[3] = BLM::GLMzero;
+	Rendering::LightsPos[4] = BLM::GLMzero;
+	Rendering::LightsPos[5] = BLM::GLMzero;
 
 	m_frameEffects.Init(width, height);
+	{
+		m_frameEffects.AddEffect(new BloomEffect());
+		m_frameEffects[0]->Init(width, height);
+		((BloomEffect*)m_frameEffects[0])->SetBlurCount(10);
+		((BloomEffect*)m_frameEffects[0])->SetRadius(2.5f);
+		((BloomEffect*)m_frameEffects[0])->SetThreshold(0.9f);
+	}
 }
 
 void MainMenu::Update()
 {
-	if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER::ONE)) {
-		if (ControllerInput::GetButton(BUTTON::RB, CONUSER::ONE)) {
-			if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
-			else							BackEnd::SetFullscreen();
-		}
-	}
 
 	if (m_scenePos == 0) {
-		float lx = ControllerInput::GetLX(CONUSER::ONE) + ControllerInput::GetLX(CONUSER::TWO) +
-			ControllerInput::GetLX(CONUSER::THREE) + ControllerInput::GetLX(CONUSER::FOUR);
-		float ly = ControllerInput::GetLY(CONUSER::ONE) + ControllerInput::GetLY(CONUSER::TWO) +
-			ControllerInput::GetLY(CONUSER::THREE) + ControllerInput::GetLY(CONUSER::FOUR);
+		float lx = 0, ly = 0, rx = 0, ry = 0;
+		for (int i(0); i < 4; ++i) {
+			if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(i))) {
+				if (ControllerInput::GetButton(BUTTON::RB, CONUSER(i))) {
+					if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
+					else							BackEnd::SetFullscreen();
+				}
+			}
+			lx += ControllerInput::GetLX(CONUSER(i));
+			ly += ControllerInput::GetLY(CONUSER(i));
+			rx += ControllerInput::GetRX(CONUSER(i));
+			ry += ControllerInput::GetRY(CONUSER(i));
+		}
 
-		float rx = ControllerInput::GetRX(CONUSER::ONE) + ControllerInput::GetRX(CONUSER::TWO) +
-			ControllerInput::GetRX(CONUSER::THREE) + ControllerInput::GetRX(CONUSER::FOUR);
-		float ry = ControllerInput::GetRY(CONUSER::ONE) + ControllerInput::GetRY(CONUSER::TWO) +
-			ControllerInput::GetRY(CONUSER::THREE) + ControllerInput::GetRY(CONUSER::FOUR);
-
-
-		Rendering::LightsPos[2] = ECS::GetComponent<Transform>(title).SetRotation(
+		Rendering::LightsPos[1] = ECS::GetComponent<Transform>(title).SetRotation(
 			glm::angleAxis(glm::radians(lx * 6), BLM::GLMup) * glm::angleAxis(glm::radians(ly * 6), glm::vec3(-1, 0, 0))
-		).GetGlobalPosition();
+		).GetGlobalPosition() + glm::vec3(0, -1, 0);
 
-		Rendering::LightsPos[3] = ECS::GetComponent<Transform>(text).SetRotation(
+		Rendering::LightsPos[2] = ECS::GetComponent<Transform>(text).SetRotation(
 			glm::angleAxis(glm::radians(lx * 3), BLM::GLMup) * glm::angleAxis(glm::radians(ly * 3), glm::vec3(-1, 0, 0))
 		).GetGlobalPosition();
 
-		Rendering::LightsPos[4] = Rendering::LightsPos[5] = ECS::GetComponent<Transform>(camera).SetPosition(
+		Rendering::LightsPos[0] = ECS::GetComponent<Transform>(camera).SetPosition(
 			cameraPath.Update(Time::dt).GetPosition()).SetRotation(
-				cameraPath.GetLookingForwards(Time::dt) * glm::angleAxis(glm::radians(rx * 4), glm::vec3(0, -1, 0))
-				* glm::angleAxis(glm::radians(ry * 4), glm::vec3(1, 0, 0))).GetGlobalPosition();
+				cameraPath.GetLookingForwards(Time::dt) * glm::angleAxis(glm::radians(rx * 8), glm::vec3(0, -1, 0))
+				* glm::angleAxis(glm::radians(ry * 4), glm::vec3(1, 0, 0))).GetGlobalPosition() + glm::vec3(0, -0.5f, 0);
 
 
 		if (m_exit) {
@@ -96,6 +108,7 @@ void MainMenu::Update()
 			ECS::GetComponent<Transform>(text).SetScale(1.f / zoomTime);
 			if (ECS::GetComponent<ObjMorphLoader>(title).IsDone()) {
 				ECS::GetComponent<ObjMorphLoader>(title).ToggleDirection();
+				ECS::GetComponent<ObjMorphLoader>(title).SetSpeed(100.f);
 				ECS::GetComponent<Transform>(camera).SetPosition(glm::vec3(0, 100, 0)).SetRotation(BLM::GLMQuat);
 				ECS::GetComponent<Transform>(text).SetScale(1.f);
 
@@ -106,6 +119,13 @@ void MainMenu::Update()
 				m_exit = false;
 				zoomTime = 1;
 				m_scenePos = 1;
+				Rendering::LightsPos[0] = glm::vec3(0, 100, -5);
+				Rendering::LightsPos[2] = BLM::GLMzero;
+				Rendering::LightsPos[3] = BLM::GLMzero;
+				Rendering::LightsPos[4] = BLM::GLMzero;
+				Rendering::LightsPos[5] = BLM::GLMzero;
+				Rendering::AmbientStrength = 1.5f;
+				((BloomEffect*)m_frameEffects[0])->SetThreshold(1.f);
 			}
 		}
 		else if (ECS::GetComponent<ObjMorphLoader>(title).IsDone()) {
@@ -143,18 +163,19 @@ void MainMenu::Update()
 	else if (m_scenePos == 1) {
 		//character select
 
-		int lx(0);
-
-		int allHolding = 0;
-		int playerCount = 0;
+		int lx = 0, allHolding = 0, playerCount = 0;
 		//exit
 		for (int x(0); x < 4; ++x) {
 			auto &p = ECS::GetComponent<Player>(models[x]);
 
 			if (p.IsPlayer()) {
+				if (Rendering::LightsPos[2 + x] == BLM::GLMzero)
+					Rendering::LightsPos[2 + x] = (ECS::GetComponent<Transform>(models[x]).GetGlobalPosition() + glm::vec3(0, -1, 1.75f));
+
 				if (ControllerInput::GetButtonDown(BUTTON::B, CONUSER(x))) {
 					p.Init(LeaderBoard::players[x].user = CONUSER::NONE, 0);
 					playerSwapped[x] = true;
+					Rendering::LightsPos[2 + x] = BLM::GLMzero;
 					continue;
 				}
 
@@ -199,6 +220,12 @@ void MainMenu::Update()
 				p.Init(CONUSER::FOUR, LeaderBoard::players[x].model);
 			}
 
+			if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(x))) {
+				if (ControllerInput::GetButton(BUTTON::RB, CONUSER(x))) {
+					if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
+					else							BackEnd::SetFullscreen();
+				}
+			}
 
 			if (ControllerInput::GetButton(BUTTON::B, CONUSER(x))) {
 				if (!playerSwapped[x]) {
@@ -210,6 +237,15 @@ void MainMenu::Update()
 						m_scenePos = 0;
 						m_exitHoldTimer = 1.f;
 						playerSwapped[x] = true;
+
+						Rendering::LightsPos[2] = BLM::GLMzero;
+						Rendering::LightsPos[3] = BLM::GLMzero;
+						Rendering::LightsPos[4] = BLM::GLMzero;
+						Rendering::LightsPos[5] = BLM::GLMzero;
+						Rendering::AmbientStrength = 1.f;
+						((BloomEffect*)m_frameEffects[0])->SetThreshold(0.9f);
+
+						ECS::GetComponent<ObjMorphLoader>(title).SetSpeed(1.f);
 
 						ECS::GetComponent<Transform>(title).SetRotation(BLM::GLMQuat).ChildTo(camera);
 						ECS::GetComponent<Transform>(text).SetRotation(BLM::GLMQuat).ChildTo(camera);
@@ -229,6 +265,8 @@ void MainMenu::Update()
 				QueueSceneChange(1);
 				m_scenePos = 0;
 				m_exitHoldTimer = 1.f;
+
+				ECS::GetComponent<ObjMorphLoader>(title).SetSpeed(1.f);
 
 				ECS::GetComponent<Transform>(title).SetRotation(BLM::GLMQuat).ChildTo(camera);
 				ECS::GetComponent<Transform>(text).SetRotation(BLM::GLMQuat).ChildTo(camera);
@@ -252,6 +290,16 @@ void MainMenu::Exit()
 Scene* MainMenu::Reattach()
 {
 	AudioEngine::Instance().GetEvent("MainMenu").Restart();
+
+	Rendering::DefaultColour = glm::vec4(1.f, 0.5f, 0.5f, 1.f);
+	Rendering::LightCount = 6;
+	Rendering::LightsColour[0] = glm::vec3(3.f);
+	Rendering::LightsPos[2] = BLM::GLMzero;
+	Rendering::LightsPos[3] = BLM::GLMzero;
+	Rendering::LightsPos[4] = BLM::GLMzero;
+	Rendering::LightsPos[5] = BLM::GLMzero;
+	Rendering::AmbientStrength = 1.f;
+	((BloomEffect*)m_frameEffects[0])->SetThreshold(0.9f);
 
 	return Scene::Reattach();
 }

@@ -13,13 +13,14 @@ public:
 		RIFLE,
 		CANON,
 		MACHINEGUN,
-		SHOTGUN,
-		SWORD
+		SHOTGUN//,
+		//SWORD
 	};
 	enum class OFFHAND {
-		EMPTY,
-		HEALPACK1,
-		HEALPACK2
+		EMPTY = 0,	//continues from WEAPON to allow for rand() choice
+		HEALPACK1 = 6,
+		HEALPACK2//,
+		//SWORD
 	};
 
 	Player() { }
@@ -108,6 +109,7 @@ public:
 	short GetScore() { return m_killCount; }
 
 private:
+	bool groundTest(float yVelo, PhysBody& bodyPos);
 	void UseWeapon(PhysBody& body, Transform& head, float offset);
 	void SwapWeapon(bool outOfAmmo = false);
 	void UseHeal();
@@ -126,9 +128,11 @@ private:
 	}
 
 	static const glm::mat4 m_modelOffset;
-	static const glm::mat4 m_gunOffset;
+	static const glm::mat4 m_gunOffsetMat;
 	static constexpr float pi = glm::half_pi<float>() - 0.01f;
 
+	static const glm::vec4 m_gunOffset;
+	static const btVector3 m_gravity;
 	static glm::vec3 m_skyPos;
 	static Camera m_orthoCam;
 	static float m_camDistance;

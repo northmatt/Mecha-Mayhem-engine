@@ -98,7 +98,7 @@ void BloomEffect::Reshape(unsigned width, unsigned height)
 	_shaders[3]->SetUniform("u_TexelSize", 1.f / height);
 }
 
-void BloomEffect::SetTreshold(float threshold)
+void BloomEffect::SetThreshold(float threshold)
 {
 	_threshold = threshold;
 }

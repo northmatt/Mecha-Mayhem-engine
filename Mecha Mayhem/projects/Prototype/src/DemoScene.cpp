@@ -184,5 +184,6 @@ void DemoScene::Exit()
 {
 	/*if (!m_colliders.SaveToFile())
 		std::cout << "file save failed\n";*/
+	Scene::Exit();
 }
 

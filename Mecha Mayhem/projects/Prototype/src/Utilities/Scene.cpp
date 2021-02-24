@@ -10,6 +10,11 @@ Scene::Scene(const std::string& name, const glm::vec3& gravity, bool physics)
 	: m_name(name)
 {
 	if (physics) {
+		_broadphase = new btDbvtBroadphase();
+		_collisionConfiguration = new btDefaultCollisionConfiguration();
+		_dispatcher = new btCollisionDispatcher(_collisionConfiguration);
+		_solver = new btSequentialImpulseConstraintSolver();
+
 		m_world = new btDiscreteDynamicsWorld(
 			_dispatcher, _broadphase, _solver, _collisionConfiguration);
 
@@ -22,8 +27,9 @@ Scene::~Scene()
 	Rendering::hitboxes = nullptr;
 	Rendering::effects = nullptr;
 	Rendering::frameEffects = nullptr;
-	if (m_world != nullptr)
-	delete m_world;
+	if (m_world != nullptr) {
+		delete m_world;
+	}
 }
 
 entt::registry* Scene::GetRegistry()
@@ -62,6 +68,11 @@ Scene* Scene::Reattach()
 		ECS::AttachWorld(m_world);
 		Rendering::hitboxes = &m_colliders;
 	}
+	else {
+		PhysBody::Init(nullptr);
+		ECS::AttachWorld(nullptr);
+		Rendering::hitboxes = nullptr;
+	}
 
 	m_frameEffects.Resize(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
 
@@ -97,12 +108,18 @@ void Scene::BackEndUpdate()
 
 	Rendering::Update(&m_reg, m_camCount, m_paused);
 
-	if (m_paused)   if (m_pauseSprite.IsValid()) {
-		Rendering::DrawPauseScreen(m_pauseSprite);
-	}
-
 	m_frameEffects.UnBind();
 	m_frameEffects.Draw();
+
+	if (m_paused)   if (m_pauseSprite.IsValid()) {
+		m_pauseSprite.DrawSingle(Rendering::orthoVP.GetViewProjection(), glm::mat4(
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, -100, 1
+		));
+		//Rendering::DrawPauseScreen(m_pauseSprite);
+	}
 }
 
 void Scene::QueueSceneChange(size_t index) {
@@ -127,7 +144,7 @@ void Scene::UnloadScenes()
 {
 	m_activeScene = nullptr;
 	while (m_scenes.size()) {
-		delete m_scenes[m_scenes.size() - 1];
-		m_scenes.pop_back();
+		delete m_scenes[0];
+		m_scenes.erase(m_scenes.begin());
 	}
 }

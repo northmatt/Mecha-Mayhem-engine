@@ -3,11 +3,9 @@
 
 namespace Rendering {
 
-	Sprite overlay;
-
 	void Init(int width, int height)
 	{
-		overlay = Sprite(glm::vec4(0, 0, 0.1f, 0.25f), 40, 20);
+		//put any pause effects here, maybe
 		orthoVP.SetOrthoHeight(10.f).SetNear(-100.f).Setfar(100.f)
 			.SetIsOrtho(true).ResizeWindow(width, height).SetPosition(BLM::GLMzero);
 	}
@@ -59,14 +57,6 @@ namespace Rendering {
 			//number of ui elements
 			Sprite::BeginDraw(spriteView.size() + 6);
 
-			textObjView.each(
-				[&](MultiTextObj& obj, Transform& trans) {
-					obj.Draw(trans.GetModel(), view, camCam,
-						DefaultColour, LightsPos, LightsColour, LightCount,
-						1, 4, 0.0f, AmbientColour, AmbientStrength);
-				}
-			);
-
 			//draw all the objs
 			objView.each(
 				[](ObjLoader& obj, Transform& trans) {
@@ -97,13 +87,13 @@ namespace Rendering {
 			);
 
 			//draw all players
-			int temp = 2;
+			//int temp = 2;
 			playerView.each(
 				[&](Player& p, PhysBody& body, Transform& trans) {
 					if (count == 0 && !paused) p.Update(body);
 					p.Draw(trans.GetModel(), count, numOfCams, paused);
-					if (p.IsPlayer())
-						Rendering::LightsPos[temp++] = trans.GetGlobalPosition();
+					/*if (p.IsPlayer())
+						Rendering::LightsPos[temp++] = trans.GetGlobalPosition();*/
 				}
 			);
 
@@ -120,45 +110,46 @@ namespace Rendering {
 				1, 4, 0.0f, AmbientColour, AmbientStrength);
 			Sprite::PerformDraw();
 
+			//map drawn last for transparency
+			textObjView.each(
+				[&](MultiTextObj& obj, Transform& trans) {
+					obj.Draw(trans.GetModel(), view, camCam,
+						DefaultColour, LightsPos, LightsColour, LightCount,
+						1, 4, 0.0f, AmbientColour, AmbientStrength);
+				}
+			);
+
 			//exit even if some cams haven't been checked, because only the amount specified should render
 			if (++count >= numOfCams)
 				break;
 		}
+		glViewport(0, 0, BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
 	}
 
-	void DrawPauseScreen(Sprite image)
+	/*void DrawPauseScreen(Sprite image)
 	{
-		glViewport(0, 0, BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
-		Sprite::BeginDraw(2);
-		overlay.Draw(orthoVP.GetViewProjection(), glm::mat4(
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, -99.9999f, 1
-		));
-		image.Draw(orthoVP.GetViewProjection(), glm::mat4(
+		image.DrawSingle(orthoVP.GetViewProjection(), glm::mat4(
 			1, 0, 0, 0,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, -100, 1
 		));
-		Sprite::PerformDraw();
-	}
+	}*/
 
 	glm::vec4 BackColour = { 0.2f, 0.2f, 0.2f, 1.f };
 	std::array<glm::vec3, MAX_LIGHTS> LightsColour = {
 	   glm::vec3(200.f),
 	   glm::vec3(15.f, 15.f, 0.f),
-	   glm::vec3(.15f), glm::vec3(.15f), glm::vec3(.15f), glm::vec3(.15f),
-	   glm::vec3(.15f), glm::vec3(.15f), glm::vec3(.15f), glm::vec3(.15f)
+	   glm::vec3(.5f), glm::vec3(.5f), glm::vec3(.5f), glm::vec3(.5f),
+	   glm::vec3(.5f), glm::vec3(.5f), glm::vec3(.5f), glm::vec3(.5f)
 	};
 	std::array<glm::vec3, MAX_LIGHTS> LightsPos = {
-		glm::vec3(0.f, 10.f, 0.f), glm::vec3(0.f),
+		glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f),
 		glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f),
 		glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f)
 	};
+	size_t LightCount = 0;
 	glm::vec3 DefaultColour = glm::vec3(1.f);
-	size_t LightCount = 6;
 	glm::vec3 AmbientColour = glm::vec3(1.f);
 	glm::float32 AmbientStrength = 1.f;
 

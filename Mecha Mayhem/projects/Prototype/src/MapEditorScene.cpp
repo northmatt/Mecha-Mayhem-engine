@@ -34,20 +34,11 @@ void MapEditor::Init(int windowWidth, int windowHeight)
 	Rendering::hitboxes = &m_colliders;
 	Rendering::effects = &m_effects;
 	Rendering::frameEffects = &m_frameEffects;
-	Rendering::LightCount = 1;
+	Rendering::LightCount = 2;
 	Rendering::LightsPos[0] = BLM::GLMzero;
 	Rendering::LightsColour[0] = glm::vec3(20.f);
 
 	m_frameEffects.Init(width, height);
-	{
-		_bloomEffect = new BloomEffect();
-
-		_bloomEffect->Init(width, height);
-
-		m_frameEffects.AddEffect(_bloomEffect);
-	}
-	Player::SetUIAspect(width, height);
-	Player::SetSkyPos(glm::vec3(0, 50, 0));
 }
 
 void MapEditor::Update()
@@ -123,6 +114,14 @@ void MapEditor::Exit()
 
 Scene* MapEditor::Reattach()
 {
+	Rendering::DefaultColour = glm::vec4(1.f, 0.5f, 0.5f, 0.5f);
+	Rendering::hitboxes = &m_colliders;
+	Rendering::effects = &m_effects;
+	Rendering::frameEffects = &m_frameEffects;
+	Rendering::LightCount = 2;
+	Rendering::LightsPos[0] = BLM::GLMzero;
+	Rendering::LightsColour[0] = glm::vec3(20.f);
+
 	return Scene::Reattach();
 }
 
@@ -145,7 +144,7 @@ void MapEditor::ImGuiFunc()
 			_bloomEffect->SetRadius(radius);
 		float threshold = _bloomEffect->GetTreshold();
 		if (ImGui::SliderFloat("Threshold", &threshold, 0, 1))
-			_bloomEffect->SetTreshold(threshold);
+			_bloomEffect->SetThreshold(threshold);
 	}
 
 	if (ImGui::Button("Toggle render hitboxes") || Input::GetKeyDown(KEY::FSLASH)) {

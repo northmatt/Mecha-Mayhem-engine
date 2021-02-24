@@ -83,10 +83,10 @@ namespace Gameloop
 	void Update() {
 		//Keybored
 		Input::Update();
-		//lowercase lol, sound stuff yea
-		AudioEngine::Instance().Update();
 		//Controller Checks n stuff
 		ControllerInput::ControllerUpdate();
+		//this
+		AudioEngine::Instance().Update();
 
 		Player::Update();
 		//update the static dt
