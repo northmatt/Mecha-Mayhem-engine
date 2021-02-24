@@ -6,6 +6,13 @@ class FrameEffects
 {
 public:
 	FrameEffects();
+	~FrameEffects() { RemoveAllEffects(); }
+
+	//ensure you can't copy it, because of Framebuffer
+	FrameEffects(const FrameEffects& other) = delete;
+	FrameEffects(FrameEffects&& other) = delete;
+	FrameEffects& operator=(const FrameEffects& other) = delete;
+	FrameEffects& operator=(FrameEffects&& other) = delete;
 
 	//for all effects (put static inits here)
 	static void Init();
@@ -40,11 +47,7 @@ public:
 		return layersOfEffects[index];
 	}
 
-	static FrameEffects *Constant;
-
 private:
 	PostEffect baseEffect;
 	std::vector<PostEffect*> layersOfEffects = {};
 };
-
-inline FrameEffects *FrameEffects::Constant = nullptr;

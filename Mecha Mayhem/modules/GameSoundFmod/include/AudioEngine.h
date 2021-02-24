@@ -136,6 +136,10 @@ public:
 	// Checks if event is playing
 	bool isPlaying();
 
+	// Get and Set Paused
+	bool CheckPaused();
+	void SetPaused(const bool& pause);
+
 	// Parameters
 	void SetParameter(const char* name, const float& value, const bool& ignoreSeekSpeed = false);
 	float GetParameterValue(const char* name);

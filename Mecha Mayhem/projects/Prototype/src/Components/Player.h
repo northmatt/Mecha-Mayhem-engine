@@ -13,13 +13,14 @@ public:
 		RIFLE,
 		CANON,
 		MACHINEGUN,
-		SHOTGUN,
-		SWORD
+		SHOTGUN//,
+		//SWORD
 	};
 	enum class OFFHAND {
-		EMPTY,
-		HEALPACK1,
-		HEALPACK2
+		EMPTY = 0,	//continues from WEAPON to allow for rand() choice
+		HEALPACK1 = 6,
+		HEALPACK2//,
+		//SWORD
 	};
 
 	Player() { }
@@ -54,7 +55,7 @@ public:
 	3 = Ryan's
 	4 = Bag
 	*/
-	Player& Init(CONUSER user, int characterModel);
+	Player& Init(CONUSER user, int characterModel, int camPos = 10);
 
 	//in radians
 	Player& SetRotation(float y, float x) { m_rot = glm::vec2(x, y); return *this; }
@@ -108,6 +109,7 @@ public:
 	short GetScore() { return m_killCount; }
 
 private:
+	bool groundTest(float yVelo, PhysBody& bodyPos);
 	void UseWeapon(PhysBody& body, Transform& head, float offset);
 	void SwapWeapon(bool outOfAmmo = false);
 	void UseHeal();
@@ -126,9 +128,11 @@ private:
 	}
 
 	static const glm::mat4 m_modelOffset;
-	static const glm::mat4 m_gunOffset;
+	static const glm::mat4 m_gunOffsetMat;
 	static constexpr float pi = glm::half_pi<float>() - 0.01f;
 
+	static const glm::vec4 m_gunOffset;
+	static const btVector3 m_gravity;
 	static glm::vec3 m_skyPos;
 	static Camera m_orthoCam;
 	static float m_camDistance;
@@ -165,6 +169,7 @@ private:
 	bool m_punched = false;
 	bool m_stepped = false;
 
+	short m_camPos = 10;
 	short m_maxHealth = 20;
 	short m_health = m_maxHealth;
 	short m_killCount = 0;

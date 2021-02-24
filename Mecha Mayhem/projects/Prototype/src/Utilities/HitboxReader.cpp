@@ -387,7 +387,21 @@ void HitboxGen::Update(entt::entity cameraEnt)
 				else	selectingScale = 0;
 				ImGui::SliderInt("Selected", &m_current, selectingScale, objCount - 1);
 
-				ImGui::Checkbox("Look At Selected", &m_lookingAtSelected);
+				if (cameraEnt != entt::null) {
+					ImGui::Checkbox("Look At Selected", &m_lookingAtSelected);
+					if (ImGui::Button("Select Looking At")) {
+						Transform& trans = ECS::GetComponent<Transform>(cameraEnt);
+						RayResult ray = PhysBody::GetRaycastResult(
+							BLM::GLMtoBT(trans.GetGlobalPosition()), BLM::GLMtoBT(trans.GetForwards()));
+
+						for (int i(0); i < m_boxShape.size(); ++i) {
+							if (m_boxShape[i] == ray.m_collisionObject->getCollisionShape()) {
+								m_current = i;
+								break;
+							}
+						}
+					}
+				}
 
 				if (ImGui::Button("Duplicate current as Box")) {
 					btCollisionShape* tempShape = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
@@ -572,7 +586,7 @@ void HitboxGen::Update(entt::entity cameraEnt)
 	}
 
 	if (m_objects.size() > 0 && m_draw) {
-		if (m_lookingAtSelected)
+		if (m_lookingAtSelected) if (cameraEnt != entt::null)
 			ECS::GetComponent<Transform>(cameraEnt).LookAt(m_objects[m_current].trans.GetGlobalPosition());
 
 		if (ImGui::TreeNode("Transformations")) {

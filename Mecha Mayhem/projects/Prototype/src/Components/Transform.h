@@ -14,7 +14,7 @@ public:
 
 	Transform& ChildTo(entt::entity index);
 	bool HasParent() { return m_parent != entt::null; }
-	Transform& UnChild();
+	Transform& UnChild(bool conservePosition = true);
 
 	Transform& SetUsingParentScale(bool yes);
 	bool GetUsingParentScale() { return m_usingParentScale; }

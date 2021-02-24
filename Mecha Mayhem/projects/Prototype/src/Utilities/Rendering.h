@@ -13,7 +13,7 @@ namespace Rendering
 	void Init(int width, int height);
 
 	void Update(entt::registry* reg, int numOfCams, bool paused);
-	void DrawPauseScreen(Sprite image);
+	//void DrawPauseScreen(Sprite image);
 
 	extern glm::vec4 BackColour;
 	extern std::array<glm::vec3, MAX_LIGHTS> LightsPos;

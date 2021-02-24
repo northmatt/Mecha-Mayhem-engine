@@ -779,8 +779,11 @@ void ObjMorphLoader::Update(float dt)
 			else
 				m_t = m_timer / data.durations[m_p1];
 
-			if (m_t >= 1)
+			if (m_t >= 1) {
 				m_t = 1;
+				if (m_reversing)	m_timer = 0;
+				else				m_timer = data.durations[data.durations.size() - 1];
+			}
 		}
 	}
 	else {

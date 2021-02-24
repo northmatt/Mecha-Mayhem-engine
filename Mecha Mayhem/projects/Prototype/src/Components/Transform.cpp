@@ -39,10 +39,12 @@ Transform& Transform::ChildTo(entt::entity index)
 	return *this;
 }
 
-Transform& Transform::UnChild()
+Transform& Transform::UnChild(bool conservePosition)
 {
-	m_position = GetGlobalPosition();
-	m_rotation = GetGlobalRotation();
+	if (conservePosition) {
+		m_position = GetGlobalPosition();
+		m_rotation = GetGlobalRotation();
+	}
 	
 	m_parent = entt::null;
 	m_dirty = true;

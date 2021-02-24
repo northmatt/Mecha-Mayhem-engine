@@ -1,9 +1,20 @@
 #include "Scene.h"
 
+std::vector<Scene*> Scene::m_scenes;
+Scene* Scene::m_activeScene = nullptr;
+size_t Scene::m_nextScene = 0;
+bool Scene::m_doSceneChange = false;
+bool Scene::m_exitGame = false;
+
 Scene::Scene(const std::string& name, const glm::vec3& gravity, bool physics)
 	: m_name(name)
 {
 	if (physics) {
+		_broadphase = new btDbvtBroadphase();
+		_collisionConfiguration = new btDefaultCollisionConfiguration();
+		_dispatcher = new btCollisionDispatcher(_collisionConfiguration);
+		_solver = new btSequentialImpulseConstraintSolver();
+
 		m_world = new btDiscreteDynamicsWorld(
 			_dispatcher, _broadphase, _solver, _collisionConfiguration);
 
@@ -16,8 +27,9 @@ Scene::~Scene()
 	Rendering::hitboxes = nullptr;
 	Rendering::effects = nullptr;
 	Rendering::frameEffects = nullptr;
-	if (m_world != nullptr)
-	delete m_world;
+	if (m_world != nullptr) {
+		delete m_world;
+	}
 }
 
 entt::registry* Scene::GetRegistry()
@@ -56,6 +68,11 @@ Scene* Scene::Reattach()
 		ECS::AttachWorld(m_world);
 		Rendering::hitboxes = &m_colliders;
 	}
+	else {
+		PhysBody::Init(nullptr);
+		ECS::AttachWorld(nullptr);
+		Rendering::hitboxes = nullptr;
+	}
 
 	m_frameEffects.Resize(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
 
@@ -91,21 +108,43 @@ void Scene::BackEndUpdate()
 
 	Rendering::Update(&m_reg, m_camCount, m_paused);
 
-	if (m_paused)   if (m_pauseSprite.IsValid()) {
-		Rendering::DrawPauseScreen(m_pauseSprite);
-	}
-
 	m_frameEffects.UnBind();
 	m_frameEffects.Draw();
+
+	if (m_paused)   if (m_pauseSprite.IsValid()) {
+		m_pauseSprite.DrawSingle(Rendering::orthoVP.GetViewProjection(), glm::mat4(
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, -100, 1
+		));
+		//Rendering::DrawPauseScreen(m_pauseSprite);
+	}
 }
 
-int Scene::ChangeScene(int sceneCount)
+void Scene::QueueSceneChange(size_t index) {
+	if (m_nextScene >= m_scenes.size())
+		return;
+
+	m_nextScene = index;
+	m_doSceneChange = true;
+}
+
+void Scene::doSceneChange(GLFWwindow* window) {
+	if (m_doSceneChange == false)
+		return;
+
+	m_doSceneChange = false;
+	m_activeScene->Exit();
+	m_activeScene = m_scenes[m_nextScene]->Reattach();
+	glfwSetWindowTitle(window, m_activeScene->GetName().c_str());
+}
+
+void Scene::UnloadScenes()
 {
-	if (m_nextScene >= sceneCount)
-		return -1;
-
-	int nextScene = m_nextScene;
-	m_nextScene = -1;
-
-	return nextScene;
+	m_activeScene = nullptr;
+	while (m_scenes.size()) {
+		delete m_scenes[0];
+		m_scenes.erase(m_scenes.begin());
+	}
 }

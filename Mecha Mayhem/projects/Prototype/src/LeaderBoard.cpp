@@ -20,6 +20,7 @@ void LeaderBoard::Init(int windowWidth, int windowHeight)
 	ECS::GetComponent<Transform>(text).SetPosition(glm::vec3(0.f, -0.1f, -0.35f)).ChildTo(camera);
 	
 	Rendering::frameEffects = &m_frameEffects;
+	Rendering::LightCount = 0;
 
 	m_frameEffects.Init(width, height);
 }
@@ -57,7 +58,7 @@ void LeaderBoard::Update()
 		ControllerInput::GetButtonDown(BUTTON::A, CONUSER::THREE) ||
 		ControllerInput::GetButtonDown(BUTTON::A, CONUSER::FOUR)) {
 
-		m_nextScene = 0;
+		QueueSceneChange(0);
 	}
 
 }
@@ -69,5 +70,13 @@ void LeaderBoard::Exit()
 
 Scene* LeaderBoard::Reattach()
 {
+	for (int i(0); i < playerCount; ++i) {
+		if (players[i].user != CONUSER::NONE) {
+			std::cout << "Player " << (int(players[i].user) + 1) << ": " << players[i].score << '\n';
+			players[i].score = 0;
+		}
+	}
+	Rendering::LightCount = 0;
+
 	return Scene::Reattach();
 }

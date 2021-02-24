@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Graphics/Post/PostEffect.h"
+#include "PostEffect.h"
 
 class BloomEffect : public PostEffect
 {
@@ -15,7 +15,7 @@ public:
 
 	void Reshape(unsigned width, unsigned height) override;
 
-	void SetTreshold(float threshold);
+	void SetThreshold(float threshold);
 	float GetTreshold() const;
 
 	void SetRadius(float radius);

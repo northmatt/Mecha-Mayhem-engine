@@ -11,6 +11,13 @@ public:
 	virtual void Init(int windowWidth, int windowHeight) override;
 	virtual void Update() override;
 	virtual Scene* Reattach() override;
+	/*virtual void ImGuiFunc() override
+	{
+		if (ImGui::Button("Draw")) {
+			m_colliders.ToggleDraw();
+		}
+		m_colliders.Update();
+	};*/
 
 private:
 
@@ -60,21 +67,9 @@ private:
 	float camDistance = 2.5f;
 	glm::quat startQuat = glm::quat(0, 0, 1, 0);
 
-	entt::entity bodyEnt1 = entt::null;
-	entt::entity Head1 = entt::null;
-	entt::entity cameraEnt1 = entt::null;
-
-	entt::entity bodyEnt2 = entt::null;
-	entt::entity Head2 = entt::null;
-	entt::entity cameraEnt2 = entt::null;
-
-	entt::entity bodyEnt3 = entt::null;
-	entt::entity Head3 = entt::null;
-	entt::entity cameraEnt3 = entt::null;
-
-	entt::entity bodyEnt4 = entt::null;
-	entt::entity Head4 = entt::null;
-	entt::entity cameraEnt4 = entt::null;
+	entt::entity bodyEnt[4] = { entt::null, entt::null, entt::null, entt::null };
+	entt::entity Head[4] = { entt::null, entt::null, entt::null, entt::null };
+	entt::entity cameraEnt[4] = { entt::null, entt::null, entt::null, entt::null };
 
 	entt::entity lightDrone = entt::null;
 	entt::entity cameraDrone = entt::null;

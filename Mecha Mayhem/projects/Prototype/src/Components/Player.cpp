@@ -3,9 +3,13 @@
 #include "Utilities/Rendering.h"
 #include "ECS.h"
 
-#include "Utilities/Input.h"
+const btVector3 Player::m_gravity = btVector3(0, -100, 0);
 
-const glm::mat4 Player::m_gunOffset = glm::mat4(
+const glm::vec4 Player::m_gunOffset = glm::vec4(
+	0.3f, -0.5f, -0.4f, 1
+);
+
+const glm::mat4 Player::m_gunOffsetMat = glm::mat4(
 	1, 0, 0, 0,
 	0, 1, 0, 0,
 	0, 0, 1, 0,
@@ -98,6 +102,12 @@ void Player::Init(int width, int height)
 			.LoadMeshs("char4/punch", true);
 }
 
+void Player::Unload()
+{
+	m_heliDrone.Destroy();
+	m_healPack.Destroy();
+}
+
 void Player::Update()
 {
 	m_heliDrone.Update(Time::dt);
@@ -109,7 +119,7 @@ void Player::SetUIAspect(int width, int height)
 	m_orthoCam.ResizeWindow(width, height);
 }
 
-Player& Player::Init(CONUSER user, int characterModel)
+Player& Player::Init(CONUSER user, int characterModel, int camPos)
 {
 	m_user = user;
 	switch (characterModel) {
@@ -125,12 +135,15 @@ Player& Player::Init(CONUSER user, int characterModel)
 	case 4:		m_charModelIndex = "char4";	m_charModel.LoadMeshs("char4/idle", true);	break;
 	}
 
+	if (camPos < 4 && camPos >= 0)
+		m_camPos = camPos;
+
 	return *this;
 }
 
 void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool paused)
 {
-	if (short(m_user) == camNum) {
+	if (m_camPos == camNum) {
 		//draw ui
 		float healthPercent = float(m_health) / m_maxHealth;
 		float dashPercent = float(m_dashTimer) / m_dashDelay;
@@ -192,11 +205,11 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		if (!m_drawSelf)	return;
 	}
 	if (!m_punched && m_currWeapon != WEAPON::FIST) {
-		GetWeaponModel(m_currWeapon).Draw(model * m_gunOffset);
+		GetWeaponModel(m_currWeapon).Draw(model * m_gunOffsetMat);
 	}
 	m_charModel.Draw(model + m_modelOffset);
 	if (m_respawnTimer > 0) {
-		m_heliDrone.Draw(model + -m_modelOffset);
+		m_heliDrone.Draw(model - m_modelOffset);
 	}
 }
 
@@ -219,7 +232,7 @@ void Player::Update(PhysBody& body)
 			m_dashTimer = 0.f;
 			m_weaponCooldown = 0.f;
 			body.SetPosition(m_spawnPos);
-			body.SetGravity(btVector3(0, -100, 0));
+			body.SetGravity(m_gravity);
 			body.SetAwake();
 		}
 		else {
@@ -283,19 +296,20 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 		vel.x += ControllerInput::GetLX(m_user);
 		vel.z -= ControllerInput::GetLY(m_user);
 
-		if (m_grounded = vel.y < 0.1f && vel.y > -0.1f) {
+		if (groundTest(vel.y, body)) {
+			vel.y = 0;
+
 			//jump
-			if (ControllerInput::GetButtonDown(BUTTON::A, m_user)) {
-			//if (ControllerInput::GetButton(BUTTON::A, m_user)) {
-				vel.y = 20.f;
+			//if (ControllerInput::GetButtonDown(BUTTON::A, m_user)) {
+			if (ControllerInput::GetButton(BUTTON::A, m_user)) {
+				vel.y = 15.f;
 				m_jumpHeld = Time::dt;
 			}
 			else m_jumpHeld = 0;
 
 			if (m_punched = ControllerInput::GetButtonDown(BUTTON::X, m_user)) {
 				//punch only when on ground
-				vel = BLM::BTtoGLM(Melee(BLM::BTtoGLM(body.GetBody()->getWorldTransform().getOrigin())
-					- head.GetForwards()));
+				vel = BLM::BTtoGLM(Melee(BLM::BTtoGLM(body.GetTransform().getOrigin()) - head.GetForwards()));
 			}
 			else {
 				//ground anims
@@ -318,9 +332,9 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 			}
 		}
 		else {
-			if (m_jumpHeld > 0 && m_jumpHeld < 0.1f) {
+			if (m_jumpHeld > 0 && m_jumpHeld < 0.12f) {
 				if (ControllerInput::GetButton(BUTTON::A, m_user)) {
-					vel.y = 20.f;
+					vel.y = 15.f;
 					m_jumpHeld += Time::dt;
 				}
 				else m_jumpHeld = 0;
@@ -352,6 +366,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 						glm::vec3 ogPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
 						btVector3 pos = PhysBody::GetRaycastWithDistanceLimit(
 							ogPos, glm::vec3(vel.x, 0, vel.z) * m_dashDistance * 10.f, m_dashDistance);
+
 						glm::vec3 newPos = BLM::BTtoGLM(pos);
 						Rendering::effects->ShootDash(glm::rotation(
 							glm::normalize(glm::vec3(vel.x, 0, -vel.z)), glm::vec3(0, 0, 1)),
@@ -369,6 +384,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 					btVector3 pos = PhysBody::GetRaycastWithDistanceLimit(ogPos,
 						glm::vec4(0, 0, m_dashDistance * -50.f, 1)
 						* glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup), m_dashDistance);
+
 					glm::vec3 newPos = BLM::BTtoGLM(pos);
 					Rendering::effects->ShootDash(BLM::BTtoGLM(body.GetTransform().getRotation()),
 						newPos, glm::length(newPos - ogPos));
@@ -430,6 +446,59 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 	}
 }
 
+//used this: https://gamedev.stackexchange.com/questions/58012/detect-when-a-bullet-rigidbody-is-on-ground
+bool Player::groundTest(float yVelo, PhysBody& body)
+{
+	/*//dont bother if moving fastish (actually causes issues for some reason)
+	//std::cout << yVelo << " - velo\n";
+	if (yVelo > 0.1f || yVelo < -0.1f) {
+		m_grounded = false;
+		return false;
+	}*/
+
+	bool grounded = false, pA = false, pB = false;
+	int numManifolds = PhysBody::GetWorld()->getDispatcher()->getNumManifolds(), index = body.GetBody()->getUserIndex();
+	for (int i = 0; (i < numManifolds) && !grounded; ++i) {
+		btPersistentManifold* contactManifold = PhysBody::GetWorld()->getDispatcher()->getManifoldByIndexInternal(i);
+		pA = (contactManifold->getBody0()->getUserIndex() == index);
+		pB = (contactManifold->getBody1()->getUserIndex() == index);
+
+		if (pA || pB) {
+			for (int j = contactManifold->getNumContacts() - 1; j >= 0; --j) {
+				btManifoldPoint& pt = contactManifold->getContactPoint(j);
+				if (pt.getDistance() <= 0.f) {
+					btVector3 normal;
+					if (pB)		normal = -pt.m_normalWorldOnB;
+					else		normal = pt.m_normalWorldOnB;
+					//std::cout << normal.y() << " - normal\n";
+
+					//normal threshold
+					if (normal.y() > 0.4f) {
+						grounded = true;
+						break;
+					}
+				}
+			}
+		}
+	}
+	
+	//m_grounded = grounded;
+	if (grounded) {
+		if (!m_grounded) {
+			m_grounded = true;
+			body.SetGravity(BLM::BTzero);
+		}
+	}
+	else {
+		if (m_grounded) {
+			m_grounded = false;
+			body.SetGravity(m_gravity);
+		}
+	}
+
+	return m_grounded;
+}
+
 void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 {
 	switch (m_currWeapon) {
@@ -446,8 +515,9 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 			//m_shootLaser.play();
 			AudioEngine::Instance().GetEvent("shoot").Restart();
 
-			glm::quat offsetQuat = glm::angleAxis(offset, BLM::GLMup);
-			ShootLazer(offsetQuat, head.GetGlobalRotation(), head.GetGlobalPosition(), 
+			glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
+			ShootLazer(offsetQuat, head.GetGlobalRotation(), head.GetGlobalPosition() +
+				glm::vec3(m_gunOffset * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup)),
 				glm::rotate(offsetQuat, -head.GetForwards()), 3);
 
 			//deal with ammo here
@@ -596,7 +666,7 @@ ObjLoader Player::GetWeaponModel(WEAPON choice)
 	case WEAPON::RIFLE:			return m_rifle;
 	case WEAPON::MACHINEGUN:	return m_machineGun;
 	case WEAPON::SHOTGUN:		return m_shotgun;
-	case WEAPON::SWORD:			return m_sword;
+	//case WEAPON::SWORD:			return m_sword;
 
 	//case WEAPON::PISTOL:		return m_pistol;
 		//WEAPON::FIST is included

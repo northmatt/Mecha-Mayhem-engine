@@ -10,6 +10,8 @@ public:
 	PhysBody() {}
 	~PhysBody() { m_body = nullptr; }
 
+	static btDiscreteDynamicsWorld* GetWorld() { return m_world; }
+
 	//assign the world
 	static void Init(btDiscreteDynamicsWorld *world);
 

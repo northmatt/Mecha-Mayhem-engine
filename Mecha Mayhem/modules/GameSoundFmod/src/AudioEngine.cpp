@@ -275,6 +275,19 @@ bool AudioEvent::isPlaying()
 	return false;
 }
 
+bool AudioEvent::CheckPaused()
+{
+	bool paused;
+	ErrorCheck(m_EventInstance->getPaused(&paused));
+	return paused;
+}
+
+void AudioEvent::SetPaused(const bool& pause)
+{
+	if (isPlaying())
+		ErrorCheck(m_EventInstance->setPaused(pause));
+}
+
 void AudioEvent::SetParameter(const char* name, const float& value, const bool& ignoreSeekSpeed)
 {
 	ErrorCheck(m_EventInstance->setParameterByName(name, value, ignoreSeekSpeed));
