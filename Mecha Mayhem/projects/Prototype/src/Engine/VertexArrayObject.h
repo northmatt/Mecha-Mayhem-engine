@@ -112,7 +112,7 @@ public:
 	/// </summary>
 	/// <param name="buffer">The buffer to add (note, does not take ownership, you will still need to delete later)</param>
 	/// <param name="attributes">A list of vertex attributes that will be fed by this buffer</param>
-	void AddVertexBuffer(const VertexBuffer::sptr& buffer, const std::vector<BufferAttribute>& attributes);
+	void AddVertexBuffer(const VertexBuffer::sptr& buffer, const std::vector<BufferAttribute>& attributes, bool notDynamic = false);
 
 	/// <summary>
 	/// Binds this VAO as the source of data for draw operations
@@ -132,12 +132,7 @@ public:
 	
 protected:
 	// Helper structure to store a buffer and the attributes
-	struct VertexBufferBinding
-	{
-		VertexBuffer::sptr Buffer;
-		std::vector<BufferAttribute> Attributes;
-	};
-	std::vector<VertexBufferBinding> _vertexBuffers;
+	std::vector<VertexBuffer::sptr> _vertexBuffers;
 	
 	// The index buffer bound to this VAO
 	IndexBuffer::sptr _indexBuffer;

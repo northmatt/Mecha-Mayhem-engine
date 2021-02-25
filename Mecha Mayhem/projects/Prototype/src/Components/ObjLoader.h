@@ -53,6 +53,12 @@ private:
 	static Shader::sptr m_matShader;
 	static Shader::sptr m_texShader;
 
+	static std::vector<BufferAttribute> m_posAttrib;
+	static std::vector<BufferAttribute> m_normAttrib;
+	static std::vector<BufferAttribute> m_colAttrib;
+	static std::vector<BufferAttribute> m_specAttrib;
+	static std::vector<BufferAttribute> m_uvAttrib;
+
 	bool m_enabled = true;
 	size_t m_index = INT_MAX;
 };

@@ -60,22 +60,30 @@ Transform& Transform::SetUsingParentScale(bool yes)
 	return *this;
 }
 
-Transform& Transform::UseAsParent(const Transform& other)
+Transform& Transform::UseAsParent(Transform other)
 {
-	m_global = other.m_global * GetModel();
+	m_dirty = true;
 
+	m_global = other.ComputeGlobal().GetModel() * GetScalessModel();
+
+	m_dirty = false;
 	m_position = GetGlobalPosition();
 	m_rotation = GetGlobalRotation();
+	ComputeGlobal();
 
 	return *this;
 }
 
 Transform& Transform::UseAsParent(const glm::mat4& model)
 {
-	m_global = model * GetModel();
+	m_dirty = true;
 
+	m_global = model * GetScalessModel();
+
+	m_dirty = false;
 	m_position = GetGlobalPosition();
 	m_rotation = GetGlobalRotation();
+	ComputeGlobal();
 
 	return *this;
 }
@@ -248,7 +256,7 @@ glm::quat Transform::GetGlobalRotation()
 	if (m_parent != entt::null)	m_dirty = true;
 	if (m_dirty)		ComputeGlobal();
 
-	return glm::mat3(m_global);
+	return glm::normalize(glm::quat_cast(glm::mat3(m_global)));
 }
 
 glm::mat3 Transform::GetLocalRotationM3()
@@ -261,7 +269,7 @@ glm::mat3 Transform::GetGlobalRotationM3()
 	if (m_parent != entt::null)	m_dirty = true;
 	if (m_dirty)				ComputeGlobal();
 
-	return glm::mat3(m_global);
+	return glm::toMat3(glm::normalize(glm::quat_cast(glm::mat3(m_global))));
 }
 
 glm::vec3 Transform::GetForwards()

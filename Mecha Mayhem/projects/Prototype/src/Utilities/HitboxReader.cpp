@@ -365,7 +365,7 @@ void HitboxGen::Update(entt::entity cameraEnt)
 			}
 
 			//only allow these when you have objects
-			int objCount = m_objects.size();
+			int objCount = m_objects.size() - 1;
 			if (objCount > 0) {
 				ImGui::SameLine();
 				if (ImGui::Button("Delete Selected")) {
@@ -383,9 +383,9 @@ void HitboxGen::Update(entt::entity cameraEnt)
 				}
 
 				if (objCount > 10)
-					ImGui::SliderInt("Selected min", &selectingScale, 0, objCount - 2);
+					ImGui::SliderInt("Selected min", &selectingScale, 0, objCount);
 				else	selectingScale = 0;
-				ImGui::SliderInt("Selected", &m_current, selectingScale, objCount - 1);
+				ImGui::SliderInt("Selected", &m_current, selectingScale, objCount);
 
 				if (cameraEnt != entt::null) {
 					ImGui::Checkbox("Look At Selected", &m_lookingAtSelected);
@@ -465,6 +465,9 @@ void HitboxGen::Update(entt::entity cameraEnt)
 								BLM::GLMtoBT(m_tempObjects[i].GetLocalPosition())
 							);
 							tempBod->getCollisionShape()->setLocalScaling(BLM::GLMtoBT(m_tempObjects[i].GetScale()));
+
+							m_world->addRigidBody(tempBod);
+
 							m_objects.push_back({ m_tempObjects[i], tempBod, "box" });
 						}
 						m_tempObjects.clear();
@@ -474,7 +477,6 @@ void HitboxGen::Update(entt::entity cameraEnt)
 						int count = m_tempObjects.size() - 1;
 						if (ImGui::SliderInt("Ring Count", &count, 1, 64)) {
 							ChangeCircularCount(count);
-
 						}
 
 						if (ImGui::InputFloat2("Radius Bounds", bound3, 2)) {
@@ -503,8 +505,7 @@ void HitboxGen::Update(entt::entity cameraEnt)
 								changed = true;
 							}
 							if (changed) {
-								m_objects[m_current].body->getWorldTransform().
-									setOrigin(BLM::GLMtoBT(m_tempObjects[0].SetPosition(value).GetLocalPosition()));
+								m_tempObjects[0].SetPosition(value);
 								ChangeCircularCount(count);
 							}
 
@@ -694,7 +695,7 @@ void HitboxGen::ChangeCircularCount(int amt, bool init)
 	if (amt < 1)	return;
 
 	if (init)
-		m_tempObjects.push_back(Transform());
+		m_tempObjects.push_back(Transform(BLM::GLMzero, BLM::GLMQuat, glm::vec3(1.f)));
 
 	int count = m_tempObjects.size() - 1;
 

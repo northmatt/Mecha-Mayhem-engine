@@ -357,16 +357,11 @@ MultiTextObj& MultiTextObj::LoadMesh(const std::string& fileName)
 
 		VertexArrayObject::sptr newVao = VertexArrayObject::Create();
 
-		newVao->AddVertexBuffer(position_vbo, {
-			BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
-		newVao->AddVertexBuffer(normal_vbo, {
-			BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
-		newVao->AddVertexBuffer(colour_vbo, {
-			BufferAttribute(2, 3, GL_FLOAT, false, 0, 0) });
-		newVao->AddVertexBuffer(spec_vbo, {
-			BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) });
-		newVao->AddVertexBuffer(UV_vbo, {
-			BufferAttribute(4, 3, GL_FLOAT, false, 0, 0) });
+		newVao->AddVertexBuffer(position_vbo, ObjLoader::m_posAttrib, true);
+		newVao->AddVertexBuffer(normal_vbo, ObjLoader::m_normAttrib, true);
+		newVao->AddVertexBuffer(colour_vbo, ObjLoader::m_colAttrib, true);
+		newVao->AddVertexBuffer(spec_vbo, ObjLoader::m_specAttrib, true);
+		newVao->AddVertexBuffer(UV_vbo, ObjLoader::m_uvAttrib, true);
 
 		m_models[ind].vao.push_back(newVao);
 	}

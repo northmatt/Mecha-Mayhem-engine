@@ -33,7 +33,7 @@ public:
 				m_timer = 0;
 				m_spawnerModel.SetDirection(true);
 				//decide on what spawns
-				switch (rand() % 6) {
+				switch (lowerBound + rand() % upperBound) {
 				case 0:		m_currWeapon = Player::WEAPON::FIST;		break;
 				case 1:		m_currWeapon = Player::WEAPON::PISTOL;		break;
 				case 2:		m_currWeapon = Player::WEAPON::RIFLE;		break;
@@ -71,6 +71,9 @@ private:
 
 	//change to int later
 	Player::WEAPON m_currWeapon = Player::WEAPON::FIST;
+
+	int lowerBound = 0;
+	int upperBound = 6;
 
 	float m_radius = 0.5f;
 	float m_timer = 0;

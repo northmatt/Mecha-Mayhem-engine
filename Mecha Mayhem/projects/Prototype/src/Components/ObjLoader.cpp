@@ -9,6 +9,12 @@ Shader::sptr ObjLoader::m_shader = nullptr;
 Shader::sptr ObjLoader::m_matShader = nullptr;
 Shader::sptr ObjLoader::m_texShader = nullptr;
 
+std::vector<BufferAttribute> ObjLoader::m_posAttrib = { BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) };
+std::vector<BufferAttribute> ObjLoader::m_normAttrib = { BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) };
+std::vector<BufferAttribute> ObjLoader::m_colAttrib = { BufferAttribute(2, 3, GL_FLOAT, false, 0, 0) };
+std::vector<BufferAttribute> ObjLoader::m_specAttrib = { BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) };
+std::vector<BufferAttribute> ObjLoader::m_uvAttrib = { BufferAttribute(4, 3, GL_FLOAT, false, 0, 0) };
+
 struct Materials
 {
 	std::string name;
@@ -93,8 +99,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 						desc.Format = InternalFormat::RGBA8;
 						Texture2D::sptr texture = Texture2D::Create(desc);
 
-						//texture->Clear(glm::vec4(0.1f, 0.1f, 0.1f, 1.f));
-						texture->Clear(glm::vec4(0.1f, 0.1f, 0.1f, 0.5f));
+						texture->Clear(glm::vec4(0.2f, 0.2f, 0.2f, 1.f));
 
 						m_models[ind].texture = Sprite::m_textures.size();
 						Sprite::m_textures.push_back({ textureName, texture });
@@ -430,10 +435,8 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	VertexBuffer::sptr normal_vbo = VertexBuffer::Create();
 	normal_vbo->LoadData(normal_data.data(), normal_data.size());
 
-	m_models[ind].vao->AddVertexBuffer(position_vbo, {
-		BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) });
-	m_models[ind].vao->AddVertexBuffer(normal_vbo, {
-		BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) });
+	m_models[ind].vao->AddVertexBuffer(position_vbo, m_posAttrib, true);
+	m_models[ind].vao->AddVertexBuffer(normal_vbo, m_normAttrib, true);
 
 	if (usingMaterial) {
 		VertexBuffer::sptr colour_vbo = VertexBuffer::Create();
@@ -441,17 +444,14 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 		VertexBuffer::sptr spec_vbo = VertexBuffer::Create();
 		spec_vbo->LoadData(spec_data.data(), spec_data.size());
 
-		m_models[ind].vao->AddVertexBuffer(colour_vbo, {
-			BufferAttribute(2, 3, GL_FLOAT, false, 0, 0) });
-		m_models[ind].vao->AddVertexBuffer(spec_vbo, {
-			BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) });
+		m_models[ind].vao->AddVertexBuffer(colour_vbo, m_colAttrib, true);
+		m_models[ind].vao->AddVertexBuffer(spec_vbo, m_specAttrib, true);
 
 		if (usingTexture) {
 			VertexBuffer::sptr UV_vbo = VertexBuffer::Create();
 			UV_vbo->LoadData(UV_data.data(), UV_data.size());
 
-			m_models[ind].vao->AddVertexBuffer(UV_vbo, {
-				BufferAttribute(4, 3, GL_FLOAT, false, 0, 0) });
+			m_models[ind].vao->AddVertexBuffer(UV_vbo, m_uvAttrib, true);
 		}
 	}
 

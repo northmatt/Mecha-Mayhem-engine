@@ -32,19 +32,15 @@ void VertexArrayObject::SetIndexBuffer(const IndexBuffer::sptr& ibo) {
 	UnBind();
 }
 
-void VertexArrayObject::AddVertexBuffer(const VertexBuffer::sptr& buffer, const std::vector<BufferAttribute>& attributes)
+void VertexArrayObject::AddVertexBuffer(const VertexBuffer::sptr& buffer, const std::vector<BufferAttribute>& attributes, bool notDynamic)
 {
 	if (_vertexCount == 0) {
 		_vertexCount = buffer->GetElementCount();
 	} else {
 		LOG_ASSERT(buffer->GetElementCount() == _vertexCount, "All buffers bound to a VAO should be of the same size in our implementation!");
 	}
-	if (_vertexBuffers.size() <= attributes[0].Slot)
-	{
-		VertexBufferBinding binding;
-		binding.Buffer = buffer;
-		binding.Attributes = attributes;
-		_vertexBuffers.push_back(binding);
+	if (notDynamic) {
+		_vertexBuffers.push_back(buffer);
 	}
 
 	Bind();

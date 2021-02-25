@@ -18,7 +18,7 @@ public:
 
 	Transform& SetUsingParentScale(bool yes);
 	bool GetUsingParentScale() { return m_usingParentScale; }
-	Transform& UseAsParent(const Transform& other);
+	Transform& UseAsParent(Transform other);
 	Transform& UseAsParent(const glm::mat4& model);
 
 	Transform& ComputeGlobal();
@@ -41,9 +41,13 @@ public:
 	Transform& SetRotation(const glm::mat3& rot);
 	Transform& SetRotation(const glm::quat& rot);
 	Transform& SetRotation(const btQuaternion& rot);
+
 	glm::quat GetLocalRotation();
+	//doesn't always work
 	glm::quat GetGlobalRotation();
+
 	glm::mat3 GetLocalRotationM3();
+	//doesn't always work
 	glm::mat3 GetGlobalRotationM3();
 
 	glm::vec3 GetForwards();

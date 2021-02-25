@@ -262,7 +262,10 @@ void MainMenu::Update()
 		if (allHolding == playerCount && playerCount > 0) {
 			m_confirmTimer -= Time::dt;
 			if (m_confirmTimer <= 0) {
-				QueueSceneChange(1);
+				//1 is tutorial
+				if (playerCount == 1)	QueueSceneChange(1);
+				//2 is DemoScene
+				else					QueueSceneChange(2);
 				m_scenePos = 0;
 				m_exitHoldTimer = 1.f;
 

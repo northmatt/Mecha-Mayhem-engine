@@ -135,18 +135,6 @@ void MapEditor::ImGuiFunc()
 		Rendering::LightCount = size_t(1) + size_t(showRay);
 	}
 
-	{
-		int blurCount = _bloomEffect->GetBlurCount();
-		if (ImGui::SliderInt("Blur Count", &blurCount, 0, 16))
-			_bloomEffect->SetBlurCount(blurCount);
-		float radius = _bloomEffect->GetRadius();
-		if (ImGui::SliderFloat("Radius", &radius, 0, 16))
-			_bloomEffect->SetRadius(radius);
-		float threshold = _bloomEffect->GetTreshold();
-		if (ImGui::SliderFloat("Threshold", &threshold, 0, 1))
-			_bloomEffect->SetThreshold(threshold);
-	}
-
 	if (ImGui::Button("Toggle render hitboxes") || Input::GetKeyDown(KEY::FSLASH)) {
 		debugText = m_colliders.ToggleDraw() ? "drawing hitboxes" : "not drawing hitboxes";
 	}

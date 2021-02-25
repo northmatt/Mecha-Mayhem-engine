@@ -7,9 +7,6 @@ class MapEditor : public Scene
 public:
 	MapEditor(const std::string& name, const glm::vec3& gravity = glm::vec3(0.f)) :
 		Scene(name, gravity, true) {}
-	~MapEditor() {
-		delete _bloomEffect;
-	}
 
 	virtual void Init(int windowWidth, int windowHeight) override;
 	virtual void Update() override;
@@ -31,7 +28,5 @@ private:
 
 	entt::entity rayPosEnt = entt::null;
 	entt::entity cameraEnt = entt::null;
-	
-	BloomEffect* _bloomEffect = nullptr;
 };
 
