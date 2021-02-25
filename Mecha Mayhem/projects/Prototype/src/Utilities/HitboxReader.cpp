@@ -325,262 +325,276 @@ void HitboxGen::Update(entt::entity cameraEnt)
 	if (!m_world)   return;
 	if (!ImGui::CollapsingHeader("Hitbox Editor"))	return;
 
-	if (ImGui::TreeNode("Utilities")) {
+	if (ImGui::InputFloat2("Floor Bounds", floorHeight, 2)) {
+		floorHeight[0] = glm::clamp(floorHeight[0], -100.f, floorHeight[1]);
+		floorHeight[1] = glm::clamp(floorHeight[1], floorHeight[0], 100.f);
+	}
+	{
+		btVector3& trans = m_floor->getWorldTransform().getOrigin();
+		float pos = trans.y();
+		if (ImGui::SliderFloat("Floor Height", &pos, floorHeight[0], floorHeight[1])) {
+			trans.setY(pos);
+		}
+	}
 
-		{
-			if (ImGui::InputFloat2("Floor Bounds", floorHeight, 2)) {
-				floorHeight[0] = glm::clamp(floorHeight[0], -100.f, floorHeight[1]);
-				floorHeight[1] = glm::clamp(floorHeight[1], floorHeight[0], 100.f);
-			}
-			btVector3& trans = m_floor->getWorldTransform().getOrigin();
-			float pos = trans.y();
-			if (ImGui::SliderFloat("Floor Height", &pos, floorHeight[0], floorHeight[1])) {
-				trans.setY(pos);
-			}
+	if (m_draw)	if (ImGui::TreeNode("Utilities")) {
+
+		if (ImGui::Button("New Box")) {
+			btCollisionShape* tempBox = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
+			m_boxShape.push_back(tempBox);
+			btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, tempBox);
+			btRigidBody* tempBod = new btRigidBody(rbInfo);
+			m_world->addRigidBody(tempBod);
+
+			m_current = m_objects.size();
+			m_objects.push_back({ m_defaultTrans, tempBod, "box" });
 		}
 
-		if (m_draw) {
-			if (ImGui::Button("New Box")) {
-				btCollisionShape* tempBox = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
-				m_boxShape.push_back(tempBox);
-				btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, tempBox);
+		ImGui::SameLine();
+
+		if (ImGui::Button("New Cylinder")) {
+			btCollisionShape* tempCyl = new btCylinderShape(btVector3(0.5f, 0.5f, 0.5f));
+			m_boxShape.push_back(tempCyl);
+			btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, tempCyl);
+			btRigidBody* tempBod = new btRigidBody(rbInfo);
+			m_world->addRigidBody(tempBod);
+
+			m_current = m_objects.size();
+			m_objects.push_back({ m_defaultTrans, tempBod, "cyl" });
+		}
+
+		//only allow these when you have objects
+		int objCount = m_objects.size() - 1;
+		if (objCount >= 0) {
+			ImGui::SameLine();
+			if (ImGui::Button("Delete Selected")) {
+				m_world->removeRigidBody(m_objects[m_current].body);
+				m_objects.erase(m_objects.begin() + m_current);
+				m_boxShape.removeAtIndex(m_current);
+				if (m_current >= objCount)  m_current = objCount - 1;
+
+				//exit if size becomes 0
+				if (m_objects.size() == 0) {
+					m_current = 0;
+					ImGui::TreePop();
+					return;
+				}
+			}
+
+			if (ImGui::Button("Duplicate current as Box")) {
+				btCollisionShape* tempShape = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
+				//if (m_objects[m_current].type == "box")			tempShape = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
+				//else if (m_objects[m_current].type == "cyl")	tempShape = new btCylinderShape(btVector3(0.5f, 0.5f, 0.5f));
+				//if (tempShape == nullptr)	throw std::runtime_error("shape machine broke somehow");
+				m_boxShape.push_back(tempShape);
+
+				btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, tempShape);
 				btRigidBody* tempBod = new btRigidBody(rbInfo);
+				tempBod->getWorldTransform() = m_objects[m_current].body->getWorldTransform();
+				tempBod->getCollisionShape()->setLocalScaling(
+					BLM::GLMtoBT(m_objects[m_current].trans.GetScale()));
+
 				m_world->addRigidBody(tempBod);
 
-				m_current = m_objects.size();
-				m_objects.push_back({ m_defaultTrans, tempBod, "box" });
+				//m_objects.push_back({ m_objects[m_current].trans, tempBod, m_objects[m_current].type });
+				m_objects.push_back({ m_objects[m_current].trans, tempBod, "box" });
+				m_current = ++objCount;
 			}
 
 			ImGui::SameLine();
 
-			if (ImGui::Button("New Cylinder")) {
-				btCollisionShape* tempCyl = new btCylinderShape(btVector3(0.5f, 0.5f, 0.5f));
-				m_boxShape.push_back(tempCyl);
-				btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, tempCyl);
+			if (ImGui::Button("Duplicate current as Cylinder")) {
+				btCollisionShape* tempShape = new btCylinderShape(btVector3(0.5f, 0.5f, 0.5f));
+				//if (m_objects[m_current].type == "box")			tempShape = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
+				//else if (m_objects[m_current].type == "cyl")	tempShape = new btCylinderShape(btVector3(0.5f, 0.5f, 0.5f));
+				//if (tempShape == nullptr)	throw std::runtime_error("shape machine broke somehow");
+				m_boxShape.push_back(tempShape);
+
+				btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, tempShape);
 				btRigidBody* tempBod = new btRigidBody(rbInfo);
+				tempBod->getWorldTransform() = m_objects[m_current].body->getWorldTransform();
+				tempBod->getCollisionShape()->setLocalScaling(
+					BLM::GLMtoBT(m_objects[m_current].trans.GetScale()));
+
 				m_world->addRigidBody(tempBod);
 
-				m_current = m_objects.size();
-				m_objects.push_back({ m_defaultTrans, tempBod, "cyl" });
+				//m_objects.push_back({ m_objects[m_current].trans, tempBod, m_objects[m_current].type });
+				m_objects.push_back({ m_objects[m_current].trans, tempBod, "cyl" });
+				m_current = ++objCount;
+
+			}
+		}
+
+		if (objCount > 10) {
+			if (ImGui::SliderInt("Selected min", &selectingScale, 0, objCount))
+				m_current = glm::clamp(m_current, selectingScale, objCount);
+		}
+		else	selectingScale = 0;
+		ImGui::SliderInt("Selected", &m_current, selectingScale, objCount);
+
+		if (cameraEnt != entt::null) {
+			if (ImGui::Button("Selected To Camera")) {
+				m_objects[m_current].body->getWorldTransform().setOrigin(
+					BLM::GLMtoBT(m_objects[m_current].trans.SetPosition(
+						ECS::GetComponent<Transform>(cameraEnt).GetGlobalPosition()
+					).GetLocalPosition())
+				);
 			}
 
-			//only allow these when you have objects
-			int objCount = m_objects.size() - 1;
-			if (objCount > 0) {
-				ImGui::SameLine();
-				if (ImGui::Button("Delete Selected")) {
-					m_world->removeRigidBody(m_objects[m_current].body);
-					m_objects.erase(m_objects.begin() + m_current);
-					m_boxShape.removeAtIndex(m_current);
-					if (m_current >= objCount)  m_current = objCount - 1;
-					
-					//exit if size becomes 0
-					if (m_objects.size() == 0) {
-						m_current = 0;
+			ImGui::SameLine();
+
+			if (ImGui::Button("Select Looking At")) {
+				Transform& trans = ECS::GetComponent<Transform>(cameraEnt);
+				RayResult ray = PhysBody::GetRaycastResult(
+					BLM::GLMtoBT(trans.GetGlobalPosition()), BLM::GLMtoBT(trans.GetForwards() * -10000.f));
+				if (ray.hasHit()) {
+					for (int i(0); i < m_boxShape.size(); ++i) {
+						if (m_boxShape[i] == ray.m_collisionObject->getCollisionShape()) {
+							m_current = i;
+							break;
+						}
+					}
+				}
+			}
+
+			ImGui::SameLine();
+
+			ImGui::Checkbox("Look At Selected", &m_lookingAtSelected);
+		}
+
+		//drawing circle test
+		if (m_tempObjects.size() > 0) {
+			if (ImGui::TreeNode("CircleTest")) {
+				if (ImGui::Button("Remove Circular Test")) {
+					m_tempObjects.clear();
+				}
+				else if (ImGui::Button("Apply Circular Test")) {
+					for (int i(1); i < m_tempObjects.size(); ++i) {
+						btCollisionShape* tempShape = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
+						m_boxShape.push_back(tempShape);
+						btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, tempShape);
+						btRigidBody* tempBod = new btRigidBody(rbInfo);
+
+						tempBod->getWorldTransform() = btTransform(
+							BLM::GLMtoBT(m_tempObjects[i].GetLocalRotation()),
+							BLM::GLMtoBT(m_tempObjects[i].GetLocalPosition())
+						);
+						tempBod->getCollisionShape()->setLocalScaling(BLM::GLMtoBT(m_tempObjects[i].GetScale()));
+
+						m_world->addRigidBody(tempBod);
+
+						m_objects.push_back({ m_tempObjects[i], tempBod, "box" });
+					}
+					m_tempObjects.clear();
+
+				}
+				else if (ImGui::TreeNode("Circular Test Data")) {
+					int count = m_tempObjects.size() - 1;
+					if (ImGui::SliderInt("Ring Count", &count, 1, 64)) {
+						ChangeCircularCount(count);
+					}
+
+					if (ImGui::InputFloat2("Radius Bounds", bound3, 2)) {
+						bound3[0] = glm::clamp(bound3[0], 0.01f, bound3[1]);
+						bound3[1] = glm::clamp(bound3[1], bound3[0], 1000.f);
+					}
+					if (ImGui::SliderFloat("Radius", &circularRadius, bound3[0], bound3[1])) {
+						ChangeCircularCount(count);
+					}
+
+
+					glm::vec3 value = m_tempObjects[0].GetLocalPosition();
+					if (ImGui::TreeNode("Center Position")) {
+						if (ImGui::InputFloat2("Position Bounds", bound, 2)) {
+							bound[0] = glm::clamp(bound[0], -1000.f, bound[1]);
+							bound[1] = glm::clamp(bound[1], bound[0], 1000.f);
+						}
+						bool changed = false;
+						if (ImGui::SliderFloat("x", &value.x, bound[0], bound[1])) {
+							changed = true;
+						}
+						if (ImGui::SliderFloat("y", &value.y, bound[0], bound[1])) {
+							changed = true;
+						}
+						if (ImGui::SliderFloat("z", &value.z, bound[0], bound[1])) {
+							changed = true;
+						}
+						if (changed) {
+							m_tempObjects[0].SetPosition(value);
+							ChangeCircularCount(count);
+						}
+
 						ImGui::TreePop();
-						return;
 					}
-				}
 
-				if (objCount > 10)
-					ImGui::SliderInt("Selected min", &selectingScale, 0, objCount);
-				else	selectingScale = 0;
-				ImGui::SliderInt("Selected", &m_current, selectingScale, objCount);
 
-				if (cameraEnt != entt::null) {
-					ImGui::Checkbox("Look At Selected", &m_lookingAtSelected);
-					if (ImGui::Button("Select Looking At")) {
-						Transform& trans = ECS::GetComponent<Transform>(cameraEnt);
-						RayResult ray = PhysBody::GetRaycastResult(
-							BLM::GLMtoBT(trans.GetGlobalPosition()), BLM::GLMtoBT(trans.GetForwards()));
+					ImGui::SliderFloat("angle", &rotAmt, 0.f, 180.f, "%.0f Degrees");
 
-						for (int i(0); i < m_boxShape.size(); ++i) {
-							if (m_boxShape[i] == ray.m_collisionObject->getCollisionShape()) {
-								m_current = i;
-								break;
-							}
-						}
+					if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on x").c_str())) {
+						m_tempObjects[0].SetRotation(glm::rotate(m_tempObjects[0].GetLocalRotation(),
+							glm::radians(rotAmt), glm::vec3(1, 0, 0))
+						).GetLocalRotation();
+						ChangeCircularCount(count);
 					}
-				}
-
-				if (ImGui::Button("Duplicate current as Box")) {
-					btCollisionShape* tempShape = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
-					//if (m_objects[m_current].type == "box")			tempShape = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
-					//else if (m_objects[m_current].type == "cyl")	tempShape = new btCylinderShape(btVector3(0.5f, 0.5f, 0.5f));
-					//if (tempShape == nullptr)	throw std::runtime_error("shape machine broke somehow");
-					m_boxShape.push_back(tempShape);
-
-					btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, tempShape);
-					btRigidBody* tempBod = new btRigidBody(rbInfo);
-					tempBod->getWorldTransform() = m_objects[m_current].body->getWorldTransform();
-					tempBod->getCollisionShape()->setLocalScaling(
-						BLM::GLMtoBT(m_objects[m_current].trans.GetScale()));
-
-					m_world->addRigidBody(tempBod);
-
-					m_current = m_objects.size();
-					//m_objects.push_back({ m_objects[m_current].trans, tempBod, m_objects[m_current].type });
-					m_objects.push_back({ m_objects[m_current].trans, tempBod, "box" });
-				}
-
-				ImGui::SameLine();
-
-				if (ImGui::Button("Duplicate current as Cylinder")) {
-					btCollisionShape* tempShape = new btCylinderShape(btVector3(0.5f, 0.5f, 0.5f));
-					//if (m_objects[m_current].type == "box")			tempShape = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
-					//else if (m_objects[m_current].type == "cyl")	tempShape = new btCylinderShape(btVector3(0.5f, 0.5f, 0.5f));
-					//if (tempShape == nullptr)	throw std::runtime_error("shape machine broke somehow");
-					m_boxShape.push_back(tempShape);
-
-					btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, tempShape);
-					btRigidBody* tempBod = new btRigidBody(rbInfo);
-					tempBod->getWorldTransform() = m_objects[m_current].body->getWorldTransform();
-					tempBod->getCollisionShape()->setLocalScaling(
-						BLM::GLMtoBT(m_objects[m_current].trans.GetScale()));
-
-					m_world->addRigidBody(tempBod);
-
-					m_current = m_objects.size();
-					//m_objects.push_back({ m_objects[m_current].trans, tempBod, m_objects[m_current].type });
-					m_objects.push_back({ m_objects[m_current].trans, tempBod, "cyl" });
-
-				}
-			}
-
-			//drawing circle test
-			if (m_tempObjects.size() > 0) {
-				if (ImGui::TreeNode("CircleTest")) {
-					if (ImGui::Button("Remove Circular Test")) {
-						m_tempObjects.clear();
+					ImGui::SameLine();
+					if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on x").c_str())) {
+						m_tempObjects[0].SetRotation(glm::rotate(m_tempObjects[0].GetLocalRotation(),
+							glm::radians(rotAmt), glm::vec3(-1, 0, 0))
+						).GetLocalRotation();
+						ChangeCircularCount(count);
 					}
-					else if (ImGui::Button("Apply Circular Test")) {
-						for (int i(1); i < m_tempObjects.size(); ++i) {
-							btCollisionShape* tempShape = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
-							m_boxShape.push_back(tempShape);
-							btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, tempShape);
-							btRigidBody* tempBod = new btRigidBody(rbInfo);
 
-							tempBod->getWorldTransform() = btTransform(
-								BLM::GLMtoBT(m_tempObjects[i].GetLocalRotation()),
-								BLM::GLMtoBT(m_tempObjects[i].GetLocalPosition())
-							);
-							tempBod->getCollisionShape()->setLocalScaling(BLM::GLMtoBT(m_tempObjects[i].GetScale()));
-
-							m_world->addRigidBody(tempBod);
-
-							m_objects.push_back({ m_tempObjects[i], tempBod, "box" });
-						}
-						m_tempObjects.clear();
-
+					if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on y").c_str())) {
+						m_tempObjects[0].SetRotation(glm::rotate(m_tempObjects[0].GetLocalRotation(),
+							glm::radians(rotAmt), glm::vec3(0, 1, 0))
+						).GetLocalRotation();
+						ChangeCircularCount(count);
 					}
-					else if (ImGui::TreeNode("Circular Test Data")) {
-						int count = m_tempObjects.size() - 1;
-						if (ImGui::SliderInt("Ring Count", &count, 1, 64)) {
+					ImGui::SameLine();
+					if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on y").c_str())) {
+						m_tempObjects[0].SetRotation(glm::rotate(m_tempObjects[0].GetLocalRotation(),
+							glm::radians(rotAmt), glm::vec3(0, -1, 0))
+						).GetLocalRotation();
+						ChangeCircularCount(count);
+					}
+
+					if (ImGui::TreeNode("Piece Scale")) {
+						if (ImGui::InputFloat2("Scale Bounds", bound2, 2)) {
+							bound2[1] = glm::clamp(bound2[1], bound2[0], 1000.f);
+							bound2[0] = glm::clamp(bound2[0], 0.01f, bound2[1]);
+						}
+
+						value = m_tempObjects[1].GetScale();
+						bool changed = false;
+						if (ImGui::SliderFloat("x", &value.x, bound2[0], bound2[1])) {
+							value.x = glm::clamp(value.x, bound2[0], bound2[1]);
+							changed = true;
+						}
+						if (ImGui::SliderFloat("y", &value.y, bound2[0], bound2[1])) {
+							value.y = glm::clamp(value.y, bound2[0], bound2[1]);
+							changed = true;
+						}
+						if (ImGui::SliderFloat("z", &value.z, bound2[0], bound2[1])) {
+							value.z = glm::clamp(value.z, bound2[0], bound2[1]);
+							changed = true;
+						}
+
+						if (changed) {
+							m_tempObjects[1].SetScale(value);
 							ChangeCircularCount(count);
 						}
-
-						if (ImGui::InputFloat2("Radius Bounds", bound3, 2)) {
-							bound3[0] = glm::clamp(bound3[0], 0.01f, bound3[1]);
-							bound3[1] = glm::clamp(bound3[1], bound3[0], 1000.f);
-						}
-						if (ImGui::SliderFloat("Radius", &circularRadius, bound3[0], bound3[1])) {
-							ChangeCircularCount(count);
-						}
-
-
-						glm::vec3 value = m_tempObjects[0].GetLocalPosition();
-						if (ImGui::TreeNode("Center Position")) {
-							if (ImGui::InputFloat2("Position Bounds", bound, 2)) {
-								bound[0] = glm::clamp(bound[0], -1000.f, bound[1]);
-								bound[1] = glm::clamp(bound[1], bound[0], 1000.f);
-							}
-							bool changed = false;
-							if (ImGui::SliderFloat("x", &value.x, bound[0], bound[1])) {
-								changed = true;
-							}
-							if (ImGui::SliderFloat("y", &value.y, bound[0], bound[1])) {
-								changed = true;
-							}
-							if (ImGui::SliderFloat("z", &value.z, bound[0], bound[1])) {
-								changed = true;
-							}
-							if (changed) {
-								m_tempObjects[0].SetPosition(value);
-								ChangeCircularCount(count);
-							}
-
-							ImGui::TreePop();
-						}
-
-
-						ImGui::SliderFloat("angle", &rotAmt, 0.f, 180.f, "%.0f");
-
-						if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on x").c_str())) {
-							m_tempObjects[0].SetRotation(m_tempObjects[0].GetLocalRotation() *
-								glm::angleAxis(glm::radians(rotAmt), glm::vec3(1, 0, 0))
-							).GetLocalRotation();
-							ChangeCircularCount(count);
-						}
-						ImGui::SameLine();
-						if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on x").c_str())) {
-							m_tempObjects[0].SetRotation(m_tempObjects[0].GetLocalRotation() *
-								glm::angleAxis(glm::radians(rotAmt), glm::vec3(-1, 0, 0))
-							).GetLocalRotation();
-							ChangeCircularCount(count);
-						}
-
-						if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on y").c_str())) {
-							m_tempObjects[0].SetRotation(m_tempObjects[0].GetLocalRotation() *
-								glm::angleAxis(glm::radians(rotAmt), glm::vec3(0, 1, 0))
-							).GetLocalRotation();
-							ChangeCircularCount(count);
-						}
-						ImGui::SameLine();
-						if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on y").c_str())) {
-							m_tempObjects[0].SetRotation(m_tempObjects[0].GetLocalRotation() *
-								glm::angleAxis(glm::radians(rotAmt), glm::vec3(0, -1, 0))
-							).GetLocalRotation();
-							ChangeCircularCount(count);
-						}
-
-						if (ImGui::TreeNode("Piece Scale")) {
-							if (ImGui::InputFloat2("Scale Bounds", bound2, 2)) {
-								bound2[1] = glm::clamp(bound2[1], bound2[0], 1000.f);
-								bound2[0] = glm::clamp(bound2[0], 0.01f, bound2[1]);
-							}
-
-							value = m_tempObjects[1].GetScale();
-							bool changed = false;
-							if (ImGui::SliderFloat("x", &value.x, bound2[0], bound2[1])) {
-								value.x = glm::clamp(value.x, bound2[0], bound2[1]);
-								changed = true;
-							}
-							if (ImGui::SliderFloat("y", &value.y, bound2[0], bound2[1])) {
-								value.y = glm::clamp(value.y, bound2[0], bound2[1]);
-								changed = true;
-							}
-							if (ImGui::SliderFloat("z", &value.z, bound2[0], bound2[1])) {
-								value.z = glm::clamp(value.z, bound2[0], bound2[1]);
-								changed = true;
-							}
-
-							if (changed) {
-								m_tempObjects[1].SetScale(value);
-								ChangeCircularCount(count);
-							}
-							ImGui::TreePop();
-						}
-
 						ImGui::TreePop();
 					}
 
 					ImGui::TreePop();
 				}
+
+				ImGui::TreePop();
 			}
-			else if (ImGui::Button("Circular Test")) {
-				circularRadius = 5.f;
-				ChangeCircularCount(5, true);
-			}
+		}
+		else if (ImGui::Button("Circular Test")) {
+			circularRadius = 5.f;
+			ChangeCircularCount(5, true);
 		}
 
 		ImGui::TreePop();
@@ -618,38 +632,47 @@ void HitboxGen::Update(entt::entity cameraEnt)
 				ImGui::TreePop();
 			}
 
-			ImGui::SliderFloat("angle", &rotAmt, 0.f, 180.f, "%.0f");
+			if (ImGui::TreeNode("Rotation")) {
+				glm::vec3 rot = glm::eulerAngles(currentTrans.GetLocalRotation());
+				ImGui::Text(("current - x:" + std::to_string(glm::degrees(rot.x)) +
+					" - y: " + std::to_string(glm::degrees(rot.y)) +
+					" - z: " + std::to_string(glm::degrees(rot.z))).c_str());
 
-			if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on x").c_str())) {
-				m_objects[m_current].body->getWorldTransform().setRotation(BLM::GLMtoBT(
-					currentTrans.SetRotation(currentTrans.GetLocalRotation() *
-						glm::angleAxis(glm::radians(rotAmt), glm::vec3(1, 0, 0))
-					).GetLocalRotation())
-				);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on x").c_str())) {
-				m_objects[m_current].body->getWorldTransform().setRotation(BLM::GLMtoBT(
-					currentTrans.SetRotation(currentTrans.GetLocalRotation() *
-						glm::angleAxis(glm::radians(rotAmt), glm::vec3(-1, 0, 0))
-					).GetLocalRotation())
-				);
-			}
+				ImGui::SliderFloat("angle", &rotAmt, 0.f, 180.f, "%.0f Degrees");
 
-			if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on y").c_str())) {
-				m_objects[m_current].body->getWorldTransform().setRotation(BLM::GLMtoBT(
-					currentTrans.SetRotation(currentTrans.GetLocalRotation() *
-						glm::angleAxis(glm::radians(rotAmt), glm::vec3(0, 1, 0))
-					).GetLocalRotation())
-				);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on y").c_str())) {
-				m_objects[m_current].body->getWorldTransform().setRotation(BLM::GLMtoBT(
-					currentTrans.SetRotation(currentTrans.GetLocalRotation() *
-						glm::angleAxis(glm::radians(rotAmt), glm::vec3(0, -1, 0))
-					).GetLocalRotation())
-				);
+				if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on x").c_str())) {
+					m_objects[m_current].body->getWorldTransform().setRotation(BLM::GLMtoBT(
+						currentTrans.SetRotation(glm::rotate(currentTrans.GetLocalRotation(),
+							glm::radians(rotAmt), glm::vec3(1, 0, 0))
+						).GetLocalRotation())
+					);
+				}
+				ImGui::SameLine();
+				if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on x").c_str())) {
+					m_objects[m_current].body->getWorldTransform().setRotation(BLM::GLMtoBT(
+						currentTrans.SetRotation(glm::rotate(currentTrans.GetLocalRotation(),
+							glm::radians(rotAmt), glm::vec3(-1, 0, 0))
+						).GetLocalRotation())
+					);
+				}
+
+				if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on y").c_str())) {
+					m_objects[m_current].body->getWorldTransform().setRotation(BLM::GLMtoBT(
+						currentTrans.SetRotation(glm::rotate(currentTrans.GetLocalRotation(),
+							glm::radians(rotAmt), glm::vec3(0, 1, 0))
+						).GetLocalRotation())
+					);
+				}
+				ImGui::SameLine();
+				if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on y").c_str())) {
+					m_objects[m_current].body->getWorldTransform().setRotation(BLM::GLMtoBT(
+						currentTrans.SetRotation(glm::rotate(currentTrans.GetLocalRotation(),
+							glm::radians(rotAmt), glm::vec3(0, -1, 0))
+						).GetLocalRotation())
+					);
+				}
+
+				ImGui::TreePop();
 			}
 
 			if (ImGui::TreeNode("Scale")) {

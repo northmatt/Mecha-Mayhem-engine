@@ -67,8 +67,7 @@ void MapEditor::Update()
 		if (Input::GetKey(KEY::A))		{ change.x -= speed * Time::dt; }
 
 		if (Input::GetKey(KEY::SPACE))	{ change.y += speed * Time::dt; }
-		if (Input::GetKey(KEY::LSHIFT) ||
-			Input::GetKey(KEY::LCTRL))	{ change.y -= speed * Time::dt; }
+		if (Input::GetKey(KEY::LSHIFT))	{ change.y -= speed * Time::dt; }
 
 		if (change != BLM::GLMzero) {
 			change = glm::rotate(camTrans.GetLocalRotation(), change);
