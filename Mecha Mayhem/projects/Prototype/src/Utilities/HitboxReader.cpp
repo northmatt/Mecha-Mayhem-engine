@@ -527,35 +527,43 @@ void HitboxGen::Update(entt::entity cameraEnt)
 						ImGui::TreePop();
 					}
 
+					if (ImGui::TreeNode("Rotation")) {
+						glm::vec3 rot = glm::eulerAngles(m_tempObjects[0].GetLocalRotation());
+						ImGui::Text(("current - x:" + std::to_string(glm::degrees(rot.x)) +
+							" - y: " + std::to_string(glm::degrees(rot.y)) +
+							" - z: " + std::to_string(glm::degrees(rot.z))).c_str());
 
-					ImGui::SliderFloat("angle", &rotAmt, 0.f, 180.f, "%.0f Degrees");
+						ImGui::SliderFloat("angle", &rotAmt, 0.f, 180.f, "%.0f Degrees");
 
-					if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on x").c_str())) {
-						m_tempObjects[0].SetRotation(glm::rotate(m_tempObjects[0].GetLocalRotation(),
-							glm::radians(rotAmt), glm::vec3(1, 0, 0))
-						).GetLocalRotation();
-						ChangeCircularCount(count);
-					}
-					ImGui::SameLine();
-					if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on x").c_str())) {
-						m_tempObjects[0].SetRotation(glm::rotate(m_tempObjects[0].GetLocalRotation(),
-							glm::radians(rotAmt), glm::vec3(-1, 0, 0))
-						).GetLocalRotation();
-						ChangeCircularCount(count);
-					}
+						if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on x").c_str())) {
+							m_tempObjects[0].SetRotation(glm::rotate(m_tempObjects[0].GetLocalRotation(),
+								glm::radians(rotAmt), glm::vec3(1, 0, 0))
+							).GetLocalRotation();
+							ChangeCircularCount(count);
+						}
+						ImGui::SameLine();
+						if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on x").c_str())) {
+							m_tempObjects[0].SetRotation(glm::rotate(m_tempObjects[0].GetLocalRotation(),
+								glm::radians(rotAmt), glm::vec3(-1, 0, 0))
+							).GetLocalRotation();
+							ChangeCircularCount(count);
+						}
 
-					if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on y").c_str())) {
-						m_tempObjects[0].SetRotation(glm::rotate(m_tempObjects[0].GetLocalRotation(),
-							glm::radians(rotAmt), glm::vec3(0, 1, 0))
-						).GetLocalRotation();
-						ChangeCircularCount(count);
-					}
-					ImGui::SameLine();
-					if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on y").c_str())) {
-						m_tempObjects[0].SetRotation(glm::rotate(m_tempObjects[0].GetLocalRotation(),
-							glm::radians(rotAmt), glm::vec3(0, -1, 0))
-						).GetLocalRotation();
-						ChangeCircularCount(count);
+						if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on y").c_str())) {
+							m_tempObjects[0].SetRotation(glm::rotate(m_tempObjects[0].GetLocalRotation(),
+								glm::radians(rotAmt), glm::vec3(0, 1, 0))
+							).GetLocalRotation();
+							ChangeCircularCount(count);
+						}
+						ImGui::SameLine();
+						if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on y").c_str())) {
+							m_tempObjects[0].SetRotation(glm::rotate(m_tempObjects[0].GetLocalRotation(),
+								glm::radians(rotAmt), glm::vec3(0, -1, 0))
+							).GetLocalRotation();
+							ChangeCircularCount(count);
+						}
+
+						ImGui::TreePop();
 					}
 
 					if (ImGui::TreeNode("Piece Scale")) {

@@ -35,7 +35,7 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	}
 	{
 		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
+		ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f).SetBounds(1, 5);
 		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, 0, -18));
 	}
 	//dummies
@@ -54,12 +54,12 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 		}
 		{
 			auto entity = ECS::CreateEntity();
-			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 5.f).SetBounds(1, 5);
+			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 5.f);// .SetBounds(1, 5);
 			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(5.f, 0, i * 7.5f - 55));
 		}
 		{
 			auto entity = ECS::CreateEntity();
-			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 5.f).SetBounds(1, 5);
+			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 5.f);// .SetBounds(1, 5);
 			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(-5.f, 0, i * 7.5f - 55));
 		}
 	}

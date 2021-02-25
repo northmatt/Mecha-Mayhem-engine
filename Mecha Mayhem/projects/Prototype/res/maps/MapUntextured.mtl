@@ -1,4 +1,4 @@
-# Blender MTL File: 'Cringe5,5.blend'
+# Blender MTL File: 'Cringe5,6.blend'
 # Material Count: 4
 
 newmtl custom/floor_texture
@@ -10,7 +10,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd .
+map_Kd main floor.png
 
 newmtl custom/wall_texture
 Ns 9.000004
@@ -21,7 +21,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd .
+map_Kd big wall.png
 
 newmtl dev/dev_measuregeneric01
 Ns 9.000004
@@ -32,7 +32,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd .
+map_Kd big wall.png
 
 newmtl dev/dev_measuregeneric01b
 Ns 9.000004
@@ -43,4 +43,4 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd .
+map_Kd main floor.png

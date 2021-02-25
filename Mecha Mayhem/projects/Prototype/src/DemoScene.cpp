@@ -1,113 +1,35 @@
 #include "DemoScene.h"
+#include "LeaderBoard.h"
 
 void DemoScene::Init(int windowWidth, int windowHeight)
 {
 	ECS::AttachRegistry(&m_reg);
 	PhysBody::Init(m_world);
 	ECS::AttachWorld(m_world);
-	std::string input = "testmap";
+	std::string input = "playtestmap";
 	std::cout << "filename: " + input + "\n";
-	//std::cin >> input;
 	if (!m_colliders.Init(m_world, input, false, false))
 		std::cout << input + " failed to load, no collision boxes loaded\n";
-	
+
 	width = windowWidth;
 	height = windowHeight;
 
 	m_camCount = 4;
 
-	/// Creating Entities
-	cameraEnt4 = ECS::CreateEntity();
-	ECS::AttachComponent<Camera>(cameraEnt4).SetFovDegrees(60.f).ResizeWindow(width, height);
-
-	cameraEnt3 = ECS::CreateEntity();
-	ECS::AttachComponent<Camera>(cameraEnt3).SetFovDegrees(60.f).ResizeWindow(width, height);
-
-	cameraEnt2 = ECS::CreateEntity();
-	ECS::AttachComponent<Camera>(cameraEnt2).SetFovDegrees(60.f).ResizeWindow(width, height);
-
-	cameraEnt1 = ECS::CreateEntity();
-	ECS::AttachComponent<Camera>(cameraEnt1).SetFovDegrees(60.f).ResizeWindow(width, height);
-
-
-	bodyEnt1 = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt1).CreatePlayer(bodyEnt1, startQuat, glm::vec3(0, 1.5f, 0));
-	ECS::AttachComponent<Player>(bodyEnt1).Init(CONUSER::ONE, 1).SetRotation(glm::radians(180.f), 0);
-
-	Head1 = ECS::CreateEntity();
-	ECS::GetComponent<Transform>(Head1).SetPosition(glm::vec3(0, 0.75f, 0)).
-		ChildTo(bodyEnt1).SetUsingParentScale(false);
-	ECS::GetComponent<Transform>(cameraEnt1).SetPosition(glm::vec3(0, 0, camDistance)).
-		ChildTo(Head1).SetUsingParentScale(false);
-
-
-
-	bodyEnt2 = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt2).CreatePlayer(bodyEnt2, startQuat, glm::vec3(0, 1.5f, 0));
-	ECS::AttachComponent<Player>(bodyEnt2).Init(CONUSER::TWO, 2).SetRotation(glm::radians(180.f), 0);
-
-	Head2 = ECS::CreateEntity();
-	ECS::GetComponent<Transform>(Head2).SetPosition(glm::vec3(0, 0.75f, 0)).
-		ChildTo(bodyEnt2).SetUsingParentScale(false);
-	ECS::GetComponent<Transform>(cameraEnt2).SetPosition(glm::vec3(0, 0, camDistance)).
-		ChildTo(Head2).SetUsingParentScale(false);
-
-
-	bodyEnt3 = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt3).CreatePlayer(bodyEnt3, startQuat, glm::vec3(0, 1.5f, 0));
-	ECS::AttachComponent<Player>(bodyEnt3).Init(CONUSER::THREE, 3).SetRotation(glm::radians(180.f), 0);
-
-	Head3 = ECS::CreateEntity();
-	ECS::GetComponent<Transform>(Head3).SetPosition(glm::vec3(0, 0.75f, 0)).
-		ChildTo(bodyEnt3).SetUsingParentScale(false);
-	ECS::GetComponent<Transform>(cameraEnt3).SetPosition(glm::vec3(0, 0, camDistance)).
-		ChildTo(Head3).SetUsingParentScale(false);
-
-
-
-	bodyEnt4 = ECS::CreateEntity();
-	ECS::AttachComponent<PhysBody>(bodyEnt4).CreatePlayer(bodyEnt4, startQuat, glm::vec3(0, 1.5f, 0));
-	ECS::AttachComponent<Player>(bodyEnt4).Init(CONUSER::FOUR, 4).SetRotation(glm::radians(180.f), 0);
-
-	Head4 = ECS::CreateEntity();
-	ECS::GetComponent<Transform>(Head4).SetPosition(glm::vec3(0, 0.75f, 0)).
-		ChildTo(bodyEnt4).SetUsingParentScale(false);
-	ECS::GetComponent<Transform>(cameraEnt4).SetPosition(glm::vec3(0, 0, camDistance)).
-		ChildTo(Head4).SetUsingParentScale(false);
-
-
+	//map
 	{
 		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/cringe.obj", true);
-		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, -30, 0)).SetScale(4.f);
-	}
-	{
-		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
-		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0,
-			-23.5914, -5));
-	}
-	{
-		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
-		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0,
-			-23.5914, -8));
-	}
-	{
-		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
-		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(3,
-			-23.5914, -5));
-	}
-	{
-		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f);
-		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(3,
-			-23.5914, -8));
+		ECS::AttachComponent<MultiTextObj>(entity).LoadMesh("maps/MapUntextured.obj");
+		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, -30.f, 0)).SetScale(4.f);
 	}
 
 	/// End of creating entities
-	Rendering::DefaultColour = glm::vec4(1.f, 0.5f, 0.5f, 1.f);
+	Rendering::DefaultColour = glm::vec4(0.75f, 0.75f, 0.75f, 1.f);
+	Rendering::LightCount = 2;
+	Rendering::LightsColour[0] = glm::vec3(200.f);
+	Rendering::LightsPos[0] = glm::vec3(0, 10, -42.5f);
+	Rendering::LightsPos[1] = glm::vec3(0, 2, 0);
+
 	Rendering::hitboxes = &m_colliders;
 	Rendering::effects = &m_effects;
 	Rendering::frameEffects = &m_frameEffects;
@@ -116,74 +38,144 @@ void DemoScene::Init(int windowWidth, int windowHeight)
 
 	Player::SetUIAspect(width, height);
 	Player::SetCamDistance(camDistance);
-	Player::SetSkyPos(glm::vec3(0, 50, 0));
+
+	Player::SetSkyPos(glm::vec3(0, 50, -45));
+
+	m_pauseSprite = Sprite("Pause.png", 8.952f, 3);
 }
 
 void DemoScene::Update()
 {
-	/// start of loop
-
-	if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER::ONE)) {
-		QueueSceneChange(0);
-		return;
-	}
-
-	if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER::ONE)) {
-		if (ControllerInput::GetButton(BUTTON::RB, CONUSER::ONE)) {
-			if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
-			else							BackEnd::SetFullscreen();
-		}
-		else {
-			if (++m_camCount > 4)	m_camCount = 1;
-			if (m_camCount == 2) {
-				ECS::GetComponent<Camera>(cameraEnt1).ResizeWindow(width / 2.f, height);
-				ECS::GetComponent<Camera>(cameraEnt2).ResizeWindow(width / 2.f, height);
-				Player::SetUIAspect(width / 2.f, height);
+	for (size_t i(0); i < 4; ++i) {
+		if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(i))) {
+			if (ControllerInput::GetButton(BUTTON::RB, CONUSER(i))) {
+				if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
+				else							BackEnd::SetFullscreen();
 			}
 			else {
-				ECS::GetComponent<Camera>(cameraEnt1).ResizeWindow(width, height);
-				ECS::GetComponent<Camera>(cameraEnt2).ResizeWindow(width, height);
-				Player::SetUIAspect(width, height);
+				if (m_paused) {
+					m_paused = false;
+					//remove effects or smt
+					m_frameEffects.RemoveEffect(0);
+				}
+				else {
+					m_paused = true;
+					//add effects or smt
+					if (m_frameEffects.size() == 0) {
+						m_frameEffects.AddEffect(new PixelEffect());
+						m_frameEffects[0]->Init(width, height);
+						((PixelEffect*)(m_frameEffects[0]))->SetPixelCount(64);
+					}
+				}
 			}
 		}
 	}
 
+	if (m_paused)
+		return;
 
-	ECS::GetComponent<Player>(bodyEnt1).GetInput(
-		ECS::GetComponent<PhysBody>(bodyEnt1),
-		ECS::GetComponent<Transform>(Head1),
-		ECS::GetComponent<Transform>(cameraEnt1)
-	);
+	bool winner = false;
+	for (int i(0); i < LeaderBoard::playerCount; ++i) {
+		auto& p = ECS::GetComponent<Player>(bodyEnt[i]);
+		p.GetInput(
+			ECS::GetComponent<PhysBody>(bodyEnt[i]),
+			ECS::GetComponent<Transform>(Head[i]),
+			ECS::GetComponent<Transform>(cameraEnt[i])
+		);
 
-	ECS::GetComponent<Player>(bodyEnt2).GetInput(
-		ECS::GetComponent<PhysBody>(bodyEnt2),
-		ECS::GetComponent<Transform>(Head2),
-		ECS::GetComponent<Transform>(cameraEnt2)
-	);
+		if (p.GetScore() >= killGoal)
+			winner = true;
+	}
 
-	ECS::GetComponent<Player>(bodyEnt3).GetInput(
-		ECS::GetComponent<PhysBody>(bodyEnt3),
-		ECS::GetComponent<Transform>(Head3),
-		ECS::GetComponent<Transform>(cameraEnt3)
-	);
+	if (winner) {
+		for (int i(0), temp(0); i < 4; ++i) {
+			if (LeaderBoard::players[i].user != CONUSER::NONE) {
+				LeaderBoard::players[i].score = ECS::GetComponent<Player>(bodyEnt[temp]).GetScore();
+				bodyEnt[temp] = Head[temp] = cameraEnt[temp] = entt::null;
+				++temp;
+			}
+		}
 
-	ECS::GetComponent<Player>(bodyEnt4).GetInput(
-		ECS::GetComponent<PhysBody>(bodyEnt4),
-		ECS::GetComponent<Transform>(Head4),
-		ECS::GetComponent<Transform>(cameraEnt4)
-	);
 
-	/// End of loop
-	/*if (Input::GetKeyDown(KEY::FSLASH))	m_colliders.ToggleDraw();
-	m_colliders.Update(Time::dt);
-	if (Input::GetKeyDown(KEY::F10))	if (!m_colliders.SaveToFile(false))	std::cout << "file save failed\n";
-	if (Input::GetKeyDown(KEY::F1))		if (!m_colliders.LoadFromFile())	std::cout << "file load failed\n";*/
+		//does the reset stuff here
+		m_reg = entt::registry();
+
+		btVector3 grav = m_world->getGravity();
+		for (int i = m_world->getNumCollisionObjects() - 1; i >= 0; --i) {
+			btCollisionObject* obj = m_world->getCollisionObjectArray()[i];
+			btRigidBody* body = btRigidBody::upcast(obj);
+			if (body && body->getMotionState())
+			{
+				delete body->getMotionState();
+			}
+			m_world->removeCollisionObject(obj);
+			delete obj;
+		}
+
+		delete m_world;
+		m_world = new btDiscreteDynamicsWorld(
+			_dispatcher, _broadphase, _solver, _collisionConfiguration);
+		m_world->setGravity(grav);
+
+		m_colliders.Clear();
+
+		Init(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
+		QueueSceneChange(3);
+	}
 }
 
-void DemoScene::Exit()
+Scene* DemoScene::Reattach()
 {
-	/*if (!m_colliders.SaveToFile())
-		std::cout << "file save failed\n";*/
-	Scene::Exit();
-}
+	ECS::AttachRegistry(&m_reg);
+	if (m_world) {
+		PhysBody::Init(m_world);
+		ECS::AttachWorld(m_world);
+		Rendering::hitboxes = &m_colliders;
+	}
 
+	m_frameEffects.Resize(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
+
+	Rendering::effects = &m_effects;
+	Rendering::frameEffects = &m_frameEffects;
+	Rendering::DefaultColour = glm::vec4(0.75f, 0.75f, 0.75f, 1.f);
+	Rendering::LightsColour[0] = glm::vec3(200.f);
+	Rendering::LightCount = 2;
+	Rendering::LightsPos[0] = glm::vec3(0, 10, -42.5f);
+	Rendering::LightsPos[1] = glm::vec3(0, 2, 0);
+	Rendering::AmbientStrength = 1.f;
+
+	m_camCount = LeaderBoard::playerCount;
+
+	for (int temp(3), i(LeaderBoard::playerCount); temp >= 0; --temp) {
+		if (LeaderBoard::players[temp].user == CONUSER::NONE)
+			continue;
+
+		--i;
+		cameraEnt[i] = ECS::CreateEntity();
+		if (m_camCount == 2)
+			ECS::AttachComponent<Camera>(cameraEnt[i]).SetFovDegrees(60.f).ResizeWindow(width / 2, height);
+		else
+			ECS::AttachComponent<Camera>(cameraEnt[i]).SetFovDegrees(60.f).ResizeWindow(width, height);
+
+		bodyEnt[i] = ECS::CreateEntity();
+		ECS::AttachComponent<PhysBody>(bodyEnt[i]).CreatePlayer(bodyEnt[i], startQuat, glm::vec3(0, 1.5f, 0));
+		ECS::AttachComponent<Player>(bodyEnt[i]).Init(
+			LeaderBoard::players[temp].user, LeaderBoard::players[temp].model, i).SetRotation(glm::radians(180.f), 0);
+
+		Head[i] = ECS::CreateEntity();
+		ECS::GetComponent<Transform>(Head[i]).SetPosition(glm::vec3(0, 0.75f, 0)).
+			ChildTo(bodyEnt[i]).SetUsingParentScale(false);
+		ECS::GetComponent<Transform>(cameraEnt[i]).SetPosition(glm::vec3(0, 0, camDistance)).
+			ChildTo(Head[i]).SetUsingParentScale(false);
+	}
+
+	if (m_camCount == 2)
+		Player::SetUIAspect(width / 2, height);
+	else
+		Player::SetUIAspect(width, height);
+
+	Player::SetCamDistance(camDistance);
+	Player::SetSkyPos(glm::vec3(0, 50, -45));
+
+	return this;
+}

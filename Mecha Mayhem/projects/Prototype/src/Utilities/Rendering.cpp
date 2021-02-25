@@ -97,6 +97,7 @@ namespace Rendering {
 				}
 			);
 
+
 			//draw scene specific stuff
 			if (hitboxes != nullptr) hitboxes->Render();
 			if (effects != nullptr) effects->Render();
@@ -110,7 +111,8 @@ namespace Rendering {
 				1, 4, 0.0f, AmbientColour, AmbientStrength);
 			Sprite::PerformDraw();
 
-			//map drawn last for transparency
+
+			//map drawn first for transparency
 			textObjView.each(
 				[&](MultiTextObj& obj, Transform& trans) {
 					obj.Draw(trans.GetModel(), view, camCam,
