@@ -507,6 +507,81 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 			body.SetVelocity(BLM::BTtoGLM(Melee(BLM::BTtoGLM(body.GetBody()->getWorldTransform().getOrigin())
 				- head.GetForwards())));
 		break;
+	case WEAPON::PISTOL:
+	{
+		m_weaponCooldown = pistol.cooldown;
+
+		AudioEngine::Instance().GetEvent("shoot").Restart();
+		glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
+		ShootLazer(offsetQuat, head.GetGlobalRotation(), head.GetGlobalPosition() +
+			glm::vec3(m_gunOffset * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup)),
+			glm::rotate(offsetQuat, -head.GetForwards()), 3);
+		//deal with ammo here
+		if (--m_currWeaponAmmo <= 0) {
+			SwapWeapon(true);
+		}
+		break;
+	}
+	case WEAPON::RIFLE:
+	{
+		m_weaponCooldown = rifle.cooldown;
+
+		AudioEngine::Instance().GetEvent("shoot").Restart();
+		glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
+		ShootLazer(offsetQuat, head.GetGlobalRotation(), head.GetGlobalPosition() +
+			glm::vec3(m_gunOffset * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup)),
+			glm::rotate(offsetQuat, -head.GetForwards()), 3);
+		//deal with ammo here
+		if (--m_currWeaponAmmo <= 0) {
+			SwapWeapon(true);
+		}
+		break;
+	}
+	case WEAPON::SHOTGUN:
+	{
+		m_weaponCooldown = shotgun.cooldown;
+
+		AudioEngine::Instance().GetEvent("shoot").Restart();
+		glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
+		ShootLazer(offsetQuat, head.GetGlobalRotation(), head.GetGlobalPosition() +
+			glm::vec3(m_gunOffset * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup)),
+			glm::rotate(offsetQuat, -head.GetForwards()), 3);
+		//deal with ammo here
+		if (--m_currWeaponAmmo <= 0) {
+			SwapWeapon(true);
+		}
+		break;
+	}
+	case WEAPON::MACHINEGUN:
+	{
+		m_weaponCooldown = machineGun.cooldown;
+
+		AudioEngine::Instance().GetEvent("shoot").Restart();
+		glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
+		ShootLazer(offsetQuat, head.GetGlobalRotation(), head.GetGlobalPosition() +
+			glm::vec3(m_gunOffset * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup)),
+			glm::rotate(offsetQuat, -head.GetForwards()), 3);
+		//deal with ammo here
+		if (--m_currWeaponAmmo <= 0) {
+			SwapWeapon(true);
+		}
+		break;
+	}
+	case WEAPON::CANNON:
+	{
+		m_weaponCooldown = cannon.cooldown;
+
+		AudioEngine::Instance().GetEvent("shoot").Restart();
+		glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
+		ShootLazer(offsetQuat, head.GetGlobalRotation(), head.GetGlobalPosition() +
+			glm::vec3(m_gunOffset * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup)),
+			glm::rotate(offsetQuat, -head.GetForwards()), 3);
+		//deal with ammo here
+		if (--m_currWeaponAmmo <= 0) {
+			SwapWeapon(true);
+		}
+		break;
+	}
 	default:	//break;	for demo, all guns do the same
 	//case WEAPON::PISTOL:
 		{
@@ -623,9 +698,27 @@ bool Player::PickUpWeapon(WEAPON pickup)
 	if (m_currWeapon == WEAPON::FIST) {
 		m_currWeapon = pickup;
 		//based on weapon, add ammo
-		m_currWeaponAmmo = 20;
-		if (pickup == WEAPON::MACHINEGUN)
-			m_currWeaponAmmo = 100;
+		switch (pickup)
+		{
+		case WEAPON::PISTOL:
+			m_currWeaponAmmo = pistol.ammoCapacity;
+			break;
+		case WEAPON::RIFLE:
+			m_currWeaponAmmo = rifle.ammoCapacity;
+			break;
+		case WEAPON::SHOTGUN:
+			m_currWeaponAmmo = shotgun.ammoCapacity;
+			break;
+		case WEAPON::MACHINEGUN:
+			m_currWeaponAmmo = machineGun.ammoCapacity;
+			break;
+		case WEAPON::CANNON:
+			m_currWeaponAmmo = cannon.ammoCapacity;
+			break;
+		default:
+			m_currWeaponAmmo = 20;
+			break;
+		}
 
 		//m_swapWeapon.play();
 		AudioEngine::Instance().GetEvent("pickup").Restart();
@@ -636,10 +729,27 @@ bool Player::PickUpWeapon(WEAPON pickup)
 		if (m_currWeapon == pickup)
 			return false;
 		m_secWeapon = pickup;
-		//based on weapon, add ammo
-		m_secWeaponAmmo = 20;
-		if (pickup == WEAPON::MACHINEGUN)
-			m_secWeaponAmmo = 100;
+		switch (pickup)
+		{
+		case WEAPON::PISTOL:
+			m_secWeaponAmmo = pistol.ammoCapacity;
+			break;
+		case WEAPON::RIFLE:
+			m_secWeaponAmmo = rifle.ammoCapacity;
+			break;
+		case WEAPON::SHOTGUN:
+			m_secWeaponAmmo = shotgun.ammoCapacity;
+			break;
+		case WEAPON::MACHINEGUN:
+			m_secWeaponAmmo = machineGun.ammoCapacity;
+			break;
+		case WEAPON::CANNON:
+			m_secWeaponAmmo = cannon.ammoCapacity;
+			break;
+		default:
+			m_secWeaponAmmo = 20;
+			break;
+		}
 
 		//m_swapWeapon.play();
 		AudioEngine::Instance().GetEvent("pickup").Restart();
@@ -662,7 +772,7 @@ ObjLoader Player::GetWeaponModel(WEAPON choice)
 {
 	switch (choice) {
 		//draw gun
-	case WEAPON::CANON:			return m_canon;
+	case WEAPON::CANNON:			return m_canon;
 	case WEAPON::RIFLE:			return m_rifle;
 	case WEAPON::MACHINEGUN:	return m_machineGun;
 	case WEAPON::SHOTGUN:		return m_shotgun;

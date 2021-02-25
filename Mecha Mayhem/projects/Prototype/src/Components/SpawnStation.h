@@ -46,7 +46,7 @@ public:
 				case 0:		m_currWeapon = Player::WEAPON::FIST;		break;
 				case 1:		m_currWeapon = Player::WEAPON::PISTOL;		break;
 				case 2:		m_currWeapon = Player::WEAPON::RIFLE;		break;
-				case 3:		m_currWeapon = Player::WEAPON::CANON;		break;
+				case 3:		m_currWeapon = Player::WEAPON::CANNON;		break;
 				case 4:		m_currWeapon = Player::WEAPON::MACHINEGUN;	break;
 				case 5:		m_currWeapon = Player::WEAPON::SHOTGUN;		break;
 				//case 6:		m_currWeapon = Player::WEAPON::SWORD;		break;

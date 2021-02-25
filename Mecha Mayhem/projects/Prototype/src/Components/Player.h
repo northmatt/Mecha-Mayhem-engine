@@ -3,7 +3,15 @@
 #include "PhysBody.h"
 #include "ObjMorphLoader.h"
 #include <AudioEngine.h>
-
+// Overloads: (name, ammo, damage, cooldown, isAuto)
+struct GunProperties 
+{
+	char* name;
+	int ammoCapacity;
+	float damage;
+	float cooldown;
+	bool isAuto = false;
+};
 class Player
 {
 public:
@@ -11,7 +19,7 @@ public:
 		FIST,
 		PISTOL,
 		RIFLE,
-		CANON,
+		CANNON,
 		MACHINEGUN,
 		SHOTGUN//,
 		//SWORD
@@ -109,6 +117,7 @@ public:
 	short GetScore() { return m_killCount; }
 
 private:
+
 	bool groundTest(float yVelo, PhysBody& bodyPos);
 	void UseWeapon(PhysBody& body, Transform& head, float offset);
 	void SwapWeapon(bool outOfAmmo = false);
@@ -190,6 +199,16 @@ private:
 	float m_jumpHeld = 0;
 	float m_speed = 15.f;
 	float m_weaponCooldown = 0.f;
+
+	//Gun stuff
+	GunProperties pistol			{ "Pistol", 30, 5.f, 0.5f };
+	GunProperties cannon			{ "Proton Cannon", 3, 30.f, 2.f };
+	GunProperties rifle				{ "Proton Rifle", 20, 10.f, 0.8f };
+	GunProperties missileLauncher	{ "Missile Launcher", 1, 100.f, 3.f };
+	GunProperties shotgun			{ "Shotgun", 15, 25.f, 2.f };
+	GunProperties machineGun		{ "Machine Gun", 50, 5.f, 0.1f, true };
+
+
 
 	glm::quat m_startRot = glm::quat(1, 0, 0, 0);
 	glm::vec3 m_spawnPos = glm::vec3(0.f);
