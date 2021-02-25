@@ -14,6 +14,7 @@ IBuffer::~IBuffer() {
 	if (_handle != 0) {
 		glDeleteBuffers(1, &_handle);
 		_handle = 0;
+		
 	}
 }
 

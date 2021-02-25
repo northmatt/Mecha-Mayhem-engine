@@ -7,7 +7,7 @@
 
 int main() {
 	int width = 1280, height = 720;
-	const bool usingImGui = true;
+	const bool usingImGui = false;
 
 	GLFWwindow* window = Gameloop::Start("Mecha Mayhem", width, height, usingImGui);
 	if (!window)	return 1;
