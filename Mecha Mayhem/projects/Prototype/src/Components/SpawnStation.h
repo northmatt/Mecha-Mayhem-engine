@@ -6,11 +6,20 @@ class Spawner {
 public:
 	Spawner() {}
 
-	void Init(float radius, float delay) {
+	Spawner& Init(float radius, float delay) {
 		m_spawnerModel.LoadMeshs("spawner/spawner", true);
 		m_radius = radius;
 		m_timer = m_delay = delay;
 		m_spawnerModel.SetDirection(false);
+
+		return *this;
+	}
+
+	void SetBounds(int lower, int upper) {
+		if ((lower > upper) || (lower < 0))	return;
+
+		lowerBound = lower;
+		upperBound = upper - lower + 1;
 	}
 
 	void Render(glm::mat4 model) {

@@ -16,7 +16,6 @@ VertexArrayObject::~VertexArrayObject()
 	if (_handle != 0) {
 		glDeleteVertexArrays(1, &_handle);
 		_handle = 0;
-		printf("VAO deleted!\n");
 	}
 }
 

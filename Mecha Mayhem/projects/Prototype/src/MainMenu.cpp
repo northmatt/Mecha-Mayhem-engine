@@ -172,6 +172,12 @@ void MainMenu::Update()
 				if (Rendering::LightsPos[2 + x] == BLM::GLMzero)
 					Rendering::LightsPos[2 + x] = (ECS::GetComponent<Transform>(models[x]).GetGlobalPosition() + glm::vec3(0, 0, 1.75f));
 
+				++playerCount;
+				if (ControllerInput::GetButton(BUTTON::START, CONUSER(x))) {
+					++allHolding;
+					playerSwapped[x] = true;
+					continue;
+				}
 				if (ControllerInput::GetButtonDown(BUTTON::B, CONUSER(x))) {
 					p.Init(LeaderBoard::players[x].user = CONUSER::NONE, 0);
 					playerSwapped[x] = true;
@@ -209,15 +215,13 @@ void MainMenu::Update()
 				else {
 					playerSwapped[x] = false;
 				}
-
-				++playerCount;
-				allHolding += ControllerInput::GetButton(BUTTON::START, CONUSER(x));
 			}
 			else if (ControllerInput::GetButtonDown(BUTTON::A, CONUSER(x))) {
 				if (LeaderBoard::players[x].model == 0)
 					LeaderBoard::players[x].model = 1;
 				LeaderBoard::players[x].user = CONUSER(x);
 				p.Init(CONUSER::FOUR, LeaderBoard::players[x].model);
+				playerSwapped[x] = true;
 			}
 
 			if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(x))) {

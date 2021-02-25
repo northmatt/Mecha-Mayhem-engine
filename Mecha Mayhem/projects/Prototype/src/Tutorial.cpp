@@ -54,12 +54,12 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 		}
 		{
 			auto entity = ECS::CreateEntity();
-			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 5.f);
+			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 5.f).SetBounds(1, 5);
 			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(5.f, 0, i * 7.5f - 55));
 		}
 		{
 			auto entity = ECS::CreateEntity();
-			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 5.f);
+			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 5.f).SetBounds(1, 5);
 			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(-5.f, 0, i * 7.5f - 55));
 		}
 	}
@@ -102,7 +102,7 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	Rendering::DefaultColour = glm::vec4(0.75f, 0.75f, 0.75f, 1.f);
 	Rendering::LightCount = 2;
 	Rendering::LightsColour[0] = glm::vec3(200.f);
-	Rendering::LightsPos[0] = glm::vec3(0, 10, -55);
+	Rendering::LightsPos[0] = glm::vec3(0, 10, -42.5f);
 	Rendering::LightsPos[1] = glm::vec3(0, 2, 0);
 
 	Rendering::hitboxes = &m_colliders;
@@ -274,7 +274,7 @@ Scene* Tutorial::Reattach() {
 	Rendering::DefaultColour = glm::vec4(0.75f, 0.75f, 0.75f, 1.f);
 	Rendering::LightsColour[0] = glm::vec3(200.f);
 	Rendering::LightCount = 2;
-	Rendering::LightsPos[0] = glm::vec3(0, 10, -55);
+	Rendering::LightsPos[0] = glm::vec3(0, 10, -42.5f);
 	Rendering::LightsPos[1] = glm::vec3(0, 2, 0);
 	Rendering::AmbientStrength = 1.f;
 
