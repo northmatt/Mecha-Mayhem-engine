@@ -132,12 +132,12 @@ public:
 	
 protected:
 	// Helper structure to store a buffer and the attributes
-	/*struct VertexBufferBinding
+	struct VertexBufferBinding
 	{
 		VertexBuffer::sptr Buffer;
 		std::vector<BufferAttribute> Attributes;
 	};
-	std::vector<VertexBufferBinding> _vertexBuffers;*/
+	std::vector<VertexBufferBinding> _vertexBuffers;
 	
 	// The index buffer bound to this VAO
 	IndexBuffer::sptr _indexBuffer;

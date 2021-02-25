@@ -1,5 +1,6 @@
 #pragma once
 #include "IBuffer.h"
+//#include <iostream>
 #include <memory>
 
 /// <summary>
@@ -13,6 +14,15 @@ public:
 		return std::make_shared<VertexBuffer>(usage);
 	}
 	
+	~VertexBuffer() override 
+	{
+		if (_handle != 0) {
+			glDeleteBuffers(1, &_handle);
+			_handle = 0;
+			printf("Vertex Buffer Deleted!\n");
+			//std::cout << "Buffer Deleted!\n";
+		}
+	}
 public:
 	/// <summary>
 	/// Creates a new vertex buffer, with the given usage. Data will still need to be uploaded before it can be used

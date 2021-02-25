@@ -16,6 +16,7 @@ VertexArrayObject::~VertexArrayObject()
 	if (_handle != 0) {
 		glDeleteVertexArrays(1, &_handle);
 		_handle = 0;
+		printf("VAO deleted!\n");
 	}
 }
 
@@ -38,10 +39,13 @@ void VertexArrayObject::AddVertexBuffer(const VertexBuffer::sptr& buffer, const 
 	} else {
 		LOG_ASSERT(buffer->GetElementCount() == _vertexCount, "All buffers bound to a VAO should be of the same size in our implementation!");
 	}
-	/*VertexBufferBinding binding;
-	binding.Buffer = buffer;
-	binding.Attributes = attributes;
-	_vertexBuffers.push_back(binding);*/
+	if (_vertexBuffers.size() <= attributes[0].Slot)
+	{
+		VertexBufferBinding binding;
+		binding.Buffer = buffer;
+		binding.Attributes = attributes;
+		_vertexBuffers.push_back(binding);
+	}
 
 	Bind();
 	buffer->Bind();
