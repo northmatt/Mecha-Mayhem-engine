@@ -49,6 +49,10 @@ void MapEditor::Update()
 		QueueSceneChange(0);
 		return;
 	}*/
+	if (Input::GetKeyDown(KEY::ESC)) {
+		QueueSceneChange(0);
+		return;
+	}
 
 	if (Input::GetKeyDown(KEY::F)) {
 		if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);

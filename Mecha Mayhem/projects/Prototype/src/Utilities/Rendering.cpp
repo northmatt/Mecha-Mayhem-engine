@@ -98,6 +98,15 @@ namespace Rendering {
 			);
 
 
+			//map drawn first for transparency
+			textObjView.each(
+				[&](MultiTextObj& obj, Transform& trans) {
+					obj.Draw(trans.GetModel(), view, camCam,
+						DefaultColour, LightsPos, LightsColour, LightCount,
+						1, 4, 0.0f, AmbientColour, AmbientStrength);
+				}
+			);
+
 			//draw scene specific stuff
 			if (hitboxes != nullptr) hitboxes->Render();
 			if (effects != nullptr) effects->Render();
@@ -111,15 +120,6 @@ namespace Rendering {
 				1, 4, 0.0f, AmbientColour, AmbientStrength);
 			Sprite::PerformDraw();
 
-
-			//map drawn first for transparency
-			textObjView.each(
-				[&](MultiTextObj& obj, Transform& trans) {
-					obj.Draw(trans.GetModel(), view, camCam,
-						DefaultColour, LightsPos, LightsColour, LightCount,
-						1, 4, 0.0f, AmbientColour, AmbientStrength);
-				}
-			);
 
 			//exit even if some cams haven't been checked, because only the amount specified should render
 			if (++count >= numOfCams)
