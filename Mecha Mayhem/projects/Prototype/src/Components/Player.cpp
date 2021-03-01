@@ -511,96 +511,87 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 	{
 		m_weaponCooldown = pistol.cooldown;
 
-		AudioEngine::Instance().GetEvent("shoot").Restart();
-		glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
-		ShootLazer(offsetQuat, head.GetGlobalRotation(), head.GetGlobalPosition() +
-			glm::vec3(m_gunOffset * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup)),
-			glm::rotate(offsetQuat, -head.GetForwards()), 3);
-		//deal with ammo here
-		if (--m_currWeaponAmmo <= 0) {
-			SwapWeapon(true);
-		}
+		LaserGun(offset, head, pistol.damage);
 		break;
 	}
 	case WEAPON::RIFLE:
 	{
 		m_weaponCooldown = rifle.cooldown;
 
-		AudioEngine::Instance().GetEvent("shoot").Restart();
-		glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
-		ShootLazer(offsetQuat, head.GetGlobalRotation(), head.GetGlobalPosition() +
-			glm::vec3(m_gunOffset * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup)),
-			glm::rotate(offsetQuat, -head.GetForwards()), 3);
-		//deal with ammo here
-		if (--m_currWeaponAmmo <= 0) {
-			SwapWeapon(true);
-		}
+		LaserGun(offset, head, rifle.damage);
 		break;
 	}
 	case WEAPON::SHOTGUN:
 	{
 		m_weaponCooldown = shotgun.cooldown;
-
-		AudioEngine::Instance().GetEvent("shoot").Restart();
-		glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
-		ShootLazer(offsetQuat, head.GetGlobalRotation(), head.GetGlobalPosition() +
-			glm::vec3(m_gunOffset * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup)),
-			glm::rotate(offsetQuat, -head.GetForwards()), 3);
-		//deal with ammo here
-		if (--m_currWeaponAmmo <= 0) {
-			SwapWeapon(true);
-		}
+		LaserGun(offset, head, shotgun.damage, 25.f);
+		LaserGun(offset, head, shotgun.damage, 25.f);
+		LaserGun(offset, head, shotgun.damage, 25.f);
+		LaserGun(offset, head, shotgun.damage, 25.f);
+		LaserGun(offset, head, shotgun.damage, 25.f);
 		break;
 	}
 	case WEAPON::MACHINEGUN:
 	{
 		m_weaponCooldown = machineGun.cooldown;
 
-		AudioEngine::Instance().GetEvent("shoot").Restart();
-		glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
-		ShootLazer(offsetQuat, head.GetGlobalRotation(), head.GetGlobalPosition() +
-			glm::vec3(m_gunOffset * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup)),
-			glm::rotate(offsetQuat, -head.GetForwards()), 3);
-		//deal with ammo here
-		if (--m_currWeaponAmmo <= 0) {
-			SwapWeapon(true);
-		}
+		LaserGun(offset, head, machineGun.damage);
 		break;
 	}
 	case WEAPON::CANNON:
 	{
 		m_weaponCooldown = cannon.cooldown;
 
-		AudioEngine::Instance().GetEvent("shoot").Restart();
-		glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
-		ShootLazer(offsetQuat, head.GetGlobalRotation(), head.GetGlobalPosition() +
-			glm::vec3(m_gunOffset * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup)),
-			glm::rotate(offsetQuat, -head.GetForwards()), 3);
-		//deal with ammo here
-		if (--m_currWeaponAmmo <= 0) {
-			SwapWeapon(true);
-		}
+		LaserGun(offset, head, cannon.damage);
 		break;
 	}
 	default:	//break;	for demo, all guns do the same
 	//case WEAPON::PISTOL:
 		{
-			m_weaponCooldown = 0.25f;
-
-			//m_shootLaser.play();
-			AudioEngine::Instance().GetEvent("shoot").Restart();
-
-			glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
-			ShootLazer(offsetQuat, head.GetGlobalRotation(), head.GetGlobalPosition() +
-				glm::vec3(m_gunOffset * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup)),
-				glm::rotate(offsetQuat, -head.GetForwards()), 3);
-
-			//deal with ammo here
-			if (--m_currWeaponAmmo <= 0) {
-				SwapWeapon(true);
-			}
+		m_weaponCooldown = 1.f;
+		LaserGun(offset, head, 3);
 		}
 		break;
+	}
+	//deal with ammo here
+	if (--m_currWeaponAmmo <= 0) {
+		SwapWeapon(true);
+	}
+}
+
+//does direction math for the shooting, ShootLazer does the actual projectile
+void Player::LaserGun(float offset, Transform& head, short damage, float distance)
+{
+	AudioEngine::Instance().GetEvent("shoot").Restart();
+
+	glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
+	//shotgun range = 30.f therefore we can do spread
+	if (distance < 26.f)
+	{
+		//shotgun spread
+		offsetQuat = glm::angleAxis(glm::radians(rand() % 15 - 7.f), glm::normalize(glm::vec3(rand() % 21 - 10.f, rand() % 21 - 10.f, 0)));
+	}
+	glm::vec3 rayPos = 
+		head.GetGlobalPosition() + glm::vec3(m_gunOffset * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup));
+
+	RayResult p = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos),
+		BLM::GLMtoBT(glm::rotate(offsetQuat, -head.GetForwards()) * distance * 100.f));
+	
+	if (p.hasHit()) if (p.m_closestHitFraction <= 0.01f)
+	{
+		std::cout << "hit\n";
+		entt::entity playerIdTest = p.m_collisionObject->getUserIndex();
+		if (ECS::Exists(playerIdTest)) {
+			if (ECS::HasComponent<Player>(playerIdTest)) {
+				if (ECS::GetComponent<Player>(playerIdTest).TakeDamage(damage))
+					++m_killCount;
+			}
+		}
+		Rendering::effects->ShootLaser(head.GetGlobalRotation() * offsetQuat, rayPos,
+			glm::length(BLM::BTtoGLM(p.m_hitPointWorld) - rayPos));
+	}
+	else {
+		Rendering::effects->ShootLaser(head.GetGlobalRotation() * offsetQuat, rayPos, distance);
 	}
 }
 
@@ -649,23 +640,7 @@ void Player::UseHeal()
 
 void Player::ShootLazer(glm::quat offsetQuat, glm::quat rotation, glm::vec3 rayPos, glm::vec3 forwards, short damage)
 {
-	RayResult p = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos),
-		BLM::GLMtoBT(forwards * 2000.f));
-	if (p.hasHit())
-	{
-		entt::entity playerIdTest = p.m_collisionObject->getUserIndex();
-		if (ECS::Exists(playerIdTest)) {
-			if (ECS::HasComponent<Player>(playerIdTest)) {
-				if (ECS::GetComponent<Player>(playerIdTest).TakeDamage(damage))
-					++m_killCount;
-			}
-		}
-		Rendering::effects->ShootLaser(rotation * offsetQuat, rayPos,
-			glm::length(BLM::BTtoGLM(p.m_hitPointWorld) - rayPos));
-	}
-	else {
-		Rendering::effects->ShootLaser(rotation * offsetQuat, rayPos, 2000.f);
-	}
+
 }
 
 btVector3 Player::Melee(const glm::vec3& pos)
@@ -725,7 +700,7 @@ bool Player::PickUpWeapon(WEAPON pickup)
 
 		return true;
 	}
-	if (m_secWeapon == WEAPON::FIST) {
+	if (m_secWeapon == WEAPON::FIST) { 
 		if (m_currWeapon == pickup)
 			return false;
 		m_secWeapon = pickup;
