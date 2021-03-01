@@ -3,18 +3,17 @@
 #include "PhysBody.h"
 #include "ObjMorphLoader.h"
 #include <AudioEngine.h>
-// Overloads: (name, ammo, damage, cooldown, isAuto)
-struct GunProperties 
-{
-	char* name;
-	int ammoCapacity;
-	float damage;
-	float cooldown;
-	bool isAuto = false;
-};
 class Player
 {
 public:
+	// Overloads: (name, ammo, damage, cooldown, isAuto)
+	struct GunProperties 
+	{
+		short ammoCapacity;
+		short damage;
+		float cooldown;
+		bool isAuto = false;
+	};
 	enum class WEAPON {
 		FIST,
 		PISTOL,
@@ -117,17 +116,19 @@ public:
 	short GetScore() { return m_killCount; }
 
 private:
-
 	bool groundTest(float yVelo, PhysBody& bodyPos);
+
+	//attacking
+	btVector3 Melee(const glm::vec3& pos);
 	void UseWeapon(PhysBody& body, Transform& head, float offset);
 	void LaserGun(float offset, Transform& head, short damage, float distance = 2000.f);
-	void SwapWeapon(bool outOfAmmo = false);
+
+	//other things
+	void SwapWeapon();
 	void UseHeal();
-	void ShootLazer(glm::quat offsetQuat, glm::quat rotation, glm::vec3 rayPos, glm::vec3 forwards, short damage);
-	btVector3 Melee(const glm::vec3& pos);
 
 	//digit 1 is first digit
-	int GetDigit(int number, int digit) {
+	/*int GetDigit(int number, int digit) {
 		if (digit < 1)	return 0;
 
 		int num = 1;
@@ -135,7 +136,7 @@ private:
 
 		num = number / num;
 		return num - (num / 10) * 10;
-	}
+	}*/
 
 	static const glm::mat4 m_modelOffset;
 	static const glm::mat4 m_gunOffsetMat;
@@ -202,14 +203,13 @@ private:
 	float m_weaponCooldown = 0.f;
 
 	//Gun stuff
-	GunProperties pistol			{ "Pistol", 30, 5.f, 0.5f };
-	GunProperties cannon			{ "Proton Cannon", 3, 30.f, 2.f };
-	GunProperties rifle				{ "Proton Rifle", 20, 10.f, 0.8f };
-	GunProperties missileLauncher	{ "Missile Launcher", 1, 100.f, 3.f };
-	GunProperties shotgun			{ "Shotgun", 15, 20.f, 2.f };
-	GunProperties machineGun		{ "Machine Gun", 50, 5.f, 0.1f, true };
-
-
+	static const GunProperties pistol;
+	static const GunProperties cannon;
+	static const GunProperties rifle;
+	static const GunProperties missileLauncher;
+	static const GunProperties shotgun;
+	static const GunProperties machineGun;
+	static const float shotgunDistance;
 
 	glm::quat m_startRot = glm::quat(1, 0, 0, 0);
 	glm::vec3 m_spawnPos = glm::vec3(0.f);
