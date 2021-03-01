@@ -28,7 +28,7 @@ void LeaderBoard::Init(int windowWidth, int windowHeight)
 void LeaderBoard::Update()
 {
 	if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER::ONE)) {
-		if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
+		if (BackEnd::GetFullscreen())	BackEnd::SetTabbed();
 		else							BackEnd::SetFullscreen();
 	}
 

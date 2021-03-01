@@ -58,10 +58,6 @@ private:
 		glm::vec3(-1, 5, -1) },8
 	};
 
-
-	int width = 0;
-	int height = 0;
-
 	size_t killGoal = 5;
 
 	float camDistance = 2.5f;

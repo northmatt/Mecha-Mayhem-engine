@@ -2,7 +2,7 @@
 #include "LeaderBoard.h"
 #include "Effects/Post/BloomEffect.h"
 
-void Tutorial::Init(int windowWidth, int windowHeight)
+void Tutorial::Init(int width, int height)
 {
 	ECS::AttachRegistry(&m_reg);
 	PhysBody::Init(m_world);
@@ -11,9 +11,6 @@ void Tutorial::Init(int windowWidth, int windowHeight)
 	std::cout << "filename: " + input + "\n";
 	if (!m_colliders.Init(m_world, input, false, false))
 		std::cout << input + " failed to load, no collision boxes loaded\n";
-
-	width = windowWidth;
-	height = windowHeight;
 
 	m_camCount = 4;
 
@@ -144,7 +141,7 @@ void Tutorial::Update()
 	for (size_t i(0); i < 4; ++i) {
 		if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(i))) {
 			if (ControllerInput::GetButton(BUTTON::RB, CONUSER(i))) {
-				if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
+				if (BackEnd::GetFullscreen())	BackEnd::SetTabbed();
 				else							BackEnd::SetFullscreen();
 			}
 			else {
@@ -158,7 +155,7 @@ void Tutorial::Update()
 					//add effects or smt
 					if (m_frameEffects.size() == 0) {
 						m_frameEffects.AddEffect(new PixelEffect());
-						m_frameEffects[0]->Init(width, height);
+						m_frameEffects[0]->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
 						((PixelEffect*)(m_frameEffects[0]))->SetPixelCount(64);
 					}
 				}
@@ -243,7 +240,7 @@ void Tutorial::Update()
 
 		m_colliders.Clear();
 
-		Init(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
+		Init(BackEnd::GetWidth(), BackEnd::GetHeight());
 		QueueSceneChange(3);
 	}
 
@@ -267,7 +264,7 @@ Scene* Tutorial::Reattach() {
 		Rendering::hitboxes = &m_colliders;
 	}
 
-	m_frameEffects.Resize(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
+	m_frameEffects.Resize(BackEnd::GetWidth(), BackEnd::GetHeight());
 
 	Rendering::effects = &m_effects;
 	Rendering::frameEffects = &m_frameEffects;
@@ -287,9 +284,9 @@ Scene* Tutorial::Reattach() {
 		--i;
 		cameraEnt[i] = ECS::CreateEntity();
 		if (m_camCount == 2)
-			ECS::AttachComponent<Camera>(cameraEnt[i]).SetFovDegrees(60.f).ResizeWindow(width / 2, height);
+			ECS::AttachComponent<Camera>(cameraEnt[i]).SetFovDegrees(60.f).ResizeWindow(BackEnd::GetHalfWidth(), BackEnd::GetHeight());
 		else
-			ECS::AttachComponent<Camera>(cameraEnt[i]).SetFovDegrees(60.f).ResizeWindow(width, height);
+			ECS::AttachComponent<Camera>(cameraEnt[i]).SetFovDegrees(60.f).ResizeWindow(BackEnd::GetWidth(), BackEnd::GetHeight());
 
 		bodyEnt[i] = ECS::CreateEntity();
 		ECS::AttachComponent<PhysBody>(bodyEnt[i]).CreatePlayer(bodyEnt[i], startQuat, glm::vec3(0, 1.5f, 0));
@@ -304,9 +301,9 @@ Scene* Tutorial::Reattach() {
 	}
 
 	if (m_camCount == 2)
-		Player::SetUIAspect(width / 2, height);
+		Player::SetUIAspect(BackEnd::GetHalfWidth(), BackEnd::GetHeight());
 	else
-		Player::SetUIAspect(width, height);
+		Player::SetUIAspect(BackEnd::GetWidth(), BackEnd::GetHeight());
 
 	Player::SetCamDistance(camDistance);
 	Player::SetSkyPos(glm::vec3(0, 50, -45));

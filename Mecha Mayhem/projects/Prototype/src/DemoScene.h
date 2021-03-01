@@ -76,7 +76,7 @@ public:
 			if (m_frameEffects.size() < maxEffectCount) {
 				if (ImGui::Button("Greyscale")) {
 					GreyscaleEffect* effect = new GreyscaleEffect();
-					effect->Init(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
+					effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
 					effect->SetInfo("Greyscale");
 					m_frameEffects.AddEffect(effect);
 					effect = nullptr;
@@ -84,7 +84,7 @@ public:
 				ImGui::SameLine();
 				if (ImGui::Button("Sepia")) {
 					SepiaEffect* effect = new SepiaEffect();
-					effect->Init(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
+					effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
 					effect->SetInfo("Sepia");
 					m_frameEffects.AddEffect(effect);
 					effect = nullptr;
@@ -92,7 +92,7 @@ public:
 				ImGui::SameLine();
 				if (ImGui::Button("Bloom")) {
 					BloomEffect* effect = new BloomEffect();
-					effect->Init(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
+					effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
 					effect->SetInfo("Bloom");
 					m_frameEffects.AddEffect(effect);
 					effect = nullptr;
@@ -100,7 +100,7 @@ public:
 				ImGui::SameLine();
 				if (ImGui::Button("\"Toon Shading\"")) {
 					ToonEffect* effect = new ToonEffect();
-					effect->Init(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
+					effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
 					effect->SetInfo("Toon");
 					m_frameEffects.AddEffect(effect);
 					effect = nullptr;
@@ -108,7 +108,7 @@ public:
 				ImGui::SameLine();
 				if (ImGui::Button("Pixelataion")) {
 					PixelEffect* effect = new PixelEffect();
-					effect->Init(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
+					effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
 					effect->SetInfo("Pixel");
 					m_frameEffects.AddEffect(effect);
 					effect = nullptr;
@@ -121,9 +121,6 @@ public:
 	}
 
 private:
-
-	int width = 0;
-	int height = 0;
 
 	size_t killGoal = 10;
 

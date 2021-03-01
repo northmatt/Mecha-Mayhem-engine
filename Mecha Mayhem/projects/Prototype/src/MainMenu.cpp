@@ -2,16 +2,13 @@
 #include "LeaderBoard.h"
 #include "Effects/Post/BloomEffect.h"
 
-void MainMenu::Init(int windowWidth, int windowHeight)
+void MainMenu::Init(int width, int height)
 {
 	ECS::AttachRegistry(&m_reg);
 
-	width = windowWidth;
-	height = windowHeight;
-
 	camera = ECS::CreateEntity();
 	ECS::AttachComponent<Camera>(camera).SetFovDegrees(60.f)
-		.ResizeWindow(windowWidth, windowHeight).SetNear(0.3f);
+		.ResizeWindow(width, height).SetNear(0.3f);
 
 	title = ECS::CreateEntity();
 	ECS::AttachComponent<ObjMorphLoader>(title).LoadMeshs("title", true);
@@ -79,7 +76,7 @@ void MainMenu::Update()
 		for (int i(0); i < 4; ++i) {
 			if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(i))) {
 				if (ControllerInput::GetButton(BUTTON::RB, CONUSER(i))) {
-					if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
+					if (BackEnd::GetFullscreen())	BackEnd::SetTabbed();
 					else							BackEnd::SetFullscreen();
 				}
 			}
@@ -168,7 +165,7 @@ void MainMenu::Update()
 		for (int x(0); x < 4; ++x) {
 			if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(x))) {
 				if (ControllerInput::GetButton(BUTTON::RB, CONUSER(x))) {
-					if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
+					if (BackEnd::GetFullscreen())	BackEnd::SetTabbed();
 					else							BackEnd::SetFullscreen();
 				}
 			}

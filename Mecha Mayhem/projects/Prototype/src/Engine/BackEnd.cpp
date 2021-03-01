@@ -37,32 +37,39 @@ void GlDebugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsi
 
 void BackEnd::GlfwWindowResizedCallback(GLFWwindow* window, int width, int height) {
 	//force window back to right ratio
-	if (_lastHeight != height / 2) {
-		int wide = height * _aspect;
-		glfwSetWindowSize(window, wide, height);
-		//glViewport(0, 0, wide, height);
-		_lastHalfHeight = height / 2;
-		_lastHalfWidth = wide / 2;
-		_lastHeight = height;
-		_lastWidth = wide;
+	if (!fullscreen) {
+		if (_lastHeight != height) {
+			int wide = height * _aspect;
+			glfwSetWindowSize(window, wide, height);
+			//glViewport(0, 0, wide, height);
+			_lastHalfHeight = height / 2;
+			_lastHalfWidth = wide / 2;
+			_lastHeight = height;
+			_lastWidth = wide;
+		}
+		else {
+			int high = width * _aspect2;
+			glfwSetWindowSize(window, width, high);
+			//glViewport(0, 0, width / 2, high / 2);
+			_lastHalfHeight = high / 2;
+			_lastHalfWidth = width / 2;
+			_lastHeight = high;
+			_lastWidth = width;
+		}
 	}
-	else {
-		int high = width * _aspect2;
-		glfwSetWindowSize(window, width, high);
-		//glViewport(0, 0, width / 2, high / 2);
-		_lastHalfHeight = high / 2;
-		_lastHalfWidth = width / 2;
-		_lastHeight = high;
-		_lastWidth = width;
-	}
-
-	Rendering::frameEffects->Resize(_lastWidth, _lastHeight);
+	Rendering::frameEffects->Resize(GetWidth(), GetHeight());
 }
 
 void BackEnd::GlfwWindowMovedCallback(GLFWwindow* window, int xPos, int yPos)
 {
-	_xPos = xPos;
-	_yPos = yPos;
+	if (!fullscreen) {
+		_xPos = xPos;
+		_yPos = yPos;
+	}
+	else {
+		//don't allow to move
+		glfwSetWindowPos(window, monitorVec[0], monitorVec[1]);
+	}
 }
 
 void BackEnd::GlfwWindowFocusCallback(GLFWwindow* window, int result)
@@ -77,12 +84,13 @@ float BackEnd::_aspect = 1;
 float BackEnd::_aspect2 = 1;
 bool BackEnd::focus = false;
 bool BackEnd::fullscreen = false;
+bool BackEnd::borderless = true;
 int BackEnd::_lastHeight = 1;
 int BackEnd::_lastWidth = 1;
 int BackEnd::_lastHalfHeight = 1;
 int BackEnd::_lastHalfWidth = 1;
-int BackEnd::_xPos = 1;
-int BackEnd::_yPos = 1;
+int BackEnd::_xPos = 50;
+int BackEnd::_yPos = 50;
 int BackEnd::monitorVec[4] = { 0 };
 GLFWmonitor* BackEnd::monitor = nullptr;
 
@@ -98,6 +106,11 @@ GLFWwindow* BackEnd::Init(std::string name, int width, int height)
 	glfwMakeContextCurrent(window);
 
 	monitor = glfwGetPrimaryMonitor();
+
+	glfwGetMonitorWorkarea(monitor, &monitorVec[0], &monitorVec[1], &monitorVec[2], &monitorVec[3]);
+	monitorVec[3] += 50;
+	glfwSetWindowSizeLimits(window, 16, 9, monitorVec[2], monitorVec[3]);
+
 	_aspect = float(width) / height;
 	_aspect2 = float(height) / width;
 	_lastHalfHeight = height / 2;
@@ -110,7 +123,7 @@ GLFWwindow* BackEnd::Init(std::string name, int width, int height)
 	glfwSetWindowFocusCallback(window, GlfwWindowFocusCallback);
 	glfwSetWindowPosCallback(window, GlfwWindowMovedCallback);
 
-	SetTabbed(width, height);
+	SetTabbed();
 
 	if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) == 0) {
 		LOG_ERROR("Failed to initialize Glad");
@@ -190,21 +203,38 @@ void BackEnd::SetAspect(int width, int height)
 void BackEnd::SetFullscreen()
 {
 	fullscreen = true;
-	glfwGetMonitorWorkarea(monitor, &monitorVec[0], &monitorVec[1], &monitorVec[2], &monitorVec[3]);
 
 	// We want GL commands to be executed for our window, so we make our window's context the current one
 	glfwMakeContextCurrent(window);
 
-	//go fullscreen on selected monitor
-	//glfwSetWindowMonitor(window, monitor, 0, 0, monitorVec[2], monitorVec[3], 60);
-	glfwSetWindowMonitor(window, nullptr, 32, -1, monitorVec[2], monitorVec[3], 60);
+	if (borderless) {
+		//manually set width and height according to main monitor
+		glfwSetWindowPos(window, monitorVec[0], monitorVec[1]);
+		glfwSetWindowSize(window, monitorVec[2], monitorVec[3]);
+		//glfwSetWindowAttrib(window, GLFW_FLOATING, GLFW_TRUE);
+		glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
+	}
+	else {
+		//go fullscreen on selected monitor
+		glfwSetWindowMonitor(window, monitor, 0, 0, monitorVec[2], monitorVec[3], GLFW_DONT_CARE);
+	}
+	//make limits the same
+	//glfwSetWindowSizeLimits(window, monitorVec[2], monitorVec[3], monitorVec[2], monitorVec[3]);
 
 	GlfwWindowFocusCallback(window, true);
 }
 
-void BackEnd::SetTabbed(int width, int height)
+void BackEnd::SetTabbed()
 {
-	fullscreen = false;
-	glfwSetWindowMonitor(window, nullptr, _xPos, _yPos, width, height, 60);
+	if (fullscreen) {
+		//glfwSetWindowAttrib(window, GLFW_FLOATING, GLFW_FALSE);
+		glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_TRUE);
+		//glfwSetWindowSizeLimits(window, 16, 9, monitorVec[2], monitorVec[3]);
+		fullscreen = false;
+	}
+	glfwSetWindowPos(window, _xPos, _yPos);
+	glfwSetWindowSize(window, _lastWidth, _lastHeight);
+	//glfwSetWindowMonitor(window, nullptr, _xPos, _yPos, _lastWidth, _lastHeight, GLFW_DONT_CARE);
+
 	GlfwWindowFocusCallback(window, true);
 }

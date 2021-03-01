@@ -74,7 +74,7 @@ Scene* Scene::Reattach()
 		Rendering::hitboxes = nullptr;
 	}
 
-	m_frameEffects.Resize(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
+	m_frameEffects.Resize(BackEnd::GetWidth(), BackEnd::GetHeight());
 
 	Rendering::effects = &m_effects;
 	Rendering::frameEffects = &m_frameEffects;

@@ -125,7 +125,7 @@ namespace Rendering {
 			if (++count >= numOfCams)
 				break;
 		}
-		glViewport(0, 0, BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
+		glViewport(0, 0, BackEnd::GetWidth(), BackEnd::GetHeight());
 	}
 
 	/*void DrawPauseScreen(Sprite image)

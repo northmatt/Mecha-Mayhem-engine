@@ -55,7 +55,7 @@ void MapEditor::Update()
 	}
 
 	if (Input::GetKeyDown(KEY::F)) {
-		if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
+		if (BackEnd::GetFullscreen())	BackEnd::SetTabbed();
 		else							BackEnd::SetFullscreen();
 	}
 
