@@ -21,7 +21,7 @@ void MapEditor::Init(int windowWidth, int windowHeight)
 	ECS::GetComponent<Transform>(cameraEnt).SetPosition(glm::vec3(0, 0, 0));
 
 	rayPosEnt = ECS::CreateEntity();
-	ECS::AttachComponent<ObjLoader>(rayPosEnt).LoadMesh("models/GodHimself.obj");
+	ECS::AttachComponent<ObjLoader>(rayPosEnt).LoadMesh("maps/GodHimself.obj");
 	ECS::GetComponent<Transform>(rayPosEnt).SetPosition(glm::vec3(0, 0.f, 0)).SetScale(0.5f);
 	{
 		auto entity = ECS::CreateEntity();

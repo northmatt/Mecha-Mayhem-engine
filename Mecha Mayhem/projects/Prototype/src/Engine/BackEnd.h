@@ -37,20 +37,27 @@ public:
 	static void SetFullscreen();
 	static void SetTabbed(int width, int height);
 
-	static int GetHalfWidth() { return _lastWidth; }
-	static int GetHalfHeight() { return _lastHeight; }
+	static int GetHalfWidth() { return _lastHalfWidth; }
+	static int GetHalfHeight() { return _lastHalfHeight; }
+	static int GetWidth() { return _lastWidth; }
+	static int GetHeight() { return _lastHeight; }
 
 	static bool HasFocus() { return focus; }
 private:
 	static void GlfwWindowResizedCallback(GLFWwindow* window, int width, int height);
+	static void GlfwWindowMovedCallback(GLFWwindow* window, int xPos, int yPos);
 	static void GlfwWindowFocusCallback(GLFWwindow* window, int result);
 	static GLFWwindow* window;
 	static float _aspect;
 	static float _aspect2;
 	static bool focus;
 	static bool fullscreen;
+	static int _lastHalfHeight;
+	static int _lastHalfWidth;
 	static int _lastHeight;
 	static int _lastWidth;
+	static int _xPos;
+	static int _yPos;
 	static int monitorVec[4];
 	static GLFWmonitor* monitor;
 };

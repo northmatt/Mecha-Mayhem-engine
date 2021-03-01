@@ -130,6 +130,10 @@ Scene* DemoScene::Reattach()
 	if (m_world) {
 		PhysBody::Init(m_world);
 		ECS::AttachWorld(m_world);
+		std::string input = "playtestmap";
+		std::cout << "filename: " + input + "\n";
+		if (!m_colliders.Init(m_world, input, false, false))
+			std::cout << input + " failed to load, no collision boxes loaded\n";
 		Rendering::hitboxes = &m_colliders;
 	}
 

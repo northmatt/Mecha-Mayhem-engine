@@ -166,6 +166,13 @@ void MainMenu::Update()
 		int lx = 0, allHolding = 0, playerCount = 0;
 		//exit
 		for (int x(0); x < 4; ++x) {
+			if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(x))) {
+				if (ControllerInput::GetButton(BUTTON::RB, CONUSER(x))) {
+					if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
+					else							BackEnd::SetFullscreen();
+				}
+			}
+
 			auto &p = ECS::GetComponent<Player>(models[x]);
 
 			if (p.IsPlayer()) {
@@ -222,13 +229,6 @@ void MainMenu::Update()
 				LeaderBoard::players[x].user = CONUSER(x);
 				p.Init(CONUSER::FOUR, LeaderBoard::players[x].model);
 				playerSwapped[x] = true;
-			}
-
-			if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(x))) {
-				if (ControllerInput::GetButton(BUTTON::RB, CONUSER(x))) {
-					if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
-					else							BackEnd::SetFullscreen();
-				}
 			}
 
 			if (ControllerInput::GetButton(BUTTON::B, CONUSER(x))) {

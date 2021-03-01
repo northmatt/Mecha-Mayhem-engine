@@ -41,18 +41,28 @@ void BackEnd::GlfwWindowResizedCallback(GLFWwindow* window, int width, int heigh
 		int wide = height * _aspect;
 		glfwSetWindowSize(window, wide, height);
 		//glViewport(0, 0, wide, height);
-		_lastHeight = height / 2;
-		_lastWidth = wide / 2;
+		_lastHalfHeight = height / 2;
+		_lastHalfWidth = wide / 2;
+		_lastHeight = height;
+		_lastWidth = wide;
 	}
 	else {
 		int high = width * _aspect2;
 		glfwSetWindowSize(window, width, high);
 		//glViewport(0, 0, width / 2, high / 2);
-		_lastHeight = high / 2;
-		_lastWidth = width / 2;
+		_lastHalfHeight = high / 2;
+		_lastHalfWidth = width / 2;
+		_lastHeight = high;
+		_lastWidth = width;
 	}
 
-	Rendering::frameEffects->Resize(_lastWidth * 2, _lastHeight * 2);
+	Rendering::frameEffects->Resize(_lastWidth, _lastHeight);
+}
+
+void BackEnd::GlfwWindowMovedCallback(GLFWwindow* window, int xPos, int yPos)
+{
+	_xPos = xPos;
+	_yPos = yPos;
 }
 
 void BackEnd::GlfwWindowFocusCallback(GLFWwindow* window, int result)
@@ -69,6 +79,10 @@ bool BackEnd::focus = false;
 bool BackEnd::fullscreen = false;
 int BackEnd::_lastHeight = 1;
 int BackEnd::_lastWidth = 1;
+int BackEnd::_lastHalfHeight = 1;
+int BackEnd::_lastHalfWidth = 1;
+int BackEnd::_xPos = 1;
+int BackEnd::_yPos = 1;
 int BackEnd::monitorVec[4] = { 0 };
 GLFWmonitor* BackEnd::monitor = nullptr;
 
@@ -86,12 +100,15 @@ GLFWwindow* BackEnd::Init(std::string name, int width, int height)
 	monitor = glfwGetPrimaryMonitor();
 	_aspect = float(width) / height;
 	_aspect2 = float(height) / width;
-	_lastHeight = height / 2;
-	_lastWidth = width / 2;
+	_lastHalfHeight = height / 2;
+	_lastHalfWidth = width / 2;
+	_lastHeight = height;
+	_lastWidth = width;
 
 	// Set our window resized callback
 	glfwSetWindowSizeCallback(window, GlfwWindowResizedCallback);
 	glfwSetWindowFocusCallback(window, GlfwWindowFocusCallback);
+	glfwSetWindowPosCallback(window, GlfwWindowMovedCallback);
 
 	SetTabbed(width, height);
 
@@ -188,6 +205,6 @@ void BackEnd::SetFullscreen()
 void BackEnd::SetTabbed(int width, int height)
 {
 	fullscreen = false;
-	glfwSetWindowMonitor(window, nullptr, 50, 50, width, height, 60);
+	glfwSetWindowMonitor(window, nullptr, _xPos, _yPos, width, height, 60);
 	GlfwWindowFocusCallback(window, true);
 }
