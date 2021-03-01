@@ -120,6 +120,7 @@ private:
 
 	bool groundTest(float yVelo, PhysBody& bodyPos);
 	void UseWeapon(PhysBody& body, Transform& head, float offset);
+	void LaserGun(float offset, Transform& head, short damage, float distance = 2000.f);
 	void SwapWeapon(bool outOfAmmo = false);
 	void UseHeal();
 	void ShootLazer(glm::quat offsetQuat, glm::quat rotation, glm::vec3 rayPos, glm::vec3 forwards, short damage);
@@ -179,7 +180,7 @@ private:
 	bool m_stepped = false;
 
 	short m_camPos = 10;
-	short m_maxHealth = 20;
+	short m_maxHealth = 100;
 	short m_health = m_maxHealth;
 	short m_killCount = 0;
 
@@ -205,7 +206,7 @@ private:
 	GunProperties cannon			{ "Proton Cannon", 3, 30.f, 2.f };
 	GunProperties rifle				{ "Proton Rifle", 20, 10.f, 0.8f };
 	GunProperties missileLauncher	{ "Missile Launcher", 1, 100.f, 3.f };
-	GunProperties shotgun			{ "Shotgun", 15, 25.f, 2.f };
+	GunProperties shotgun			{ "Shotgun", 15, 20.f, 2.f };
 	GunProperties machineGun		{ "Machine Gun", 50, 5.f, 0.1f, true };
 
 
