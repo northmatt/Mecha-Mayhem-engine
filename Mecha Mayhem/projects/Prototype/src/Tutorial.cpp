@@ -32,11 +32,14 @@ void Tutorial::Init(int width, int height)
 		ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69)
 			.SetSpawn(glm::vec3(-4, 1, -59)).SetRotation(glm::radians(180.f), 0);// .SetMaxHealth(10);
 	}
-	{
+
+	m_colliders.GenerateSpawners();
+
+	/*{
 		auto entity = ECS::CreateEntity();
 		ECS::AttachComponent<Spawner>(entity).Init(0.3f, 2.5f).SetBounds(1, 5);
 		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, 0, -18));
-	}
+	}*/
 	//dummies
 	for (int i(0); i < 3; ++i) {
 		{
@@ -53,16 +56,16 @@ void Tutorial::Init(int width, int height)
 			ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(7.5f, 1, i * 7.5f - 55))
 				.SetRotation(glm::radians(270.f), 0);
 		}
-		{
+		/*{
 			auto entity = ECS::CreateEntity();
-			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 5.f);// .SetBounds(1, 5);
+			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 5.f);
 			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(5.f, 0, i * 7.5f - 55));
 		}
 		{
 			auto entity = ECS::CreateEntity();
-			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 5.f);// .SetBounds(1, 5);
+			ECS::AttachComponent<Spawner>(entity).Init(0.3f, 5.f);
 			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(-5.f, 0, i * 7.5f - 55));
-		}
+		}*/
 	}
 
 	//map

@@ -50,6 +50,16 @@ public:
 	//Through ImGui
 	void Update(entt::entity cameraEnt = entt::null);
 
+	//only call once please
+	void GenerateSpawners() {
+		for (int i(0); i < m_spawners.size(); ++i) {
+			auto entity = ECS::CreateEntity();
+			ECS::AttachComponent<Spawner>(entity).Init(m_spawners[i].radius, m_spawners[i].delay)
+				.SetBounds(m_spawners[i].bounds[0], m_spawners[i].bounds[1]);
+			ECS::GetComponent<Transform>(entity).SetPosition(m_spawners[i].pos).SetRotation(m_spawners[i].rot);
+		}
+	}
+
 	void GetSpawnNear(Player& p, glm::vec3 testPos, float range) {
 		//for loop in case it never hits anything
 		int index = rand() % m_spawnLocations.size();
@@ -151,11 +161,14 @@ private:
 	};
 	std::vector<Shape> m_objects = {};
 
+	const glm::vec2 __spawnerBounds = { 0, 5 };	//check player.h for more info
 	struct SpawnerData
 	{
 		glm::vec3 pos;
 		glm::quat rot;
+		glm::vec2 bounds;
 		float radius;
+		float delay;
 	};
 	std::vector<SpawnerData> m_spawners = {};
 
