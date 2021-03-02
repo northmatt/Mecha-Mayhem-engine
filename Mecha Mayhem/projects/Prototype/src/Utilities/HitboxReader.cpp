@@ -17,6 +17,8 @@ bool HitboxGen::Init(btDiscreteDynamicsWorld* world, const std::string& filename
 		}
 		m_objects.resize(0);
 		m_boxShape.resize(0);
+		m_spawners.resize(0);
+		m_spawnLocations.resize(0);
 		m_world->removeRigidBody(m_floor);
 	}
 	m_world = world;
@@ -105,9 +107,9 @@ bool HitboxGen::Init(btDiscreteDynamicsWorld* world, const std::string& filename
 					glm::vec3 scl(1.f);
 					while (!ss.eof()) {
 						ss >> input;
-						if (input == "pos")         ss >> pos.x >> pos.y >> pos.z;
-						else if (input == "rot")    ss >> rot.x >> rot.y >> rot.z >> rot.w;
-						else if (input == "scl")    ss >> scl.x >> scl.y >> scl.z;
+						if (input == "pos")			ss >> pos.x >> pos.y >> pos.z;
+						else if (input == "rot")	ss >> rot.x >> rot.y >> rot.z >> rot.w;
+						else if (input == "scl")	ss >> scl.x >> scl.y >> scl.z;
 					}
 
 					btCollisionShape* tempShape = nullptr;
@@ -129,6 +131,28 @@ bool HitboxGen::Init(btDiscreteDynamicsWorld* world, const std::string& filename
 					float height = 0;
 					ss >> height;
 					m_floor->getWorldTransform().getOrigin().setY(height);
+				}
+				else if (input == "spawner") {
+					glm::vec3 pos(0.f);
+					glm::quat rot(1.f, 0.f, 0.f, 0.f);
+					float radius = 1.f;
+					while (!ss.eof()) {
+						ss >> input;
+						if (input == "pos")			ss >> pos.x >> pos.y >> pos.z;
+						else if (input == "rot")	ss >> rot.x >> rot.y >> rot.z >> rot.w;
+						else if (input == "radius")	ss >> radius;
+					}
+					m_spawners.push_back({ pos, rot, radius });
+				}
+				else if (input == "spawn") {
+					glm::vec3 pos(0.f);
+					glm::vec2 rot(0.f);
+					while (!ss.eof()) {
+						ss >> input;
+						if (input == "pos")			ss >> pos.x >> pos.y >> pos.z;
+						else if (input == "rot")	ss >> rot.x >> rot.y;
+					}
+					m_spawnLocations.push_back({ pos, rot.x, rot.y });
 				}
 			}
 
@@ -200,10 +224,10 @@ bool HitboxGen::SaveToFile(bool overwriteExisting)
 	if(height != 0)     file << "floor " << height;
 
 	for (short i(0); i < m_objects.size(); ++i) {
-		file << "\n" << m_objects[i].type;
+		file << '\n' << m_objects[i].type;
 		auto trans = m_objects[i].trans;
 		glm::vec3 pos = trans.GetLocalPosition();
-		if (glm::length(pos) != 0)
+		if (pos.x != 0 || pos.y != 0 || pos.z != 0)
 			file << " pos " << pos.x << ' ' << pos.y << ' ' << pos.z;
 
 		glm::quat rot = trans.GetLocalRotation();
@@ -213,6 +237,32 @@ bool HitboxGen::SaveToFile(bool overwriteExisting)
 		glm::vec3 scl = trans.GetScale();
 		if (scl.x != 1 || scl.y != 1 || scl.z != 1)
 			file << " scl " << scl.x << ' ' << scl.y << ' ' << scl.z;
+	}
+
+	for (short i(0); i < m_spawners.size(); ++i) {
+		file << "\nspawner";
+		glm::vec3 pos = m_spawners[i].pos;
+		if (pos.x != 0 || pos.y != 0 || pos.z != 0)
+			file << " pos " << pos.x << ' ' << pos.y << ' ' << pos.z;
+
+		glm::quat rot = m_spawners[i].rot;
+		if (rot.w != 1 || rot.x != 0 || rot.y != 0 || rot.z != 0)
+			file << " rot " << rot.x << ' ' << rot.y << ' ' << rot.z << ' ' << rot.w;
+
+		float radius = m_spawners[i].radius;
+		if (radius != 1)
+			file << " radius " << radius;
+	}
+
+	for (short i(0); i < m_spawnLocations.size(); ++i) {
+		file << "\nspawn";
+		glm::vec3 pos = m_spawnLocations[i].pos;
+		if (pos.x != 0 || pos.y != 0 || pos.z != 0)
+			file << " pos " << pos.x << ' ' << pos.y << ' ' << pos.z;
+
+		glm::vec2 rot = glm::vec2(m_spawnLocations[i].rotx, m_spawnLocations[i].roty);
+		if (rot.x != 0 || rot.y != 0)
+			file << " rot " << rot.x << ' ' << rot.y;
 	}
 	std::cout << "saved data\n";
 
@@ -237,6 +287,8 @@ bool HitboxGen::LoadFromFile()
 	}
 	m_objects.resize(0);
 	m_boxShape.resize(0);
+	m_spawners.resize(0);
+	m_spawnLocations.resize(0);
 	m_world->removeRigidBody(m_floor);
 
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, m_planeShape);
@@ -256,9 +308,9 @@ bool HitboxGen::LoadFromFile()
 			glm::vec3 scl(1.f);
 			while (!ss.eof()) {
 				ss >> input;
-				if (input == "pos")         ss >> pos.x >> pos.y >> pos.z;
-				else if (input == "rot")    ss >> rot.x >> rot.y >> rot.z >> rot.w;
-				else if (input == "scl")    ss >> scl.x >> scl.y >> scl.z;
+				if (input == "pos")			ss >> pos.x >> pos.y >> pos.z;
+				else if (input == "rot")	ss >> rot.x >> rot.y >> rot.z >> rot.w;
+				else if (input == "scl")	ss >> scl.x >> scl.y >> scl.z;
 			}
 
 			btCollisionShape* tempShape = nullptr;
@@ -280,6 +332,28 @@ bool HitboxGen::LoadFromFile()
 			ss >> height;
 			m_floor->getWorldTransform().getOrigin().setY(height);
 		}
+		else if (input == "spawner") {
+			glm::vec3 pos(0.f);
+			glm::quat rot(1.f, 0.f, 0.f, 0.f);
+			float radius = 1.f;
+			while (!ss.eof()) {
+				ss >> input;
+				if (input == "pos")			ss >> pos.x >> pos.y >> pos.z;
+				else if (input == "rot")	ss >> rot.x >> rot.y >> rot.z >> rot.w;
+				else if (input == "radius")	ss >> radius;
+			}
+			m_spawners.push_back({ pos, rot, radius });
+		}
+		else if (input == "spawn") {
+			glm::vec3 pos(0.f);
+			glm::vec2 rot(0.f);
+			while (!ss.eof()) {
+				ss >> input;
+				if (input == "pos")			ss >> pos.x >> pos.y >> pos.z;
+				else if (input == "rot")	ss >> rot.x >> rot.y;
+			}
+			m_spawnLocations.push_back({ pos, rot.x, rot.y });
+		}
 	}
 
 	file.close();
@@ -298,6 +372,46 @@ void HitboxGen::Render()
 		Transform floor;
 		floor.SetPosition(m_floor->getWorldTransform().getOrigin()).SetScale(glm::vec3(100000, 0, 100000));
 		m_cube.Draw(floor.GetModel());
+	}
+
+	for (short i(0); i < m_spawners.size(); ++i) {
+		glm::mat4 model = glm::mat4(1.f);
+		model *= m_spawners[i].radius * 2.f;
+		model[3][3] = 1.f;
+		model *= glm::toMat4(m_spawners[i].rot);
+		model[3] = glm::vec4(m_spawners[i].pos + BLM::GLMup, 1);
+		m_cylinderCurrent.Draw(model);
+
+		m_cylinder.Draw(glm::mat4(
+			1.f, 0, 0, 0,
+			0, 0.2f, 0, 0,
+			0, 0, 1.f, 0,
+			m_spawners[i].pos.x,
+			m_spawners[i].pos.y + 0.1f,
+			m_spawners[i].pos.z,
+			1
+		));
+	}
+
+	for (short i(0); i < m_spawnLocations.size(); ++i) {
+		m_cubeCurrent.Draw(glm::mat4(
+			1, 0, 0, 0,
+			0, 2, 0, 0,
+			0, 0, 1, 0,
+			m_spawnLocations[i].pos.x,
+			m_spawnLocations[i].pos.y,
+			m_spawnLocations[i].pos.z,
+			1
+		));
+
+		glm::mat4 model = glm::translate(glm::mat4(1.f), m_spawnLocations[i].pos + glm::vec3(0, 0.5f, 0));
+		model *= glm::toMat4(glm::angleAxis(-m_spawnLocations[i].roty, BLM::GLMup));
+		model *= glm::toMat4(glm::angleAxis(m_spawnLocations[i].rotx, glm::vec3(1, 0, 0)));
+		model = glm::translate(model, glm::vec3(0, 0, 1.f));
+		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 1.f));
+
+		m_cube.Draw(model);
+
 	}
 
 	for (short i(0); i < m_tempObjects.size(); ++i) {
@@ -443,6 +557,19 @@ void HitboxGen::Update(entt::entity cameraEnt)
 
 			ImGui::SameLine();
 
+			if (ImGui::Button("Selected To Ray")) {
+				btVector3 pos = PhysBody::GetRaycast(
+					ECS::GetComponent<Transform>(cameraEnt).GetGlobalPosition(),
+					ECS::GetComponent<Transform>(cameraEnt).GetForwards() * -10000.f);
+				if (pos != btVector3()) {
+					m_objects[m_current].body->getWorldTransform().setOrigin(BLM::GLMtoBT(
+						m_objects[m_current].trans.SetPosition(pos).GetLocalPosition()
+					));
+				}
+			}
+
+			ImGui::SameLine();
+
 			if (ImGui::Button("Select Looking At")) {
 				Transform& trans = ECS::GetComponent<Transform>(cameraEnt);
 				RayResult ray = PhysBody::GetRaycastResult(
@@ -506,8 +633,8 @@ void HitboxGen::Update(entt::entity cameraEnt)
 					glm::vec3 value = m_tempObjects[0].GetLocalPosition();
 					if (ImGui::TreeNode("Center Position")) {
 						if (ImGui::InputFloat2("Position Bounds", bound, 2)) {
-							bound[0] = glm::clamp(bound[0], -1000.f, bound[1]);
 							bound[1] = glm::clamp(bound[1], bound[0], 1000.f);
+							bound[0] = glm::clamp(bound[0], -1000.f, bound[1]);
 						}
 						bool changed = false;
 						if (ImGui::SliderFloat("x", &value.x, bound[0], bound[1])) {
@@ -605,6 +732,190 @@ void HitboxGen::Update(entt::entity cameraEnt)
 			ChangeCircularCount(5, true);
 		}
 
+		if (ImGui::TreeNode("Spawnpoints")) {
+			if (ImGui::Button("New")) {
+				m_spawnLocations.push_back({ BLM::GLMzero, 0, 0 });
+			}
+			if (m_spawnLocations.size()) {
+				ImGui::SameLine();
+				if (ImGui::Button("Remove")) {
+					m_spawnLocations.erase(m_spawnLocations.begin() + m_spawnLocCurrent);
+					if (m_spawnLocCurrent >= m_spawnLocations.size())
+						m_spawnLocCurrent = m_spawnLocations.size() - 1;
+					if (m_spawnLocations.size() == 0)
+						m_spawnLocCurrent = 0;
+				}
+			}
+
+			if (m_spawnLocations.size()) {
+				ImGui::SliderInt("Selected", &m_spawnLocCurrent, 0, m_spawnLocations.size() - 1);
+
+				if (ImGui::Button("Selected To Camera")) {
+					m_spawnLocations[m_spawnLocCurrent].pos = ECS::GetComponent<Transform>(cameraEnt).GetGlobalPosition();
+				}
+
+				ImGui::SameLine();
+
+				if (ImGui::Button("Selected To Ray")) {
+					btVector3 pos = PhysBody::GetRaycast(
+						ECS::GetComponent<Transform>(cameraEnt).GetGlobalPosition(),
+						ECS::GetComponent<Transform>(cameraEnt).GetForwards() * -10000.f);
+					if (pos != btVector3()) {
+						m_spawnLocations[m_spawnLocCurrent].pos = BLM::BTtoGLM(pos);
+					}
+				}
+
+				if (ImGui::TreeNode("Transformations")) {
+					ImGui::Text("Blue is Z, Green is Y, Red is X");
+
+					if (ImGui::TreeNode("Position")) {
+						glm::vec3 value = m_spawnLocations[m_spawnLocCurrent].pos;
+						if (ImGui::InputFloat2("Position Bounds", bound, 2)) {
+							bound[1] = glm::clamp(bound[1], bound[0], 1000.f);
+							bound[0] = glm::clamp(bound[0], -1000.f, bound[1]);
+						}
+
+						bool changed = false;
+						if (ImGui::SliderFloat("x", &value.x, bound[0], bound[1])) {
+							changed = true;
+						}
+						if (ImGui::SliderFloat("y", &value.y, bound[0], bound[1])) {
+							changed = true;
+						}
+						if (ImGui::SliderFloat("z", &value.z, bound[0], bound[1])) {
+							changed = true;
+						}
+						if (changed)
+							m_spawnLocations[m_spawnLocCurrent].pos = value;
+
+						if (ImGui::Button("Move 1 up the y")) {
+							m_spawnLocations[m_spawnLocCurrent].pos += BLM::GLMup;
+						}
+
+						ImGui::TreePop();
+					}
+
+					if (ImGui::TreeNode("Rotation")) {
+
+						ImGui::SliderFloat("angle", &rotAmt, 0.f, 180.f, "%.0f Degrees");
+
+						if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on x").c_str())) {
+							m_spawnLocations[m_spawnLocCurrent].roty += glm::radians(rotAmt);
+						}
+						ImGui::SameLine();
+						if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on x").c_str())) {
+							m_spawnLocations[m_spawnLocCurrent].roty -= glm::radians(rotAmt);
+						}
+
+						if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on y").c_str())) {
+							m_spawnLocations[m_spawnLocCurrent].rotx += glm::radians(rotAmt);
+						}
+						ImGui::SameLine();
+						if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on y").c_str())) {
+							m_spawnLocations[m_spawnLocCurrent].rotx -= glm::radians(rotAmt);
+						}
+
+						ImGui::TreePop();
+					}
+
+					ImGui::TreePop();
+				}
+			}
+
+			ImGui::TreePop();
+		}
+
+		if (ImGui::TreeNode("Spawners")) {
+			if (ImGui::Button("New")) {
+				m_spawners.push_back({ BLM::GLMzero, BLM::GLMQuat, 0.3f });
+			}
+			if (m_spawners.size()) {
+				ImGui::SameLine();
+				if (ImGui::Button("Remove")) {
+					m_spawners.erase(m_spawners.begin() + m_spawnerCurrent);
+					if (m_spawnerCurrent >= m_spawners.size())
+						m_spawnerCurrent = m_spawners.size() - 1;
+					if (m_spawners.size() == 0)
+						m_spawnerCurrent = 0;
+				}
+			}
+
+			if (m_spawners.size()) {
+				ImGui::SliderInt("Selected", &m_spawnerCurrent, 0, m_spawners.size() - 1);
+
+				if (ImGui::Button("Selected To Camera")) {
+					m_spawners[m_spawnerCurrent].pos = ECS::GetComponent<Transform>(cameraEnt).GetGlobalPosition();
+				}
+
+				ImGui::SameLine();
+
+				if (ImGui::Button("Selected To Ray")) {
+					btVector3 pos = PhysBody::GetRaycast(
+						ECS::GetComponent<Transform>(cameraEnt).GetGlobalPosition(),
+						ECS::GetComponent<Transform>(cameraEnt).GetForwards() * -10000.f);
+					if (pos != btVector3()) {
+						m_spawners[m_spawnerCurrent].pos = BLM::BTtoGLM(pos);
+					}
+				}
+
+				if (ImGui::TreeNode("Transformations")) {
+					ImGui::Text("Blue is Z, Green is Y, Red is X");
+
+					if (ImGui::TreeNode("Position")) {
+						glm::vec3 value = m_spawners[m_spawnerCurrent].pos;
+						if (ImGui::InputFloat2("Position Bounds", bound, 2)) {
+							bound[1] = glm::clamp(bound[1], bound[0], 1000.f);
+							bound[0] = glm::clamp(bound[0], -1000.f, bound[1]);
+						}
+
+						bool changed = false;
+						if (ImGui::SliderFloat("x", &value.x, bound[0], bound[1])) {
+							changed = true;
+						}
+						if (ImGui::SliderFloat("y", &value.y, bound[0], bound[1])) {
+							changed = true;
+						}
+						if (ImGui::SliderFloat("z", &value.z, bound[0], bound[1])) {
+							changed = true;
+						}
+						if (changed)
+							m_spawners[m_spawnerCurrent].pos = value;
+
+						if (ImGui::Button("Move 1 up the y")) {
+							m_spawners[m_spawnerCurrent].pos += BLM::GLMup;
+						}
+
+						ImGui::TreePop();
+					}
+
+					if (ImGui::TreeNode("Rotation")) {
+						ImGui::Text(("current - x: " + std::to_string(glm::degrees(
+							glm::eulerAngles(m_spawners[m_spawnerCurrent].rot).y
+						))).c_str());
+
+						ImGui::SliderFloat("angle", &rotAmt, 0.f, 180.f, "%.0f Degrees");
+
+						if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on x").c_str())) {
+							m_spawners[m_spawnerCurrent].rot = glm::rotate(m_spawners[m_spawnerCurrent].rot,
+								glm::radians(rotAmt), BLM::GLMup);
+						}
+						ImGui::SameLine();
+						if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on x").c_str())) {
+							m_spawners[m_spawnerCurrent].rot = glm::rotate(m_spawners[m_spawnerCurrent].rot,
+								glm::radians(-rotAmt), BLM::GLMup);
+						}
+
+						ImGui::TreePop();
+					}
+
+					ImGui::SliderFloat("Radius", &(m_spawners[m_spawnerCurrent].radius), 0.01f, 2.f);
+
+					ImGui::TreePop();
+				}
+			}
+			ImGui::TreePop();
+		}
+
 		ImGui::TreePop();
 	}
 
@@ -619,8 +930,8 @@ void HitboxGen::Update(entt::entity cameraEnt)
 
 			if (ImGui::TreeNode("Position")) {
 				if (ImGui::InputFloat2("Position Bounds", bound, 2)) {
-					bound[0] = glm::clamp(bound[0], -1000.f, bound[1]);
 					bound[1] = glm::clamp(bound[1], bound[0], 1000.f);
+					bound[0] = glm::clamp(bound[0], -1000.f, bound[1]);
 				}
 
 				bool changed = false;

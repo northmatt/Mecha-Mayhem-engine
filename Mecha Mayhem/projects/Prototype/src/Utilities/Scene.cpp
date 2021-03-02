@@ -85,9 +85,26 @@ Scene* Scene::Reattach()
 void Scene::BackEndUpdate()
 {
 	if (!m_paused) {
-		if (m_world != nullptr) {
+		//update components
+		m_reg.view<ObjMorphLoader, Transform>().each(
+			[](ObjMorphLoader& obj, Transform& trans) {
+				obj.Update(Time::dt);
+			}
+		);
+		m_reg.view<Player, PhysBody, Transform>().each(
+			[](Player& p, PhysBody& body, Transform& trans) {
+				p.Update(body);
+			}
+		);
+		m_reg.view<Spawner, Transform>().each(
+			[&](Spawner& spawn, Transform& trans) {
+				spawn.Update(&m_reg, trans.GetGlobalPosition());
+			}
+		);
 
+		if (m_world != nullptr) {
 			m_world->stepSimulation(Time::dt, 10);
+
 
 			m_reg.view<PhysBody, Transform>().each(
 				[](PhysBody& phys, Transform& trans) {
@@ -98,7 +115,6 @@ void Scene::BackEndUpdate()
 		}
 		m_effects.Update();
 	}
-
 
 	//always render
 	if (m_camCount < 1)

@@ -1,6 +1,7 @@
 #pragma once
-#include "Components/ObjMorphLoader.h"
 #include "Components/Transform.h"
+#include "Components/ObjMorphLoader.h"
+#include "Components/SpawnStation.h"
 
 class HitboxGen
 {
@@ -49,6 +50,50 @@ public:
 	//Through ImGui
 	void Update(entt::entity cameraEnt = entt::null);
 
+	void GetSpawnNear(Player& p, glm::vec3 testPos, float range) {
+		//for loop in case it never hits anything
+		int index = rand() % m_spawnLocations.size();
+		glm::vec3 pos = m_spawnLocations[index].pos;
+		for (int i(0); i < 25; ++i) {
+			if (glm::length(testPos - pos) < range) {
+				//success
+				break;
+			}
+			//re-get one
+			index = rand() % m_spawnLocations.size();
+			pos = m_spawnLocations[index].pos;
+		}
+
+		p.SetSpawn(pos);
+		p.SetRotation(m_spawnLocations[index].roty, m_spawnLocations[index].rotx);
+	}
+
+	void SetPlayerSpawn(Player& p, std::vector<glm::vec3> tests, float range) {
+		if (m_spawnLocations.size() == 0)	return;
+		//test for players or limits or whatever
+
+		int index = rand() % m_spawnLocations.size();
+		glm::vec3 pos = m_spawnLocations[index].pos;
+		//decide how to check this or smt here
+		for (int i(0); i < 25; ++i) {
+			bool works = true;
+			for (int x(0); x < tests.size(); ++x) {
+				if (glm::length(tests[x] - pos) < range) {
+					works = false;
+					break;
+				}
+			}
+			if (works)
+				break;
+
+			index = rand() % m_spawnLocations.size();
+			pos = m_spawnLocations[index].pos;
+		}
+
+		p.SetSpawn(pos);
+		p.SetRotation(m_spawnLocations[index].roty, m_spawnLocations[index].rotx);
+	}
+
 	void Clear() {
 		m_draw = false;
 		m_current = 0;
@@ -58,6 +103,8 @@ public:
 			delete m_boxShape[i];
 		}
 		m_boxShape.clear();
+		m_spawners.clear();
+		m_spawnLocations.clear();
 	}
 
 	//init things
@@ -89,6 +136,8 @@ private:
 	bool m_draw = false;
 	bool m_lookingAtSelected = false;
 	int m_current = 0;
+	int m_spawnerCurrent = 0;
+	int m_spawnLocCurrent = 0;
 	int selectingScale = 0;
 	std::string m_filename;
 
@@ -100,8 +149,24 @@ private:
 		btRigidBody* body;
 		std::string type = "box";
 	};
-
 	std::vector<Shape> m_objects = {};
+
+	struct SpawnerData
+	{
+		glm::vec3 pos;
+		glm::quat rot;
+		float radius;
+	};
+	std::vector<SpawnerData> m_spawners = {};
+
+	struct SpawnData
+	{
+		glm::vec3 pos;
+		float rotx;
+		float roty;
+	};
+	std::vector<SpawnData> m_spawnLocations = {};
+
 	std::vector<Transform> m_tempObjects = {};
 	btRigidBody* m_floor = nullptr;
 	btAlignedObjectArray<btCollisionShape*> m_boxShape;

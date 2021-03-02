@@ -223,6 +223,10 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 
 void Player::Update(PhysBody& body)
 {
+	if (m_user == CONUSER::NONE) {
+		//rotate even dummies
+		body.SetRotation(glm::angleAxis(-m_rot.y, BLM::GLMup));
+	}
 	m_charModel.Update(Time::dt);
 	//when dead
 	if (m_respawnTimer > 0) {
@@ -230,6 +234,7 @@ void Player::Update(PhysBody& body)
 		m_charModel.BlendTo(m_charModelIndex + "/death", 0.25f);
 		if (m_respawnTimer == m_respawnDelay)
 			m_deathPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
+
 		m_respawnTimer -= Time::dt;
 		if (m_respawnTimer <= 0) {
 			m_charModel.BlendTo(m_charModelIndex + "/idle");
@@ -284,8 +289,8 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 		if (m_rot.x > pi)			m_rot.x = pi;
 		else if (m_rot.x < -pi)		m_rot.x = -pi;
 
-		body.SetRotation(glm::rotate(m_startRot, -m_rot.y, BLM::GLMup));
-		head.SetRotation(glm::rotate(m_startRot, m_rot.x, glm::vec3(1, 0, 0)));
+		body.SetRotation(glm::angleAxis(-m_rot.y, BLM::GLMup));
+		head.SetRotation(glm::angleAxis(m_rot.x, glm::vec3(1, 0, 0)));
 	
 
 		//camera distance checks

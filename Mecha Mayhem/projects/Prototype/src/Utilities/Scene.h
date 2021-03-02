@@ -3,7 +3,6 @@
 #include "Time.h"
 #include "Input.h"
 #include <AudioEngine.h>
-#include "Effects/Post/SepiaEffect.h"
 
 class Scene
 {

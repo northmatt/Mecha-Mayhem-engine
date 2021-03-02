@@ -66,8 +66,7 @@ namespace Rendering {
 
 			//draw all the morph objs
 			morphView.each(
-				[&](ObjMorphLoader& obj, Transform& trans) {
-					if ((count == 0) && !paused) obj.Update(Time::dt);
+				[](ObjMorphLoader& obj, Transform& trans) {
 					obj.Draw(trans.GetModel());
 				}
 			);
@@ -80,8 +79,7 @@ namespace Rendering {
 			);
 
 			spawnerView.each(
-				[&](Spawner& spawn, Transform& trans) {
-					if ((count == 0) && !paused) spawn.Update(reg, trans.GetGlobalPosition());
+				[](Spawner& spawn, Transform& trans) {
 					spawn.Render(trans.GetModel());
 				}
 			);
@@ -90,10 +88,7 @@ namespace Rendering {
 			//int temp = 2;
 			playerView.each(
 				[&](Player& p, PhysBody& body, Transform& trans) {
-					if (count == 0 && !paused) p.Update(body);
 					p.Draw(trans.GetModel(), count, numOfCams, paused);
-					/*if (p.IsPlayer())
-						Rendering::LightsPos[temp++] = trans.GetGlobalPosition();*/
 				}
 			);
 

@@ -61,7 +61,6 @@ private:
 	size_t killGoal = 5;
 
 	float camDistance = 2.5f;
-	glm::quat startQuat = glm::quat(0, 0, 1, 0);
 
 	entt::entity bodyEnt[4] = { entt::null, entt::null, entt::null, entt::null };
 	entt::entity Head[4] = { entt::null, entt::null, entt::null, entt::null };

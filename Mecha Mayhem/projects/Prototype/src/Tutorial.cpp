@@ -20,15 +20,17 @@ void Tutorial::Init(int width, int height)
 	
 	{
 		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<PhysBody>(entity).CreatePlayer(entity, startQuat, glm::vec3(0, 1, -12))
+		ECS::AttachComponent<PhysBody>(entity).CreatePlayer(entity, BLM::GLMQuat, glm::vec3(0, 1, -12))
 			.GetBody()->setMassProps(0, btVector3(0, -1, 0));
-		ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(4, 1, -59)).SetMaxHealth(5);
+		ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69)
+			.SetSpawn(glm::vec3(4, 1, -59)).SetRotation(glm::radians(180.f), 0);// .SetMaxHealth(5);
 	}
 	{
 		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<PhysBody>(entity).CreatePlayer(entity, startQuat, glm::vec3(0, 2.5f, -20))
+		ECS::AttachComponent<PhysBody>(entity).CreatePlayer(entity, BLM::GLMQuat, glm::vec3(0, 2.5f, -20))
 			.GetBody()->setMassProps(0, btVector3(0, -1, 0));
-		ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(-4, 1, -59)).SetMaxHealth(10);
+		ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69)
+			.SetSpawn(glm::vec3(-4, 1, -59)).SetRotation(glm::radians(180.f), 0);// .SetMaxHealth(10);
 	}
 	{
 		auto entity = ECS::CreateEntity();
@@ -39,15 +41,17 @@ void Tutorial::Init(int width, int height)
 	for (int i(0); i < 3; ++i) {
 		{
 			auto entity = ECS::CreateEntity();
-			ECS::AttachComponent<PhysBody>(entity).CreatePlayer(entity, startQuat, glm::vec3(-7.5f, 1, i * 7.5f - 55))
+			ECS::AttachComponent<PhysBody>(entity).CreatePlayer(entity, BLM::GLMQuat, glm::vec3(-7.5f, 1, i * 7.5f - 55))
 				.GetBody()->setMassProps(0, btVector3(0, -1, 0));
-			ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(-7.5f, 1, i * 7.5f - 55));
+			ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(-7.5f, 1, i * 7.5f - 55))
+				.SetRotation(glm::radians(90.f), 0);
 		}
 		{
 			auto entity = ECS::CreateEntity();
-			ECS::AttachComponent<PhysBody>(entity).CreatePlayer(entity, startQuat, glm::vec3(7.5f, 1, i * 7.5f - 55))
+			ECS::AttachComponent<PhysBody>(entity).CreatePlayer(entity, BLM::GLMQuat, glm::vec3(7.5f, 1, i * 7.5f - 55))
 				.GetBody()->setMassProps(0, btVector3(0, -1, 0));
-			ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(7.5f, 1, i * 7.5f - 55));
+			ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69).SetSpawn(glm::vec3(7.5f, 1, i * 7.5f - 55))
+				.SetRotation(glm::radians(270.f), 0);
 		}
 		{
 			auto entity = ECS::CreateEntity();
@@ -289,7 +293,7 @@ Scene* Tutorial::Reattach() {
 			ECS::AttachComponent<Camera>(cameraEnt[i]).SetFovDegrees(60.f).ResizeWindow(BackEnd::GetWidth(), BackEnd::GetHeight());
 
 		bodyEnt[i] = ECS::CreateEntity();
-		ECS::AttachComponent<PhysBody>(bodyEnt[i]).CreatePlayer(bodyEnt[i], startQuat, glm::vec3(0, 1.5f, 0));
+		ECS::AttachComponent<PhysBody>(bodyEnt[i]).CreatePlayer(bodyEnt[i], BLM::GLMQuat, glm::vec3(0, 1.5f, 0));
 		ECS::AttachComponent<Player>(bodyEnt[i]).Init(
 			LeaderBoard::players[temp].user, LeaderBoard::players[temp].model, i).SetRotation(glm::radians(180.f), 0);
 

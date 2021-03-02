@@ -64,10 +64,10 @@ public:
 	*/
 	Player& Init(CONUSER user, int characterModel, int camPos = 10);
 
-	//in radians
+	//in radians, y is horizontal, x is vertical
 	Player& SetRotation(float y, float x) { m_rot = glm::vec2(x, y); return *this; }
 
-	Player& SetSpawn(const glm::vec3 pos) { m_spawnPos = pos; return *this; }
+	Player& SetSpawn(const glm::vec3& pos) { m_spawnPos = pos; return *this; }
 
 	Player& SetMaxHealth(short amt) { m_maxHealth = amt; if (m_health > amt) m_health = amt; return *this; }
 
@@ -105,6 +105,9 @@ public:
 	}
 
 	bool IsPlayer() { return m_user != CONUSER::NONE; }
+
+	//returns true if <= than timer
+	bool RespawnDelayTest(float timer) { return m_respawnTimer <= timer; }
 
 	//returns true if successful
 	bool PickUpWeapon(WEAPON pickup);
@@ -211,7 +214,7 @@ private:
 	static const GunProperties machineGun;
 	static const float shotgunDistance;
 
-	glm::quat m_startRot = glm::quat(1, 0, 0, 0);
+	//glm::quat m_startRot = glm::quat(1, 0, 0, 0);
 	glm::vec3 m_spawnPos = glm::vec3(0.f);
 	glm::vec3 m_deathPos = glm::vec3(0.f);
 	glm::vec2 m_rot = glm::vec2(0.f);
