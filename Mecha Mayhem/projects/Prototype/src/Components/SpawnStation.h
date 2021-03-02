@@ -18,8 +18,7 @@ public:
 	void SetBounds(int lower, int upper) {
 		if ((lower > upper) || (lower < 0))	return;
 		lowerBound = lower;
-		if (lower == upper)		upperBound = 0;
-		else	upperBound = upper - lower + 1;
+		upperBound = upper - lower + 1;
 	}
 
 	void Render(glm::mat4 model) {

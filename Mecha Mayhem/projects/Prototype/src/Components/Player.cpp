@@ -6,7 +6,7 @@
 const btVector3 Player::m_gravity = btVector3(0, -100, 0);
 
 const glm::vec4 Player::m_gunOffset = glm::vec4(
-	0.3f, -0.5f, -0.4f, 1
+	0.3f, -0.3f, -0.4f, 1
 );
 
 const glm::mat4 Player::m_gunOffsetMat = glm::mat4(
@@ -599,7 +599,6 @@ void Player::LaserGun(float offset, Transform& head, short damage, float distanc
 	
 	if (p.hasHit()) if (p.m_closestHitFraction <= 0.01f)
 	{
-		std::cout << "hit\n";
 		entt::entity playerIdTest = p.m_collisionObject->getUserIndex();
 		if (ECS::Exists(playerIdTest)) {
 			if (ECS::HasComponent<Player>(playerIdTest)) {

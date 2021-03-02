@@ -135,14 +135,18 @@ bool HitboxGen::Init(btDiscreteDynamicsWorld* world, const std::string& filename
 				else if (input == "spawner") {
 					glm::vec3 pos(0.f);
 					glm::quat rot(1.f, 0.f, 0.f, 0.f);
+					glm::vec2 bounds = __spawnerBounds;
 					float radius = 1.f;
+					float delay = 5.f;
 					while (!ss.eof()) {
 						ss >> input;
 						if (input == "pos")			ss >> pos.x >> pos.y >> pos.z;
 						else if (input == "rot")	ss >> rot.x >> rot.y >> rot.z >> rot.w;
+						else if (input == "bounds")	ss >> bounds.x >> bounds.y;
 						else if (input == "radius")	ss >> radius;
+						else if (input == "delay")	ss >> delay;
 					}
-					m_spawners.push_back({ pos, rot, radius });
+					m_spawners.push_back({ pos, rot, bounds, radius, delay });
 				}
 				else if (input == "spawn") {
 					glm::vec3 pos(0.f);
@@ -249,9 +253,17 @@ bool HitboxGen::SaveToFile(bool overwriteExisting)
 		if (rot.w != 1 || rot.x != 0 || rot.y != 0 || rot.z != 0)
 			file << " rot " << rot.x << ' ' << rot.y << ' ' << rot.z << ' ' << rot.w;
 
+		glm::vec2 bounds = m_spawners[i].bounds;
+		if (bounds.x != 0 || bounds.y != 5)
+			file << " bounds " << bounds.x << ' ' << bounds.y;
+
 		float radius = m_spawners[i].radius;
-		if (radius != 1)
+		if (radius != 0.3f)
 			file << " radius " << radius;
+
+		float delay = m_spawners[i].delay;
+		if (delay != 5.f)
+			file << " delay " << delay;
 	}
 
 	for (short i(0); i < m_spawnLocations.size(); ++i) {
@@ -335,14 +347,18 @@ bool HitboxGen::LoadFromFile()
 		else if (input == "spawner") {
 			glm::vec3 pos(0.f);
 			glm::quat rot(1.f, 0.f, 0.f, 0.f);
-			float radius = 1.f;
+			glm::vec2 bounds = __spawnerBounds;
+			float radius = 0.3f;
+			float delay = 5.f;
 			while (!ss.eof()) {
 				ss >> input;
 				if (input == "pos")			ss >> pos.x >> pos.y >> pos.z;
 				else if (input == "rot")	ss >> rot.x >> rot.y >> rot.z >> rot.w;
+				else if (input == "bounds")	ss >> bounds.x >> bounds.y;
 				else if (input == "radius")	ss >> radius;
+				else if (input == "delay")	ss >> delay;
 			}
-			m_spawners.push_back({ pos, rot, radius });
+			m_spawners.push_back({ pos, rot, bounds, radius, delay });
 		}
 		else if (input == "spawn") {
 			glm::vec3 pos(0.f);
@@ -380,7 +396,7 @@ void HitboxGen::Render()
 		model[3][3] = 1.f;
 		model *= glm::toMat4(m_spawners[i].rot);
 		model[3] = glm::vec4(m_spawners[i].pos + BLM::GLMup, 1);
-		m_cylinderCurrent.Draw(model);
+		m_cubeCurrent.Draw(model);
 
 		m_cylinder.Draw(glm::mat4(
 			1.f, 0, 0, 0,
@@ -827,7 +843,7 @@ void HitboxGen::Update(entt::entity cameraEnt)
 
 		if (ImGui::TreeNode("Spawners")) {
 			if (ImGui::Button("New")) {
-				m_spawners.push_back({ BLM::GLMzero, BLM::GLMQuat, 0.3f });
+				m_spawners.push_back({ BLM::GLMzero, BLM::GLMQuat, __spawnerBounds, 0.3f, 5.f });
 			}
 			if (m_spawners.size()) {
 				ImGui::SameLine();
@@ -897,18 +913,24 @@ void HitboxGen::Update(entt::entity cameraEnt)
 
 						if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on x").c_str())) {
 							m_spawners[m_spawnerCurrent].rot = glm::rotate(m_spawners[m_spawnerCurrent].rot,
-								glm::radians(rotAmt), BLM::GLMup);
+								glm::radians(-rotAmt), BLM::GLMup);
 						}
 						ImGui::SameLine();
 						if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on x").c_str())) {
 							m_spawners[m_spawnerCurrent].rot = glm::rotate(m_spawners[m_spawnerCurrent].rot,
-								glm::radians(-rotAmt), BLM::GLMup);
+								glm::radians(rotAmt), BLM::GLMup);
 						}
 
 						ImGui::TreePop();
 					}
 
 					ImGui::SliderFloat("Radius", &(m_spawners[m_spawnerCurrent].radius), 0.01f, 2.f);
+					ImGui::SliderFloat("Delay", &(m_spawners[m_spawnerCurrent].delay), 0.f, 30.f);
+					if (ImGui::SliderFloat2("itemBounds", &(m_spawners[m_spawnerCurrent].bounds[0]),
+						__spawnerBounds.x, __spawnerBounds.y, "%.0f")) {
+						if (m_spawners[m_spawnerCurrent].bounds[1] < m_spawners[m_spawnerCurrent].bounds[0])
+							m_spawners[m_spawnerCurrent].bounds[1] = m_spawners[m_spawnerCurrent].bounds[0];
+					}
 
 					ImGui::TreePop();
 				}
