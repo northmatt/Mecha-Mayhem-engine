@@ -60,10 +60,11 @@ public:
 		}
 	}
 
-	void GetSpawnNear(Player& p, glm::vec3 testPos, float range) {
+	void SetSpawnNear(Player& p, glm::vec3 testPos, float range) {
 		//for loop in case it never hits anything
 		int index = rand() % m_spawnLocations.size();
 		glm::vec3 pos = m_spawnLocations[index].pos;
+		//limit how many tries it does (in case all attempts fail)
 		for (int i(0); i < 25; ++i) {
 			if (glm::length(testPos - pos) < range) {
 				//success
@@ -78,16 +79,17 @@ public:
 		p.SetRotation(m_spawnLocations[index].roty, m_spawnLocations[index].rotx);
 	}
 
-	void SetPlayerSpawn(Player& p, std::vector<glm::vec3> tests, float range) {
+	void SetSpawnAvoid(Player& p, std::vector<glm::vec3> tests, float range) {
 		if (m_spawnLocations.size() == 0)	return;
 		//test for players or limits or whatever
 
 		int index = rand() % m_spawnLocations.size();
 		glm::vec3 pos = m_spawnLocations[index].pos;
-		//decide how to check this or smt here
+		//limit how many tries it does (in case all attempts fail)
 		for (int i(0); i < 25; ++i) {
 			bool works = true;
 			for (int x(0); x < tests.size(); ++x) {
+				//if too close, try again
 				if (glm::length(tests[x] - pos) < range) {
 					works = false;
 					break;

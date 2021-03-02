@@ -145,6 +145,20 @@ void Tutorial::Update()
 		}
 	}*/
 
+	if (Input::GetKeyDown(KEY::F)) {
+		if (++m_camCount > 4)	m_camCount = 1;
+		if (m_camCount == 2) {
+			ECS::GetComponent<Camera>(cameraEnt[0]).ResizeWindow(BackEnd::GetHalfWidth(), BackEnd::GetHeight());
+			ECS::GetComponent<Camera>(cameraEnt[1]).ResizeWindow(BackEnd::GetHalfWidth(), BackEnd::GetHeight());
+			Player::SetUIAspect(BackEnd::GetHalfWidth(), BackEnd::GetHeight());
+		}
+		else {
+			ECS::GetComponent<Camera>(cameraEnt[0]).ResizeWindow(BackEnd::GetWidth(), BackEnd::GetHeight());
+			ECS::GetComponent<Camera>(cameraEnt[1]).ResizeWindow(BackEnd::GetWidth(), BackEnd::GetHeight());
+			Player::SetUIAspect(BackEnd::GetWidth(), BackEnd::GetHeight());
+		}
+	}
+
 	for (size_t i(0); i < 4; ++i) {
 		if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(i))) {
 			if (ControllerInput::GetButton(BUTTON::RB, CONUSER(i))) {

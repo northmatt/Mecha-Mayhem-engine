@@ -170,44 +170,57 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 
 		glm::mat4 VP = m_orthoCam.GetViewProjection();
 
-		m_scoreBack.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			x, y, -9.9f, 1		));
+		m_scoreBack.DrawToUI(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			x, y, -9.9f, 1),
+			camNum);
 
 		if (m_killCount < 10) {
-			m_digits[m_killCount].Draw(VP, glm::mat4(
-				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x, y, -10, 1			));
+			m_digits[m_killCount].DrawToUI(VP, glm::mat4(
+				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x, y, -10, 1),
+				camNum);
 		}
 		else if (m_killCount < 100) {
 			int digit2 = m_killCount / 10;
-			m_digits[m_killCount - digit2 * 10].Draw(VP, glm::mat4(
-				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x - 0.65f, y, -10, 1			));
-			m_digits[digit2].Draw(VP, glm::mat4(
-				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x + 0.65f, y, -10, 1			));
+			m_digits[m_killCount - digit2 * 10].DrawToUI(VP, glm::mat4(
+				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x - 0.65f, y, -10, 1),
+				camNum);
+			m_digits[digit2].DrawToUI(VP, glm::mat4(
+				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x + 0.65f, y, -10, 1),
+				camNum);
 		}
 		else {
-			m_digits[0].Draw(VP, glm::mat4(
-				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x - 0.65f, y, -10, 1			));
-			m_digits[0].Draw(VP, glm::mat4(
-				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x + 0.65f, y, -10, 1			));
+			m_digits[0].DrawToUI(VP, glm::mat4(
+				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x - 0.65f, y, -10, 1),
+				camNum);
+			m_digits[0].DrawToUI(VP, glm::mat4(
+				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x + 0.65f, y, -10, 1),
+				camNum);
 		}
 
-		m_healthBar.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			(1 - healthPercent) * 7.475f, -8.5f, -9.9f, 1		));
-		m_healthBarBack.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -8.5f, -9.8f, 1		));
-		m_dashBar.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			dashPercent * 4.575f, -7.25f, -9.9f, 1		));
-		m_dashBarBack.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -7.25f, -9.8f, 1		));
+		m_healthBar.DrawToUI(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			(1 - healthPercent) * 7.475f, -8.5f, -9.9f, 1),
+			camNum);
+		m_healthBarBack.DrawToUI(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -8.5f, -9.8f, 1),
+			camNum);
+		m_dashBar.DrawToUI(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			dashPercent * 4.575f, -7.25f, -9.9f, 1),
+			camNum);
+		m_dashBarBack.DrawToUI(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -7.25f, -9.8f, 1),
+			camNum);
 
 		//drawn last cause layering
-		m_healthBarOutline.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -8.5f, -10.f, 1		));
-		m_dashBarOutline.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -7.25f, -10.f, 1		));
+		m_healthBarOutline.DrawToUI(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -8.5f, -10.f, 1),
+			camNum);
+		m_dashBarOutline.DrawToUI(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -7.25f, -10.f, 1),
+			camNum);
 
-		if (!paused)	m_reticle.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, 0, -10, 1		));
+		if (!paused)	m_reticle.DrawToUI(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, 0, -10, 1),
+			camNum);
 
 		//is false when cam is too close
 		if (!m_drawSelf)	return;

@@ -20,6 +20,8 @@ void DemoScene::Init(int width, int height)
 		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, -30.f, 0)).SetScale(4.f);
 	}
 
+	m_colliders.GenerateSpawners();
+
 	/// End of creating entities
 	Rendering::DefaultColour = glm::vec4(0.75f, 0.75f, 0.75f, 1.f);
 	Rendering::LightCount = 2;

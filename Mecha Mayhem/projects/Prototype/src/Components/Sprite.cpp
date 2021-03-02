@@ -1,6 +1,7 @@
 #include "Sprite.h"
 std::vector<Sprite::Texture> Sprite::m_textures = {};
 std::vector<Sprite::DrawData> Sprite::m_Queue = {};
+std::vector<Sprite::DrawData> Sprite::m_UIQueue[4] = {};
 VertexArrayObject::sptr Sprite::m_square = nullptr;
 Shader::sptr Sprite::m_shader = nullptr;
 
@@ -73,6 +74,14 @@ void Sprite::BeginDraw(unsigned amt)
 	m_Queue.reserve(amt);
 }
 
+void Sprite::BeginUIDraw(unsigned UIamt, unsigned camCount)
+{
+	for (int i(0); i < camCount; ++i) {
+		m_UIQueue[i].resize(0);
+		m_UIQueue[i].reserve(UIamt);
+	}
+}
+
 void Sprite::Draw(const glm::mat4& VP, const glm::mat4& model)
 {
 	glm::mat4 MVP = VP * glm::scale(model, glm::vec3(m_width * m_scale, m_height * m_scale, 1));
@@ -94,6 +103,13 @@ void Sprite::DrawSingle(const glm::mat4& VP, const glm::mat4& model)
 	Shader::UnBind();
 }
 
+void Sprite::DrawToUI(const glm::mat4& VP, const glm::mat4& model, short camNum)
+{
+	glm::mat4 MVP = VP * glm::scale(model, glm::vec3(m_width * m_scale, m_height * m_scale, 1));
+
+	m_UIQueue[camNum].push_back({ m_index, MVP });
+}
+
 void Sprite::PerformDraw()
 {
 	if (m_Queue.size() != 0) {
@@ -104,6 +120,34 @@ void Sprite::PerformDraw()
 			m_textures[m_Queue[i].index].texture->Bind(0);
 
 			m_square->Render();
+		}
+
+		Shader::UnBind();
+	}
+}
+
+void Sprite::PerformUIDraw(int numOfCams)
+{
+	if (m_UIQueue[0].size() != 0) {
+		int height = BackEnd::GetHalfHeight();
+		int width = BackEnd::GetHalfWidth();
+
+		m_shader->Bind();
+
+		for (int cam(0); cam < numOfCams; ++cam) {
+			if (numOfCams > 2)
+				glViewport(((cam % 2) * width), ((cam < 2) * height), width, height);
+			else if (numOfCams == 2)
+				glViewport((cam * width), 0, width, height * 2);
+			else
+				glViewport(0, 0, width * 2, height * 2);
+
+			for (int i(0); i < m_UIQueue[cam].size(); ++i) {
+				m_shader->SetUniformMatrix("MVP", m_UIQueue[cam][i].MVP);
+				m_textures[m_UIQueue[cam][i].index].texture->Bind(0);
+
+				m_square->Render();
+			}
 		}
 
 		Shader::UnBind();

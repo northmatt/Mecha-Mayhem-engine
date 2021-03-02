@@ -27,6 +27,8 @@ namespace Rendering {
 		auto cameraView = reg->view<Camera, Transform>();
 		auto spawnerView = reg->view<Spawner, Transform>();
 
+		Sprite::BeginUIDraw(10, numOfCams);
+
 		int height = BackEnd::GetHalfHeight();
 		int width = BackEnd::GetHalfWidth();
 
@@ -37,7 +39,7 @@ namespace Rendering {
 			//    width * (numOfCams == 1 ? 2 : 1), height * (numOfCams > 2 ? 1 : 2));
 
 			if (numOfCams > 2)
-				glViewport(((count % 2) * width), (count < 2 ? height : 0), width, height);
+				glViewport(((count % 2) * width), ((count < 2) * height), width, height);
 			else if (numOfCams == 2)
 				glViewport((count * width), 0, width, height * 2);
 			else
@@ -55,7 +57,7 @@ namespace Rendering {
 			ObjLoader::BeginDraw(objView.size());
 			ObjMorphLoader::BeginDraw(morphView.size() + spawnerView.size() + playerView.size());
 			//number of ui elements
-			Sprite::BeginDraw(spriteView.size() + 6);
+			Sprite::BeginDraw(spriteView.size());
 
 			//draw all the objs
 			objView.each(
@@ -121,6 +123,10 @@ namespace Rendering {
 				break;
 		}
 		glViewport(0, 0, BackEnd::GetWidth(), BackEnd::GetHeight());
+
+		frameEffects->UnBind();
+		frameEffects->Draw();
+		Sprite::PerformUIDraw(numOfCams);
 	}
 
 	/*void DrawPauseScreen(Sprite image)

@@ -105,7 +105,6 @@ void Scene::BackEndUpdate()
 		if (m_world != nullptr) {
 			m_world->stepSimulation(Time::dt, 10);
 
-
 			m_reg.view<PhysBody, Transform>().each(
 				[](PhysBody& phys, Transform& trans) {
 					if (phys.IsDynamic() || phys.Changed())
@@ -124,10 +123,9 @@ void Scene::BackEndUpdate()
 
 	Rendering::Update(&m_reg, m_camCount, m_paused);
 
-	m_frameEffects.UnBind();
-	m_frameEffects.Draw();
-
 	if (m_paused)   if (m_pauseSprite.IsValid()) {
+		glViewport(0, 0, BackEnd::GetWidth(), BackEnd::GetHeight());
+
 		m_pauseSprite.DrawSingle(Rendering::orthoVP.GetViewProjection(), glm::mat4(
 			1, 0, 0, 0,
 			0, 1, 0, 0,

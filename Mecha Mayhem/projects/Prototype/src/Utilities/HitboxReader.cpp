@@ -382,18 +382,11 @@ bool HitboxGen::LoadFromFile()
 
 void HitboxGen::Render()
 {
-	if (!m_world || !m_draw)    return;
-
-	if (m_floor) {
-		Transform floor;
-		floor.SetPosition(m_floor->getWorldTransform().getOrigin()).SetScale(glm::vec3(100000, 0, 100000));
-		m_cube.Draw(floor.GetModel());
-	}
+	if (!m_world)    return;
 
 	for (short i(0); i < m_spawners.size(); ++i) {
-		glm::mat4 model = glm::mat4(1.f);
-		model *= m_spawners[i].radius * 2.f;
-		model[3][3] = 1.f;
+		glm::mat4 model = glm::scale(glm::mat4(1.f),
+			glm::vec3(m_spawners[i].radius * 1.5f, m_spawners[i].radius * 2.f, m_spawners[i].radius * 2.f));
 		model *= glm::toMat4(m_spawners[i].rot);
 		model[3] = glm::vec4(m_spawners[i].pos + BLM::GLMup, 1);
 		m_cubeCurrent.Draw(model);
@@ -428,6 +421,14 @@ void HitboxGen::Render()
 
 		m_cube.Draw(model);
 
+	}
+
+	if (!m_draw)	return;
+
+	if (m_floor) {
+		Transform floor;
+		floor.SetPosition(m_floor->getWorldTransform().getOrigin()).SetScale(glm::vec3(100000, 0, 100000));
+		m_cube.Draw(floor.GetModel());
 	}
 
 	for (short i(0); i < m_tempObjects.size(); ++i) {
@@ -748,196 +749,6 @@ void HitboxGen::Update(entt::entity cameraEnt)
 			ChangeCircularCount(5, true);
 		}
 
-		if (ImGui::TreeNode("Spawnpoints")) {
-			if (ImGui::Button("New")) {
-				m_spawnLocations.push_back({ BLM::GLMzero, 0, 0 });
-			}
-			if (m_spawnLocations.size()) {
-				ImGui::SameLine();
-				if (ImGui::Button("Remove")) {
-					m_spawnLocations.erase(m_spawnLocations.begin() + m_spawnLocCurrent);
-					if (m_spawnLocCurrent >= m_spawnLocations.size())
-						m_spawnLocCurrent = m_spawnLocations.size() - 1;
-					if (m_spawnLocations.size() == 0)
-						m_spawnLocCurrent = 0;
-				}
-			}
-
-			if (m_spawnLocations.size()) {
-				ImGui::SliderInt("Selected", &m_spawnLocCurrent, 0, m_spawnLocations.size() - 1);
-
-				if (ImGui::Button("Selected To Camera")) {
-					m_spawnLocations[m_spawnLocCurrent].pos = ECS::GetComponent<Transform>(cameraEnt).GetGlobalPosition();
-				}
-
-				ImGui::SameLine();
-
-				if (ImGui::Button("Selected To Ray")) {
-					btVector3 pos = PhysBody::GetRaycast(
-						ECS::GetComponent<Transform>(cameraEnt).GetGlobalPosition(),
-						ECS::GetComponent<Transform>(cameraEnt).GetForwards() * -10000.f);
-					if (pos != btVector3()) {
-						m_spawnLocations[m_spawnLocCurrent].pos = BLM::BTtoGLM(pos);
-					}
-				}
-
-				if (ImGui::TreeNode("Transformations")) {
-					ImGui::Text("Blue is Z, Green is Y, Red is X");
-
-					if (ImGui::TreeNode("Position")) {
-						glm::vec3 value = m_spawnLocations[m_spawnLocCurrent].pos;
-						if (ImGui::InputFloat2("Position Bounds", bound, 2)) {
-							bound[1] = glm::clamp(bound[1], bound[0], 1000.f);
-							bound[0] = glm::clamp(bound[0], -1000.f, bound[1]);
-						}
-
-						bool changed = false;
-						if (ImGui::SliderFloat("x", &value.x, bound[0], bound[1])) {
-							changed = true;
-						}
-						if (ImGui::SliderFloat("y", &value.y, bound[0], bound[1])) {
-							changed = true;
-						}
-						if (ImGui::SliderFloat("z", &value.z, bound[0], bound[1])) {
-							changed = true;
-						}
-						if (changed)
-							m_spawnLocations[m_spawnLocCurrent].pos = value;
-
-						if (ImGui::Button("Move 1 up the y")) {
-							m_spawnLocations[m_spawnLocCurrent].pos += BLM::GLMup;
-						}
-
-						ImGui::TreePop();
-					}
-
-					if (ImGui::TreeNode("Rotation")) {
-
-						ImGui::SliderFloat("angle", &rotAmt, 0.f, 180.f, "%.0f Degrees");
-
-						if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on x").c_str())) {
-							m_spawnLocations[m_spawnLocCurrent].roty += glm::radians(rotAmt);
-						}
-						ImGui::SameLine();
-						if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on x").c_str())) {
-							m_spawnLocations[m_spawnLocCurrent].roty -= glm::radians(rotAmt);
-						}
-
-						if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on y").c_str())) {
-							m_spawnLocations[m_spawnLocCurrent].rotx += glm::radians(rotAmt);
-						}
-						ImGui::SameLine();
-						if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on y").c_str())) {
-							m_spawnLocations[m_spawnLocCurrent].rotx -= glm::radians(rotAmt);
-						}
-
-						ImGui::TreePop();
-					}
-
-					ImGui::TreePop();
-				}
-			}
-
-			ImGui::TreePop();
-		}
-
-		if (ImGui::TreeNode("Spawners")) {
-			if (ImGui::Button("New")) {
-				m_spawners.push_back({ BLM::GLMzero, BLM::GLMQuat, __spawnerBounds, 0.3f, 5.f });
-			}
-			if (m_spawners.size()) {
-				ImGui::SameLine();
-				if (ImGui::Button("Remove")) {
-					m_spawners.erase(m_spawners.begin() + m_spawnerCurrent);
-					if (m_spawnerCurrent >= m_spawners.size())
-						m_spawnerCurrent = m_spawners.size() - 1;
-					if (m_spawners.size() == 0)
-						m_spawnerCurrent = 0;
-				}
-			}
-
-			if (m_spawners.size()) {
-				ImGui::SliderInt("Selected", &m_spawnerCurrent, 0, m_spawners.size() - 1);
-
-				if (ImGui::Button("Selected To Camera")) {
-					m_spawners[m_spawnerCurrent].pos = ECS::GetComponent<Transform>(cameraEnt).GetGlobalPosition();
-				}
-
-				ImGui::SameLine();
-
-				if (ImGui::Button("Selected To Ray")) {
-					btVector3 pos = PhysBody::GetRaycast(
-						ECS::GetComponent<Transform>(cameraEnt).GetGlobalPosition(),
-						ECS::GetComponent<Transform>(cameraEnt).GetForwards() * -10000.f);
-					if (pos != btVector3()) {
-						m_spawners[m_spawnerCurrent].pos = BLM::BTtoGLM(pos);
-					}
-				}
-
-				if (ImGui::TreeNode("Transformations")) {
-					ImGui::Text("Blue is Z, Green is Y, Red is X");
-
-					if (ImGui::TreeNode("Position")) {
-						glm::vec3 value = m_spawners[m_spawnerCurrent].pos;
-						if (ImGui::InputFloat2("Position Bounds", bound, 2)) {
-							bound[1] = glm::clamp(bound[1], bound[0], 1000.f);
-							bound[0] = glm::clamp(bound[0], -1000.f, bound[1]);
-						}
-
-						bool changed = false;
-						if (ImGui::SliderFloat("x", &value.x, bound[0], bound[1])) {
-							changed = true;
-						}
-						if (ImGui::SliderFloat("y", &value.y, bound[0], bound[1])) {
-							changed = true;
-						}
-						if (ImGui::SliderFloat("z", &value.z, bound[0], bound[1])) {
-							changed = true;
-						}
-						if (changed)
-							m_spawners[m_spawnerCurrent].pos = value;
-
-						if (ImGui::Button("Move 1 up the y")) {
-							m_spawners[m_spawnerCurrent].pos += BLM::GLMup;
-						}
-
-						ImGui::TreePop();
-					}
-
-					if (ImGui::TreeNode("Rotation")) {
-						ImGui::Text(("current - x: " + std::to_string(glm::degrees(
-							glm::eulerAngles(m_spawners[m_spawnerCurrent].rot).y
-						))).c_str());
-
-						ImGui::SliderFloat("angle", &rotAmt, 0.f, 180.f, "%.0f Degrees");
-
-						if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on x").c_str())) {
-							m_spawners[m_spawnerCurrent].rot = glm::rotate(m_spawners[m_spawnerCurrent].rot,
-								glm::radians(-rotAmt), BLM::GLMup);
-						}
-						ImGui::SameLine();
-						if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on x").c_str())) {
-							m_spawners[m_spawnerCurrent].rot = glm::rotate(m_spawners[m_spawnerCurrent].rot,
-								glm::radians(rotAmt), BLM::GLMup);
-						}
-
-						ImGui::TreePop();
-					}
-
-					ImGui::SliderFloat("Radius", &(m_spawners[m_spawnerCurrent].radius), 0.01f, 2.f);
-					ImGui::SliderFloat("Delay", &(m_spawners[m_spawnerCurrent].delay), 0.f, 30.f);
-					if (ImGui::SliderFloat2("itemBounds", &(m_spawners[m_spawnerCurrent].bounds[0]),
-						__spawnerBounds.x, __spawnerBounds.y, "%.0f")) {
-						if (m_spawners[m_spawnerCurrent].bounds[1] < m_spawners[m_spawnerCurrent].bounds[0])
-							m_spawners[m_spawnerCurrent].bounds[1] = m_spawners[m_spawnerCurrent].bounds[0];
-					}
-
-					ImGui::TreePop();
-				}
-			}
-			ImGui::TreePop();
-		}
-
 		ImGui::TreePop();
 	}
 
@@ -1051,6 +862,198 @@ void HitboxGen::Update(entt::entity cameraEnt)
 
 			ImGui::TreePop();
 		}
+	}
+
+	if (ImGui::TreeNode("Spawnpoints")) {
+		if (ImGui::Button("New")) {
+			m_spawnLocations.push_back({ BLM::GLMzero, 0, 0 });
+		}
+		if (m_spawnLocations.size()) {
+			ImGui::SameLine();
+			if (ImGui::Button("Remove")) {
+				m_spawnLocations.erase(m_spawnLocations.begin() + m_spawnLocCurrent);
+				if (m_spawnLocCurrent >= m_spawnLocations.size())
+					m_spawnLocCurrent = m_spawnLocations.size() - 1;
+				if (m_spawnLocations.size() == 0)
+					m_spawnLocCurrent = 0;
+			}
+		}
+
+		if (m_spawnLocations.size()) {
+			ImGui::SliderInt("Selected", &m_spawnLocCurrent, 0, m_spawnLocations.size() - 1);
+
+			if (ImGui::Button("Selected To Camera")) {
+				m_spawnLocations[m_spawnLocCurrent].pos = ECS::GetComponent<Transform>(cameraEnt).GetGlobalPosition();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Selected To Ray")) {
+				btVector3 pos = PhysBody::GetRaycast(
+					ECS::GetComponent<Transform>(cameraEnt).GetGlobalPosition(),
+					ECS::GetComponent<Transform>(cameraEnt).GetForwards() * -10000.f);
+				if (pos != btVector3()) {
+					m_spawnLocations[m_spawnLocCurrent].pos = BLM::BTtoGLM(pos);
+				}
+			}
+
+			if (ImGui::TreeNode("Transformations")) {
+				ImGui::Text("Blue is Z, Green is Y, Red is X");
+
+				if (ImGui::TreeNode("Position")) {
+					glm::vec3 value = m_spawnLocations[m_spawnLocCurrent].pos;
+					if (ImGui::InputFloat2("Position Bounds", bound, 2)) {
+						bound[1] = glm::clamp(bound[1], bound[0], 1000.f);
+						bound[0] = glm::clamp(bound[0], -1000.f, bound[1]);
+					}
+
+					bool changed = false;
+					if (ImGui::SliderFloat("x", &value.x, bound[0], bound[1])) {
+						changed = true;
+					}
+					if (ImGui::SliderFloat("y", &value.y, bound[0], bound[1])) {
+						changed = true;
+					}
+					if (ImGui::SliderFloat("z", &value.z, bound[0], bound[1])) {
+						changed = true;
+					}
+					if (changed)
+						m_spawnLocations[m_spawnLocCurrent].pos = value;
+
+					if (ImGui::Button("Move 1 up the y")) {
+						m_spawnLocations[m_spawnLocCurrent].pos += BLM::GLMup;
+					}
+
+					ImGui::TreePop();
+				}
+
+				if (ImGui::TreeNode("Rotation")) {
+
+					ImGui::SliderFloat("angle", &rotAmt, 0.f, 180.f, "%.0f Degrees");
+
+					if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on x").c_str())) {
+						m_spawnLocations[m_spawnLocCurrent].roty += glm::radians(rotAmt);
+					}
+					ImGui::SameLine();
+					if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on x").c_str())) {
+						m_spawnLocations[m_spawnLocCurrent].roty -= glm::radians(rotAmt);
+					}
+
+					if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on y").c_str())) {
+						m_spawnLocations[m_spawnLocCurrent].rotx += glm::radians(rotAmt);
+					}
+					ImGui::SameLine();
+					if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on y").c_str())) {
+						m_spawnLocations[m_spawnLocCurrent].rotx -= glm::radians(rotAmt);
+					}
+
+					ImGui::TreePop();
+				}
+
+				ImGui::TreePop();
+			}
+		}
+
+		ImGui::TreePop();
+	}
+
+	if (ImGui::TreeNode("Spawners")) {
+		if (ImGui::Button("New")) {
+			m_spawners.push_back({ BLM::GLMzero, BLM::GLMQuat, __spawnerBounds, 0.3f, 5.f });
+		}
+		if (m_spawners.size()) {
+			ImGui::SameLine();
+			if (ImGui::Button("Remove")) {
+				m_spawners.erase(m_spawners.begin() + m_spawnerCurrent);
+				if (m_spawnerCurrent >= m_spawners.size())
+					m_spawnerCurrent = m_spawners.size() - 1;
+				if (m_spawners.size() == 0)
+					m_spawnerCurrent = 0;
+			}
+		}
+
+		if (m_spawners.size()) {
+			ImGui::SliderInt("Selected", &m_spawnerCurrent, 0, m_spawners.size() - 1);
+
+			if (ImGui::Button("Selected To Camera")) {
+				m_spawners[m_spawnerCurrent].pos = ECS::GetComponent<Transform>(cameraEnt).GetGlobalPosition();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Selected To Ray")) {
+				btVector3 pos = PhysBody::GetRaycast(
+					ECS::GetComponent<Transform>(cameraEnt).GetGlobalPosition(),
+					ECS::GetComponent<Transform>(cameraEnt).GetForwards() * -10000.f);
+				if (pos != btVector3()) {
+					m_spawners[m_spawnerCurrent].pos = BLM::BTtoGLM(pos);
+				}
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Move 1 up the y")) {
+				m_spawners[m_spawnerCurrent].pos += BLM::GLMup;
+			}
+
+			if (ImGui::TreeNode("Transformations")) {
+				ImGui::Text("Blue is Z, Green is Y, Red is X");
+
+				if (ImGui::TreeNode("Position")) {
+					glm::vec3 value = m_spawners[m_spawnerCurrent].pos;
+					if (ImGui::InputFloat2("Position Bounds", bound, 2)) {
+						bound[1] = glm::clamp(bound[1], bound[0], 1000.f);
+						bound[0] = glm::clamp(bound[0], -1000.f, bound[1]);
+					}
+
+					bool changed = false;
+					if (ImGui::SliderFloat("x", &value.x, bound[0], bound[1])) {
+						changed = true;
+					}
+					if (ImGui::SliderFloat("y", &value.y, bound[0], bound[1])) {
+						changed = true;
+					}
+					if (ImGui::SliderFloat("z", &value.z, bound[0], bound[1])) {
+						changed = true;
+					}
+					if (changed)
+						m_spawners[m_spawnerCurrent].pos = value;
+
+					ImGui::TreePop();
+				}
+
+				if (ImGui::TreeNode("Rotation")) {
+					ImGui::Text(("current - x: " + std::to_string(glm::degrees(
+						glm::eulerAngles(m_spawners[m_spawnerCurrent].rot).y
+					))).c_str());
+
+					ImGui::SliderFloat("angle", &rotAmt, 0.f, 180.f, "%.0f Degrees");
+
+					if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on x").c_str())) {
+						m_spawners[m_spawnerCurrent].rot = glm::rotate(m_spawners[m_spawnerCurrent].rot,
+							glm::radians(-rotAmt), BLM::GLMup);
+					}
+					ImGui::SameLine();
+					if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on x").c_str())) {
+						m_spawners[m_spawnerCurrent].rot = glm::rotate(m_spawners[m_spawnerCurrent].rot,
+							glm::radians(rotAmt), BLM::GLMup);
+					}
+
+					ImGui::TreePop();
+				}
+
+				ImGui::SliderFloat("Radius", &(m_spawners[m_spawnerCurrent].radius), 0.01f, 2.f);
+				ImGui::SliderFloat("Delay", &(m_spawners[m_spawnerCurrent].delay), 0.f, 30.f);
+				if (ImGui::SliderFloat2("itemBounds", &(m_spawners[m_spawnerCurrent].bounds[0]),
+					__spawnerBounds.x, __spawnerBounds.y, "%.0f")) {
+					if (m_spawners[m_spawnerCurrent].bounds[1] < m_spawners[m_spawnerCurrent].bounds[0])
+						m_spawners[m_spawnerCurrent].bounds[1] = m_spawners[m_spawnerCurrent].bounds[0];
+				}
+
+				ImGui::TreePop();
+			}
+		}
+		ImGui::TreePop();
 	}
 }
 
