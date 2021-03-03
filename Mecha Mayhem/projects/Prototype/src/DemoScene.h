@@ -1,8 +1,5 @@
 #pragma once
 #include "Utilities/Scene.h"
-#include "Effects/Post/BloomEffect.h"
-#include "Effects/Post/SepiaEffect.h"
-#include "Effects/Post/GreyscaleEffect.h"
 
 class DemoScene : public Scene
 {
@@ -125,15 +122,10 @@ private:
 	size_t killGoal = 10;
 
 	float camDistance = 2.5f;
-	glm::quat startQuat = glm::quat(-1, 0, 0, 0);
+	float m_timer = 0.f;
 
 	entt::entity bodyEnt[4] = { entt::null, entt::null, entt::null, entt::null };
 	entt::entity Head[4] = { entt::null, entt::null, entt::null, entt::null };
 	entt::entity cameraEnt[4] = { entt::null, entt::null, entt::null, entt::null };
-
-	entt::entity lightDrone = entt::null;
-	entt::entity cameraDrone = entt::null;
-	entt::entity speakerDrone = entt::null;
-	entt::entity shieldDrone = entt::null;
 };
 

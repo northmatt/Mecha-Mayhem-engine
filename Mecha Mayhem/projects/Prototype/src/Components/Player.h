@@ -62,7 +62,7 @@ public:
 	3 = Ryan's
 	4 = Bag
 	*/
-	Player& Init(CONUSER user, int characterModel, int camPos = 10);
+	Player& Init(CONUSER user, int characterModel, short camPos = -1);
 
 	//in radians, y is horizontal, x is vertical
 	Player& SetRotation(float y, float x) { m_rot = glm::vec2(x, y); return *this; }
@@ -78,12 +78,20 @@ public:
 	//update the morph animator and stuff like health
 	void Update(PhysBody& body);
 
-	//make the player move
+	//make the player move, returns true if player is currently dead
 	void GetInput(PhysBody& body, Transform& head, Transform& personalCam);
+
+	void MakeInvincible(bool choice) { m_invincible = choice; }
+
+	void GainHealth(short amt) {
+		m_health += amt;
+		if (m_health > m_maxHealth)
+			m_health = m_maxHealth;
+	}
 
 	//returns true if kill shot
 	bool TakeDamage(short dmg) {
-		if (m_health == 0)	return false;
+		if (m_health <= 0 || m_invincible)	return false;
 
 		if ((m_health -= dmg) <= 0) {
 			m_health = 0;
@@ -103,6 +111,8 @@ public:
 
 		return false;
 	}
+
+	bool IsAlive() { return m_respawnTimer == 0; }
 
 	bool IsPlayer() { return m_user != CONUSER::NONE; }
 
@@ -182,8 +192,9 @@ private:
 	bool m_grounded = false;
 	bool m_punched = false;
 	bool m_stepped = false;
+	bool m_invincible = false;
 
-	short m_camPos = 10;
+	short m_camPos = -1;
 	short m_maxHealth = 100;
 	short m_health = m_maxHealth;
 	short m_killCount = 0;

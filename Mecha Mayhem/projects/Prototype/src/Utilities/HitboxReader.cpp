@@ -31,7 +31,8 @@ bool HitboxGen::Init(btDiscreteDynamicsWorld* world, const std::string& filename
 
 	if (!file) {            //if file doesn't exists, overwrite means nothing, so check if new file
 		if (newFile) {
-			std::cout << "creating \"maps/" + m_filename + ".jpegs\"\n";
+			if (printText)
+				std::cout << "creating \"maps/" + m_filename + ".jpegs\"\n";
 			file.open("maps/" + m_filename + ".jpegs", std::fstream::out);
 			file.close();
 		}
@@ -45,7 +46,8 @@ bool HitboxGen::Init(btDiscreteDynamicsWorld* world, const std::string& filename
 		m_world->addRigidBody(m_floor);
 	}
 	else if (overwrite) {
-		std::cout << "overwriting existing file \"maps/" + m_filename + ".jpegs\"\n";
+		if (printText)
+			std::cout << "overwriting existing file \"maps/" + m_filename + ".jpegs\"\n";
 
 		btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, m_planeShape);
 		m_floor = new btRigidBody(rbInfo);
@@ -81,14 +83,16 @@ bool HitboxGen::Init(btDiscreteDynamicsWorld* world, const std::string& filename
 			}
 			file.open("maps/" + m_filename + ".jpegs", std::fstream::out);
 
-			std::cout << "found an existing file, newfile specified, so \"maps/" + m_filename + ".jpegs\" created\n";
+			if (printText)
+				std::cout << "found an existing file, newfile specified, so \"maps/" + m_filename + ".jpegs\" created\n";
 
 			btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, m_planeShape);
 			m_floor = new btRigidBody(rbInfo);
 			m_world->addRigidBody(m_floor);
 		}
 		else {
-			std::cout << "found \"maps/" + m_filename + ".jpegs\", reading data\n";
+			if (printText)
+				std::cout << "found \"maps/" + m_filename + ".jpegs\", reading data\n";
 
 			btRigidBody::btRigidBodyConstructionInfo rbInfo(0, nullptr, m_planeShape);
 			m_floor = new btRigidBody(rbInfo);
@@ -173,7 +177,8 @@ bool HitboxGen::Init(btDiscreteDynamicsWorld* world, const std::string& filename
 bool HitboxGen::SaveToFile(bool overwriteExisting)
 {
 	if (m_filename == "") {
-		std::cout << "no file loaded, so no save\n";
+		if (printText)
+			std::cout << "no file loaded, so no save\n";
 		return true;
 	}
 	if (!m_world)   return false;
@@ -185,7 +190,9 @@ bool HitboxGen::SaveToFile(bool overwriteExisting)
 	if (overwriteExisting) {
 		file.close();
 		file.open("maps/" + m_filename + ".jpegs", std::ios::out);
-		std::cout << "overwriting \"maps/" + m_filename + ".jpegs\", ";
+
+		if (printText)
+			std::cout << "overwriting \"maps/" + m_filename + ".jpegs\", ";
 	}
 	else if (file >> std::string()) {
 		std::string oldName = m_filename;
@@ -216,8 +223,9 @@ bool HitboxGen::SaveToFile(bool overwriteExisting)
 			file.open("maps/" + m_filename + ".jpegs");
 		}
 		file.open("maps/" + m_filename + ".jpegs", std::fstream::out);
-
-		std::cout << "\"maps/" + oldName + ".jpegs\" has data, so \"maps/" + m_filename + ".jpegs\" created, ";
+		
+		if (printText)
+			std::cout << "\"maps/" + oldName + ".jpegs\" has data, so \"maps/" + m_filename + ".jpegs\" created, ";
 	}
 	else {
 		file.close();
@@ -276,7 +284,8 @@ bool HitboxGen::SaveToFile(bool overwriteExisting)
 		if (rot.x != 0 || rot.y != 0)
 			file << " rot " << rot.x << ' ' << rot.y;
 	}
-	std::cout << "saved data\n";
+	if (printText)
+		std::cout << "saved data\n";
 
 	file.close();
 	return true;
@@ -285,7 +294,8 @@ bool HitboxGen::SaveToFile(bool overwriteExisting)
 bool HitboxGen::LoadFromFile()
 {
 	if (m_filename == "") {
-		std::cout << "no file loaded, so no save\n";
+		if (printText)
+			std::cout << "no file loaded, so no save\n";
 		return true;
 	}
 	if (!m_world)   return false;
@@ -293,7 +303,9 @@ bool HitboxGen::LoadFromFile()
 	std::ifstream file("maps/" + m_filename + ".jpegs");
 
 	if (!file)      return false;
-	std::cout << "found the \"maps/" + m_filename + ".jpegs\", replacing data\n";
+	if (printText)
+		std::cout << "found the \"maps/" + m_filename + ".jpegs\", replacing data\n";
+
 	for (int i(0); i < m_objects.size(); ++i) {
 		m_world->removeRigidBody(m_objects[i].body);
 	}
@@ -384,43 +396,48 @@ void HitboxGen::Render()
 {
 	if (!m_world)    return;
 
-	for (short i(0); i < m_spawners.size(); ++i) {
-		glm::mat4 model = glm::scale(glm::mat4(1.f),
-			glm::vec3(m_spawners[i].radius * 1.5f, m_spawners[i].radius * 2.f, m_spawners[i].radius * 2.f));
-		model *= glm::toMat4(m_spawners[i].rot);
-		model[3] = glm::vec4(m_spawners[i].pos + BLM::GLMup, 1);
-		m_cubeCurrent.Draw(model);
+	if (m_drawSpawns) {
+		for (short i(0); i < m_spawners.size(); ++i) {
+			glm::mat4 model = glm::scale(glm::mat4(1.f),
+				glm::vec3(m_spawners[i].radius * 1.5f, m_spawners[i].radius * 2.f, m_spawners[i].radius * 2.f));
+			model *= glm::toMat4(m_spawners[i].rot);
+			model[3] = glm::vec4(m_spawners[i].pos + BLM::GLMup, 1);
+			m_cubeCurrent.Draw(model);
 
-		m_cylinder.Draw(glm::mat4(
-			1.f, 0, 0, 0,
-			0, 0.2f, 0, 0,
-			0, 0, 1.f, 0,
-			m_spawners[i].pos.x,
-			m_spawners[i].pos.y + 0.1f,
-			m_spawners[i].pos.z,
-			1
-		));
-	}
+			model = glm::mat4(
+				1.f, 0, 0, 0,
+				0, 0.2f, 0, 0,
+				0, 0, 1.f, 0,
+				m_spawners[i].pos.x,
+				m_spawners[i].pos.y + 0.1f,
+				m_spawners[i].pos.z,
+				1);
 
-	for (short i(0); i < m_spawnLocations.size(); ++i) {
-		m_cubeCurrent.Draw(glm::mat4(
-			1, 0, 0, 0,
-			0, 2, 0, 0,
-			0, 0, 1, 0,
-			m_spawnLocations[i].pos.x,
-			m_spawnLocations[i].pos.y,
-			m_spawnLocations[i].pos.z,
-			1
-		));
+			if (m_spawnerCurrent == i)	m_cylinderCurrent.Draw(model);
+			else		m_cylinder.Draw(model);
+		}
 
-		glm::mat4 model = glm::translate(glm::mat4(1.f), m_spawnLocations[i].pos + glm::vec3(0, 0.5f, 0));
-		model *= glm::toMat4(glm::angleAxis(-m_spawnLocations[i].roty, BLM::GLMup));
-		model *= glm::toMat4(glm::angleAxis(m_spawnLocations[i].rotx, glm::vec3(1, 0, 0)));
-		model = glm::translate(model, glm::vec3(0, 0, 1.f));
-		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 1.f));
+		for (short i(0); i < m_spawnLocations.size(); ++i) {
+			glm::mat4 model = glm::translate(glm::mat4(1.f), m_spawnLocations[i].pos + glm::vec3(0, 0.5f, 0));
+			model *= glm::toMat4(glm::angleAxis(-m_spawnLocations[i].roty, BLM::GLMup));
+			model *= glm::toMat4(glm::angleAxis(m_spawnLocations[i].rotx, glm::vec3(1, 0, 0)));
+			model = glm::translate(model, glm::vec3(0, 0, -1.f));
+			model = glm::scale(model, glm::vec3(0.1f, 0.1f, 1.f));
 
-		m_cube.Draw(model);
+			m_cube.Draw(model);
 
+			model = glm::mat4(
+				1, 0, 0, 0,
+				0, 2, 0, 0,
+				0, 0, 1, 0,
+				m_spawnLocations[i].pos.x,
+				m_spawnLocations[i].pos.y,
+				m_spawnLocations[i].pos.z,
+				1);
+
+			if (m_spawnLocCurrent == i)		m_cubeCurrent.Draw(model);
+			else		m_cube.Draw(model);
+		}
 	}
 
 	if (!m_draw)	return;
@@ -864,8 +881,11 @@ void HitboxGen::Update(entt::entity cameraEnt)
 		}
 	}
 
+	if (!m_drawSpawns)	return;
+
 	if (ImGui::TreeNode("Spawnpoints")) {
 		if (ImGui::Button("New")) {
+			m_spawnLocCurrent = m_spawnLocations.size();
 			m_spawnLocations.push_back({ BLM::GLMzero, 0, 0 });
 		}
 		if (m_spawnLocations.size()) {
@@ -959,6 +979,7 @@ void HitboxGen::Update(entt::entity cameraEnt)
 
 	if (ImGui::TreeNode("Spawners")) {
 		if (ImGui::Button("New")) {
+			m_spawnerCurrent = m_spawners.size();
 			m_spawners.push_back({ BLM::GLMzero, BLM::GLMQuat, __spawnerBounds, 0.3f, 5.f });
 		}
 		if (m_spawners.size()) {

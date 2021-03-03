@@ -23,7 +23,7 @@ namespace Rendering {
 		auto textObjView = reg->view<MultiTextObj, Transform>();
 		auto morphView = reg->view<ObjMorphLoader, Transform>();
 		auto spriteView = reg->view<Sprite, Transform>();
-		auto playerView = reg->view<Player, PhysBody, Transform>();
+		auto playerView = reg->view<Player, Transform>();
 		auto cameraView = reg->view<Camera, Transform>();
 		auto spawnerView = reg->view<Spawner, Transform>();
 
@@ -89,7 +89,7 @@ namespace Rendering {
 			//draw all players
 			//int temp = 2;
 			playerView.each(
-				[&](Player& p, PhysBody& body, Transform& trans) {
+				[&](Player& p, Transform& trans) {
 					p.Draw(trans.GetModel(), count, numOfCams, paused);
 				}
 			);

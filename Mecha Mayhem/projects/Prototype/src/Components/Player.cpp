@@ -127,9 +127,11 @@ void Player::SetUIAspect(int width, int height)
 	m_orthoCam.ResizeWindow(width, height);
 }
 
-Player& Player::Init(CONUSER user, int characterModel, int camPos)
+Player& Player::Init(CONUSER user, int characterModel, short camPos)
 {
 	m_user = user;
+	m_camPos = camPos;
+
 	switch (characterModel) {
 		//dummy (case 0 is also here)
 	default:	m_charModelIndex = "dummy";	m_charModel.LoadMeshs("dummy/idle", true);	m_user = CONUSER::NONE;	break;
@@ -142,9 +144,6 @@ Player& Player::Init(CONUSER user, int characterModel, int camPos)
 		//Bag
 	case 4:		m_charModelIndex = "char4";	m_charModel.LoadMeshs("char4/idle", true);	break;
 	}
-
-	if (camPos < 4 && camPos >= 0)
-		m_camPos = camPos;
 
 	return *this;
 }
@@ -243,10 +242,12 @@ void Player::Update(PhysBody& body)
 	m_charModel.Update(Time::dt);
 	//when dead
 	if (m_respawnTimer > 0) {
-		body.SetGravity(BLM::BTzero);
+		body.SetVelocity(BLM::BTzero);
 		m_charModel.BlendTo(m_charModelIndex + "/death", 0.25f);
-		if (m_respawnTimer == m_respawnDelay)
+		if (m_respawnTimer == m_respawnDelay) {
 			m_deathPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
+			body.SetGravity(BLM::BTzero);
+		}
 
 		m_respawnTimer -= Time::dt;
 		if (m_respawnTimer <= 0) {
@@ -287,7 +288,6 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 	if (m_user == CONUSER::NONE)	return;
 	if (m_health == 0) {
 		personalCam.SetPosition(glm::vec3(0, 0, m_camDistance));
-		body.SetVelocity(BLM::BTzero);
 		head.SetRotation(glm::quat(-0.71f, 0.71f, 0.f, 0.f));
 		return;
 	}
@@ -473,6 +473,8 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 			UseWeapon(body, head, rayOff);
 		}
 	}
+
+	return;
 }
 
 //used this: https://gamedev.stackexchange.com/questions/58012/detect-when-a-bullet-rigidbody-is-on-ground
@@ -679,7 +681,8 @@ btVector3 Player::Melee(const glm::vec3& pos)
 
 	ECS::GetRegistry()->view<Player, PhysBody>().each(
 		[&](Player& p, PhysBody& body) {
-			if (p.m_user != m_user) if (body.TestAABB(pos, 0.5f)) {
+			//if (p.m_user != m_user) if (body.TestAABB(pos, 0.5f)) {
+			if (p.m_camPos != m_camPos) if (body.TestAABB(pos, 0.5f)) {
 				if (p.TakeDamage(2))
 					++m_killCount;
 				hit = true;

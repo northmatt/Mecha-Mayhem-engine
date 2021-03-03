@@ -1,6 +1,5 @@
 #include "Tutorial.h"
 #include "LeaderBoard.h"
-#include "Effects/Post/BloomEffect.h"
 
 void Tutorial::Init(int width, int height)
 {
@@ -8,9 +7,10 @@ void Tutorial::Init(int width, int height)
 	PhysBody::Init(m_world);
 	ECS::AttachWorld(m_world);
 	std::string input = "tutorial";
-	std::cout << "filename: " + input + "\n";
+	m_colliders.Init(m_world, input, false, false);
+	/*std::cout << "filename: " + input + "\n";
 	if (!m_colliders.Init(m_world, input, false, false))
-		std::cout << input + " failed to load, no collision boxes loaded\n";
+		std::cout << input + " failed to load, no collision boxes loaded\n";*/
 
 	m_camCount = 4;
 
@@ -96,11 +96,6 @@ void Tutorial::Init(int width, int height)
 		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/SpeakerDrone.obj", true);
 		speakerDrone = entity;
 	}
-	{
-		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<ObjMorphLoader>(entity).LoadMeshs("drone/shield", true);
-		shieldDrone = entity;
-	}
 
 	/// End of creating entities
 	Rendering::DefaultColour = glm::vec4(0.75f, 0.75f, 0.75f, 1.f);
@@ -125,27 +120,7 @@ void Tutorial::Init(int width, int height)
 
 void Tutorial::Update()
 {
-	/*if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER::ONE)) {
-		if (ControllerInput::GetButton(BUTTON::RB, CONUSER::ONE)) {
-			QueueSceneChange(2);
-			return;
-		}
-		else {
-			if (++m_camCount > 4)	m_camCount = 1;
-			if (m_camCount == 2) {
-				ECS::GetComponent<Camera>(cameraEnt[0]).ResizeWindow(width / 2.f, height);
-				ECS::GetComponent<Camera>(cameraEnt[1]).ResizeWindow(width / 2.f, height);
-				Player::SetUIAspect(width / 2.f, height);
-			}
-			else {
-				ECS::GetComponent<Camera>(cameraEnt[0]).ResizeWindow(width, height);
-				ECS::GetComponent<Camera>(cameraEnt[1]).ResizeWindow(width, height);
-				Player::SetUIAspect(width, height);
-			}
-		}
-	}*/
-
-	if (Input::GetKeyDown(KEY::F)) {
+	/*if (Input::GetKeyDown(KEY::F)) {
 		if (++m_camCount > 4)	m_camCount = 1;
 		if (m_camCount == 2) {
 			ECS::GetComponent<Camera>(cameraEnt[0]).ResizeWindow(BackEnd::GetHalfWidth(), BackEnd::GetHeight());
@@ -157,7 +132,7 @@ void Tutorial::Update()
 			ECS::GetComponent<Camera>(cameraEnt[1]).ResizeWindow(BackEnd::GetWidth(), BackEnd::GetHeight());
 			Player::SetUIAspect(BackEnd::GetWidth(), BackEnd::GetHeight());
 		}
-	}
+	}*/
 
 	for (size_t i(0); i < 4; ++i) {
 		if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(i))) {
@@ -227,54 +202,60 @@ void Tutorial::Update()
 
 		if (p.GetScore() >= killGoal)
 			winner = true;
+
+		if (m_timer > 0)
+			p.GainHealth(1);
 	}
 
-	if (winner) {
+	if (m_timer > 0) {
+		m_timer -= Time::dt;
+		if (m_timer <= 0) {
+			m_timer = 0.f;
+
+			//does the reset stuff here
+			m_reg = entt::registry();
+
+			for (int i(0); i < LeaderBoard::playerCount; ++i) {
+				bodyEnt[i] = Head[i] = cameraEnt[i] = entt::null;
+			}
+
+			btVector3 grav = m_world->getGravity();
+			for (int i = m_world->getNumCollisionObjects() - 1; i >= 0; --i) {
+				btCollisionObject* obj = m_world->getCollisionObjectArray()[i];
+				btRigidBody* body = btRigidBody::upcast(obj);
+				if (body && body->getMotionState())
+				{
+					delete body->getMotionState();
+				}
+				m_world->removeCollisionObject(obj);
+				delete obj;
+			}
+
+			delete m_world;
+			m_world = new btDiscreteDynamicsWorld(
+				_dispatcher, _broadphase, _solver, _collisionConfiguration);
+			m_world->setGravity(grav);
+
+			m_colliders.Clear();
+
+			Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+			QueueSceneChange(3);
+		}
+	}
+	else if (winner) {
 		for (int i(0), temp(0); i < 4; ++i) {
 			if (LeaderBoard::players[i].user != CONUSER::NONE) {
+				ECS::GetComponent<Player>(bodyEnt[temp]).MakeInvincible(true);
 				LeaderBoard::players[i].score = ECS::GetComponent<Player>(bodyEnt[temp]).GetScore();
-				bodyEnt[temp] = Head[temp] = cameraEnt[temp] = entt::null;
 				++temp;
 			}
 		}
-
-
-		//does the reset stuff here
-		m_reg = entt::registry();
-
-		btVector3 grav = m_world->getGravity();
-		for (int i = m_world->getNumCollisionObjects() - 1; i >= 0; --i) {
-			btCollisionObject* obj = m_world->getCollisionObjectArray()[i];
-			btRigidBody* body = btRigidBody::upcast(obj);
-			if (body && body->getMotionState())
-			{
-				delete body->getMotionState();
-			}
-			m_world->removeCollisionObject(obj);
-			delete obj;
-		}
-
-		delete m_world;
-		m_world = new btDiscreteDynamicsWorld(
-			_dispatcher, _broadphase, _solver, _collisionConfiguration);
-		m_world->setGravity(grav);
-
-		m_colliders.Clear();
-
-		Init(BackEnd::GetWidth(), BackEnd::GetHeight());
-		QueueSceneChange(3);
+		m_timer = 5.f;
 	}
 
 	ECS::GetComponent<Transform>(lightDrone).SetPosition(dronePath.Update(Time::dt).GetPosition()).SetRotation(dronePath.GetLookingForwards(0.5f));
 	ECS::GetComponent<Transform>(cameraDrone).SetPosition(dronePath2.Update(Time::dt).GetPosition()).SetRotation(dronePath2.GetLookingForwards(0.5f));
 	ECS::GetComponent<Transform>(speakerDrone).SetPosition(dronePath3.Update(Time::dt).GetPosition()).SetRotation(dronePath3.GetLookingForwards(0.5f));
-	ECS::GetComponent<Transform>(shieldDrone).SetPosition(dronePath4.Update(Time::dt).GetPosition()).SetRotation(dronePath4.GetLookingForwards(0.5f));
-
-
-	/*if (Input::GetKeyDown(KEY::FSLASH))	m_colliders.ToggleDraw();
-	m_colliders.Update(Time::dt);
-	if (Input::GetKeyDown(KEY::F10))	if (!m_colliders.SaveToFile(false))	std::cout << "file save failed\n";
-	if (Input::GetKeyDown(KEY::F1))		if (!m_colliders.LoadFromFile())	std::cout << "file load failed\n";*/
 }
 
 Scene* Tutorial::Reattach() {

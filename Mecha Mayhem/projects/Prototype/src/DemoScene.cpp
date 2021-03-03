@@ -7,9 +7,10 @@ void DemoScene::Init(int width, int height)
 	PhysBody::Init(m_world);
 	ECS::AttachWorld(m_world);
 	std::string input = "playtestmap";
-	std::cout << "filename: " + input + "\n";
+	m_colliders.Init(m_world, input, false, false);
+	/*std::cout << "filename: " + input + "\n";
 	if (!m_colliders.Init(m_world, input, false, false))
-		std::cout << input + " failed to load, no collision boxes loaded\n";
+		std::cout << input + " failed to load, no collision boxes loaded\n";*/
 
 	m_camCount = 4;
 
@@ -82,44 +83,72 @@ void DemoScene::Update()
 			ECS::GetComponent<Transform>(cameraEnt[i])
 		);
 
+		if (!p.IsAlive()) {
+			//check if respawn time is about to say dead
+			if (p.RespawnDelayTest(Time::dt)) {
+				std::vector<glm::vec3> tests = {};
+				for (int x(0); x < LeaderBoard::playerCount; ++x) {
+					if (x == i)	continue;
+
+					//only add to list if alive
+					if (ECS::GetComponent<Player>(bodyEnt[x]).IsAlive())
+						tests.push_back(BLM::BTtoGLM(ECS::GetComponent<PhysBody>(bodyEnt[x]).GetTransform().getOrigin()));
+				}
+				m_colliders.SetSpawnAvoid(p, tests, 20.f);
+			}
+		}
+
 		if (p.GetScore() >= killGoal)
 			winner = true;
+
+		if (m_timer > 0)
+			p.GainHealth(1);
 	}
 
-	if (winner) {
+	if (m_timer > 0) {
+		m_timer -= Time::dt;
+		if (m_timer <= 0) {
+			m_timer = 0;
+
+			//does the reset stuff here
+			m_reg = entt::registry();
+
+			for (int i(0); i < LeaderBoard::playerCount; ++i) {
+				bodyEnt[i] = Head[i] = cameraEnt[i] = entt::null;
+			}
+
+			btVector3 grav = m_world->getGravity();
+			for (int i = m_world->getNumCollisionObjects() - 1; i >= 0; --i) {
+				btCollisionObject* obj = m_world->getCollisionObjectArray()[i];
+				btRigidBody* body = btRigidBody::upcast(obj);
+				if (body && body->getMotionState())
+				{
+					delete body->getMotionState();
+				}
+				m_world->removeCollisionObject(obj);
+				delete obj;
+			}
+
+			delete m_world;
+			m_world = new btDiscreteDynamicsWorld(
+				_dispatcher, _broadphase, _solver, _collisionConfiguration);
+			m_world->setGravity(grav);
+
+			m_colliders.Clear();
+
+			Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+			QueueSceneChange(3);
+		}
+	}
+	else if (winner) {
 		for (int i(0), temp(0); i < 4; ++i) {
 			if (LeaderBoard::players[i].user != CONUSER::NONE) {
+				ECS::GetComponent<Player>(bodyEnt[temp]).MakeInvincible(true);
 				LeaderBoard::players[i].score = ECS::GetComponent<Player>(bodyEnt[temp]).GetScore();
-				bodyEnt[temp] = Head[temp] = cameraEnt[temp] = entt::null;
 				++temp;
 			}
 		}
-
-
-		//does the reset stuff here
-		m_reg = entt::registry();
-
-		btVector3 grav = m_world->getGravity();
-		for (int i = m_world->getNumCollisionObjects() - 1; i >= 0; --i) {
-			btCollisionObject* obj = m_world->getCollisionObjectArray()[i];
-			btRigidBody* body = btRigidBody::upcast(obj);
-			if (body && body->getMotionState())
-			{
-				delete body->getMotionState();
-			}
-			m_world->removeCollisionObject(obj);
-			delete obj;
-		}
-
-		delete m_world;
-		m_world = new btDiscreteDynamicsWorld(
-			_dispatcher, _broadphase, _solver, _collisionConfiguration);
-		m_world->setGravity(grav);
-
-		m_colliders.Clear();
-
-		Init(BackEnd::GetWidth(), BackEnd::GetHeight());
-		QueueSceneChange(3);
+		m_timer = 5.f;
 	}
 }
 
@@ -149,6 +178,30 @@ Scene* DemoScene::Reattach()
 
 	m_camCount = LeaderBoard::playerCount;
 
+	std::vector<glm::vec3> spawntests = {};
+	for (int i(0); i < 4;) {
+		glm::vec3 tempPos;
+		switch (rand() % 4) {
+		case 0:	tempPos = glm::vec3(20, -20, -30);	break;
+		case 1:	tempPos = glm::vec3(70, -20, 30);	break;
+		case 2:	tempPos = glm::vec3(25, -20, 75);	break;
+		case 3:	tempPos = glm::vec3(-30, -20, 20);	break;
+		}
+
+		bool valid = true;
+		for (int x(0); x < spawntests.size(); ++x) {
+			if (spawntests[x] == tempPos) {
+				valid = false;
+				break;
+			}
+		}
+
+		if (valid) {
+			spawntests.push_back(tempPos);
+			++i;
+		}
+	}
+
 	for (int temp(3), i(LeaderBoard::playerCount); temp >= 0; --temp) {
 		if (LeaderBoard::players[temp].user == CONUSER::NONE)
 			continue;
@@ -161,9 +214,13 @@ Scene* DemoScene::Reattach()
 			ECS::AttachComponent<Camera>(cameraEnt[i]).SetFovDegrees(60.f).ResizeWindow(BackEnd::GetWidth(), BackEnd::GetHeight());
 
 		bodyEnt[i] = ECS::CreateEntity();
-		ECS::AttachComponent<PhysBody>(bodyEnt[i]).CreatePlayer(bodyEnt[i], startQuat, glm::vec3(0, 1.5f, 0));
-		ECS::AttachComponent<Player>(bodyEnt[i]).Init(
-			LeaderBoard::players[temp].user, LeaderBoard::players[temp].model, i).SetRotation(glm::radians(180.f), 0);
+		ECS::AttachComponent<PhysBody>(bodyEnt[i]).CreatePlayer(bodyEnt[i], BLM::GLMzero,
+			m_colliders.SetSpawnNear(
+				ECS::AttachComponent<Player>(bodyEnt[i]).Init(
+					LeaderBoard::players[temp].user, LeaderBoard::players[temp].model, i).SetRotation(glm::radians(180.f), 0),
+				spawntests[i], 30
+			)
+		);
 
 		Head[i] = ECS::CreateEntity();
 		ECS::GetComponent<Transform>(Head[i]).SetPosition(glm::vec3(0, 0.75f, 0)).

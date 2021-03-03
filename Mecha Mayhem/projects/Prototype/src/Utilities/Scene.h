@@ -4,6 +4,11 @@
 #include "Input.h"
 #include <AudioEngine.h>
 
+//post effect stuff
+#include "Effects/Post/BloomEffect.h"
+#include "Effects/Post/SepiaEffect.h"
+#include "Effects/Post/GreyscaleEffect.h"
+
 class Scene
 {
 public:

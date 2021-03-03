@@ -6,9 +6,10 @@ void MapEditor::Init(int windowWidth, int windowHeight)
 	PhysBody::Init(m_world);
 	ECS::AttachWorld(m_world);
 	std::string input = "playtestmap";
-	std::cout << "filename: " + input + "\n";
+	m_colliders.Init(m_world, input, false, false);
+	/*std::cout << "filename: " + input + "\n";
 	if (!m_colliders.Init(m_world, input, false, false))
-		std::cout << input + " failed to load, no collision boxes loaded\n";
+		std::cout << input + " failed to load, no collision boxes loaded\n";*/
 	
 	width = windowWidth;
 	height = windowHeight;
@@ -138,6 +139,9 @@ void MapEditor::ImGuiFunc()
 		Rendering::LightCount = size_t(1) + size_t(showRay);
 	}
 
+	if (ImGui::Button("Toggle render spawn(ers)(points)") || Input::GetKeyDown(KEY::FSLASH)) {
+		debugText = m_colliders.ToggleDrawSpawns() ? "drawing spawn(ers)(points)" : "not drawing spawn(ers)(points)";
+	}
 	if (ImGui::Button("Toggle render hitboxes") || Input::GetKeyDown(KEY::FSLASH)) {
 		debugText = m_colliders.ToggleDraw() ? "drawing hitboxes" : "not drawing hitboxes";
 	}

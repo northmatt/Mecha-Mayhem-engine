@@ -61,6 +61,7 @@ private:
 	size_t killGoal = 5;
 
 	float camDistance = 2.5f;
+	float m_timer = 0.f;
 
 	entt::entity bodyEnt[4] = { entt::null, entt::null, entt::null, entt::null };
 	entt::entity Head[4] = { entt::null, entt::null, entt::null, entt::null };
@@ -69,6 +70,5 @@ private:
 	entt::entity lightDrone = entt::null;
 	entt::entity cameraDrone = entt::null;
 	entt::entity speakerDrone = entt::null;
-	entt::entity shieldDrone = entt::null;
 };
 

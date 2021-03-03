@@ -10,10 +10,11 @@ public:
 	~HitboxGen() { m_world = nullptr; }
 
 	bool ToggleDraw() {
-		if (m_draw = !m_draw)		std::cout << "drawing hitboxes    \r";
-		else						std::cout << "not drawing hitboxes\r";
+		return m_draw = !m_draw;
+	}
 
-		return m_draw;
+	bool ToggleDrawSpawns() {
+		return m_drawSpawns = !m_drawSpawns;
 	}
 
 	//gets the physicsworld and reads/create the file.
@@ -60,7 +61,10 @@ public:
 		}
 	}
 
-	void SetSpawnNear(Player& p, glm::vec3 testPos, float range) {
+	//returns position
+	glm::vec3 SetSpawnNear(Player& p, glm::vec3 testPos, float range) {
+		if (m_spawnLocations.size() == 0)	return BLM::GLMzero;
+
 		//for loop in case it never hits anything
 		int index = rand() % m_spawnLocations.size();
 		glm::vec3 pos = m_spawnLocations[index].pos;
@@ -77,12 +81,14 @@ public:
 
 		p.SetSpawn(pos);
 		p.SetRotation(m_spawnLocations[index].roty, m_spawnLocations[index].rotx);
+
+		return pos;
 	}
 
 	void SetSpawnAvoid(Player& p, std::vector<glm::vec3> tests, float range) {
 		if (m_spawnLocations.size() == 0)	return;
-		//test for players or limits or whatever
 
+		//test for players or limits or whatever
 		int index = rand() % m_spawnLocations.size();
 		glm::vec3 pos = m_spawnLocations[index].pos;
 		//limit how many tries it does (in case all attempts fail)
@@ -98,6 +104,7 @@ public:
 			if (works)
 				break;
 
+			//re-get one
 			index = rand() % m_spawnLocations.size();
 			pos = m_spawnLocations[index].pos;
 		}
@@ -138,6 +145,8 @@ private:
 	static btCollisionShape* m_planeShape;
 	static Transform m_defaultTrans;
 
+	static const bool printText = false;
+
 	float m_speedModifier = 1.f;
 	float rotAmt = 45.f;
 	float circularRadius = 5.f;
@@ -146,6 +155,7 @@ private:
 	float bound2[2] = { 1.f, 100.f };
 	float bound3[2] = { 0.01f, 100.f };
 	bool m_draw = false;
+	bool m_drawSpawns = false;
 	bool m_lookingAtSelected = false;
 	int m_current = 0;
 	int m_spawnerCurrent = 0;

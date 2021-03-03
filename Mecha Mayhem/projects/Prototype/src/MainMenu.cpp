@@ -276,6 +276,19 @@ void MainMenu::Update()
 				ECS::GetComponent<Transform>(text).SetRotation(BLM::GLMQuat).ChildTo(camera);
 
 				LeaderBoard::playerCount = playerCount;
+
+
+				// dalettuce
+
+				LeaderBoard::playerCount = 4;
+
+				LeaderBoard::players[0] = { CONUSER::ONE, 1, 0 };
+				LeaderBoard::players[1] = { CONUSER::ONE, 1, 0 };
+				LeaderBoard::players[2] = { CONUSER::ONE, 1, 0 };
+				LeaderBoard::players[3] = { CONUSER::ONE, 1, 0 };
+
+				// dalettuce
+
 			}
 			ECS::GetComponent<Sprite>(backGround).SetHeight(10 * m_confirmTimer);
 		}
