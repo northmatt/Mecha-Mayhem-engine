@@ -466,6 +466,10 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 
 	//guns
 	{
+		if (m_currWeapon != WEAPON::FIST) if (ControllerInput::GetButtonDown(BUTTON::LB, m_user)) {
+			m_currWeaponAmmo = 0;
+			SwapWeapon();
+		}
 		if (m_secWeapon != WEAPON::FIST) if(ControllerInput::GetButtonDown(BUTTON::Y, m_user)) {
 			SwapWeapon();
 		}
@@ -683,7 +687,7 @@ btVector3 Player::Melee(const glm::vec3& pos)
 		[&](Player& p, PhysBody& body) {
 			//if (p.m_user != m_user) if (body.TestAABB(pos, 0.5f)) {
 			if (p.m_camPos != m_camPos) if (body.TestAABB(pos, 0.5f)) {
-				if (p.TakeDamage(2))
+				if (p.TakeDamage(8))
 					++m_killCount;
 				hit = true;
 			}

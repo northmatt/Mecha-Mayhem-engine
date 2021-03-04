@@ -81,6 +81,14 @@ public:
 	//make the player move, returns true if player is currently dead
 	void GetInput(PhysBody& body, Transform& head, Transform& personalCam);
 
+	void ClearWeapons() {
+		m_currWeapon = WEAPON::FIST;
+		m_secWeapon = WEAPON::FIST;
+		m_currWeaponAmmo = 0;
+		m_secWeaponAmmo = 0;
+		m_offhand = OFFHAND::EMPTY;
+	}
+
 	void MakeInvincible(bool choice) { m_invincible = choice; }
 
 	void GainHealth(short amt) {
@@ -98,12 +106,8 @@ public:
 			m_respawnTimer = m_respawnDelay;
 			
 			//m_deathSound.play();
+			ClearWeapons();
 
-			m_currWeapon = WEAPON::FIST;
-			m_secWeapon = WEAPON::FIST;
-			m_currWeaponAmmo = 0;
-			m_secWeaponAmmo = 0;
-			m_offhand = OFFHAND::EMPTY;
 			return true;
 		}
 

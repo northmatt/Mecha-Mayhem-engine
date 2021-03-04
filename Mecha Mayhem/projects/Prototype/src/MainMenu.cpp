@@ -265,10 +265,11 @@ void MainMenu::Update()
 			if (m_confirmTimer <= 0) {
 				//1 is tutorial
 				if (playerCount == 1)	QueueSceneChange(1);
-				//2 is DemoScene
+				//2+ is DemoScene
 				else					QueueSceneChange(2);
 				m_scenePos = 0;
 				m_exitHoldTimer = 1.f;
+				m_confirmTimer = 1.f;
 
 				ECS::GetComponent<ObjMorphLoader>(title).SetSpeed(1.f);
 
@@ -280,12 +281,12 @@ void MainMenu::Update()
 
 				// dalettuce
 
-				LeaderBoard::playerCount = 4;
+				/*LeaderBoard::playerCount = 4;
 
 				LeaderBoard::players[0] = { CONUSER::ONE, 1, 0 };
 				LeaderBoard::players[1] = { CONUSER::ONE, 1, 0 };
 				LeaderBoard::players[2] = { CONUSER::ONE, 1, 0 };
-				LeaderBoard::players[3] = { CONUSER::ONE, 1, 0 };
+				LeaderBoard::players[3] = { CONUSER::ONE, 1, 0 };*/
 
 				// dalettuce
 
@@ -297,11 +298,6 @@ void MainMenu::Update()
 			ECS::GetComponent<Sprite>(backGround).SetHeight(10);
 		}
 	}
-}
-
-void MainMenu::Exit()
-{
-	Scene::Exit();
 }
 
 Scene* MainMenu::Reattach()

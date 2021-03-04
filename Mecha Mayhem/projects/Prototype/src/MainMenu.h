@@ -10,7 +10,6 @@ public:
 
 	virtual void Init(int windowWidth, int windowHeight) override;
 	virtual void Update() override;
-	virtual void Exit() override;
 
 	virtual Scene* Reattach() override;
 

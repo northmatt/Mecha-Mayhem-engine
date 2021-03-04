@@ -23,14 +23,14 @@ void Tutorial::Init(int width, int height)
 		ECS::AttachComponent<PhysBody>(entity).CreatePlayer(entity, BLM::GLMQuat, glm::vec3(0, 1, -12))
 			.GetBody()->setMassProps(0, btVector3(0, -1, 0));
 		ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69)
-			.SetSpawn(glm::vec3(4, 1, -59)).SetRotation(glm::radians(180.f), 0);// .SetMaxHealth(5);
+			.SetSpawn(glm::vec3(4, 1, -59)).SetRotation(glm::radians(180.f), 0).TakeDamage(76);
 	}
 	{
 		auto entity = ECS::CreateEntity();
 		ECS::AttachComponent<PhysBody>(entity).CreatePlayer(entity, BLM::GLMQuat, glm::vec3(0, 2.5f, -20))
 			.GetBody()->setMassProps(0, btVector3(0, -1, 0));
 		ECS::AttachComponent<Player>(entity).Init(CONUSER::NONE, 69)
-			.SetSpawn(glm::vec3(-4, 1, -59)).SetRotation(glm::radians(180.f), 0);// .SetMaxHealth(10);
+			.SetSpawn(glm::vec3(-4, 1, -59)).SetRotation(glm::radians(180.f), 0);
 	}
 
 	m_colliders.GenerateSpawners();
@@ -202,9 +202,6 @@ void Tutorial::Update()
 
 		if (p.GetScore() >= killGoal)
 			winner = true;
-
-		if (m_timer > 0)
-			p.GainHealth(1);
 	}
 
 	if (m_timer > 0) {
@@ -245,11 +242,18 @@ void Tutorial::Update()
 	else if (winner) {
 		for (int i(0), temp(0); i < 4; ++i) {
 			if (LeaderBoard::players[i].user != CONUSER::NONE) {
-				ECS::GetComponent<Player>(bodyEnt[temp]).MakeInvincible(true);
 				LeaderBoard::players[i].score = ECS::GetComponent<Player>(bodyEnt[temp]).GetScore();
 				++temp;
 			}
 		}
+
+		m_reg.view<Player>().each(
+			[](Player& p) {
+				p.MakeInvincible(true);
+				p.GainHealth(100);
+			}
+		);
+
 		m_timer = 5.f;
 	}
 
