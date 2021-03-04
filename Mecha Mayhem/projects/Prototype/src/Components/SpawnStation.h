@@ -6,11 +6,19 @@ class Spawner {
 public:
 	Spawner() {}
 
-	void Init(float radius, float delay) {
+	Spawner& Init(float radius, float delay) {
 		m_spawnerModel.LoadMeshs("spawner/spawner", true);
 		m_radius = radius;
 		m_timer = m_delay = delay;
 		m_spawnerModel.SetDirection(false);
+
+		return *this;
+	}
+
+	void SetBounds(int lower, int upper) {
+		if ((lower > upper) || (lower < 0))	return;
+		lowerBound = lower;
+		upperBound = upper - lower + 1;
 	}
 
 	void Render(glm::mat4 model) {
@@ -33,7 +41,7 @@ public:
 				m_timer = 0;
 				m_spawnerModel.SetDirection(true);
 				//decide on what spawns
-				switch (rand() % 6) {
+				switch (lowerBound + rand() % upperBound) {
 				case 0:		m_currWeapon = Player::WEAPON::FIST;		break;
 				case 1:		m_currWeapon = Player::WEAPON::PISTOL;		break;
 				case 2:		m_currWeapon = Player::WEAPON::RIFLE;		break;
@@ -71,6 +79,9 @@ private:
 
 	//change to int later
 	Player::WEAPON m_currWeapon = Player::WEAPON::FIST;
+
+	int lowerBound = 0;
+	int upperBound = 6;
 
 	float m_radius = 0.5f;
 	float m_timer = 0;

@@ -3,18 +3,17 @@
 #include "PhysBody.h"
 #include "ObjMorphLoader.h"
 #include <AudioEngine.h>
-// Overloads: (name, ammo, damage, cooldown, isAuto)
-struct GunProperties 
-{
-	char* name;
-	int ammoCapacity;
-	float damage;
-	float cooldown;
-	bool isAuto = false;
-};
 class Player
 {
 public:
+	// Overloads: (name, ammo, damage, cooldown, isAuto)
+	struct GunProperties 
+	{
+		short ammoCapacity;
+		short damage;
+		float cooldown;
+		bool isAuto = false;
+	};
 	enum class WEAPON {
 		FIST,
 		PISTOL,
@@ -63,12 +62,12 @@ public:
 	3 = Ryan's
 	4 = Bag
 	*/
-	Player& Init(CONUSER user, int characterModel, int camPos = 10);
+	Player& Init(CONUSER user, int characterModel, short camPos = -1);
 
-	//in radians
+	//in radians, y is horizontal, x is vertical
 	Player& SetRotation(float y, float x) { m_rot = glm::vec2(x, y); return *this; }
 
-	Player& SetSpawn(const glm::vec3 pos) { m_spawnPos = pos; return *this; }
+	Player& SetSpawn(const glm::vec3& pos) { m_spawnPos = pos; return *this; }
 
 	Player& SetMaxHealth(short amt) { m_maxHealth = amt; if (m_health > amt) m_health = amt; return *this; }
 
@@ -79,12 +78,20 @@ public:
 	//update the morph animator and stuff like health
 	void Update(PhysBody& body);
 
-	//make the player move
+	//make the player move, returns true if player is currently dead
 	void GetInput(PhysBody& body, Transform& head, Transform& personalCam);
+
+	void MakeInvincible(bool choice) { m_invincible = choice; }
+
+	void GainHealth(short amt) {
+		m_health += amt;
+		if (m_health > m_maxHealth)
+			m_health = m_maxHealth;
+	}
 
 	//returns true if kill shot
 	bool TakeDamage(short dmg) {
-		if (m_health == 0)	return false;
+		if (m_health <= 0 || m_invincible)	return false;
 
 		if ((m_health -= dmg) <= 0) {
 			m_health = 0;
@@ -105,7 +112,12 @@ public:
 		return false;
 	}
 
+	bool IsAlive() { return m_respawnTimer == 0; }
+
 	bool IsPlayer() { return m_user != CONUSER::NONE; }
+
+	//returns true if <= than timer
+	bool RespawnDelayTest(float timer) { return m_respawnTimer <= timer; }
 
 	//returns true if successful
 	bool PickUpWeapon(WEAPON pickup);
@@ -117,17 +129,19 @@ public:
 	short GetScore() { return m_killCount; }
 
 private:
-
 	bool groundTest(float yVelo, PhysBody& bodyPos);
+
+	//attacking
+	btVector3 Melee(const glm::vec3& pos);
 	void UseWeapon(PhysBody& body, Transform& head, float offset);
 	void LaserGun(float offset, Transform& head, short damage, float distance = 2000.f);
-	void SwapWeapon(bool outOfAmmo = false);
+
+	//other things
+	void SwapWeapon();
 	void UseHeal();
-	void ShootLazer(glm::quat offsetQuat, glm::quat rotation, glm::vec3 rayPos, glm::vec3 forwards, short damage);
-	btVector3 Melee(const glm::vec3& pos);
 
 	//digit 1 is first digit
-	int GetDigit(int number, int digit) {
+	/*int GetDigit(int number, int digit) {
 		if (digit < 1)	return 0;
 
 		int num = 1;
@@ -135,7 +149,7 @@ private:
 
 		num = number / num;
 		return num - (num / 10) * 10;
-	}
+	}*/
 
 	static const glm::mat4 m_modelOffset;
 	static const glm::mat4 m_gunOffsetMat;
@@ -178,8 +192,9 @@ private:
 	bool m_grounded = false;
 	bool m_punched = false;
 	bool m_stepped = false;
+	bool m_invincible = false;
 
-	short m_camPos = 10;
+	short m_camPos = -1;
 	short m_maxHealth = 100;
 	short m_health = m_maxHealth;
 	short m_killCount = 0;
@@ -202,16 +217,15 @@ private:
 	float m_weaponCooldown = 0.f;
 
 	//Gun stuff
-	GunProperties pistol			{ "Pistol", 30, 5.f, 0.5f };
-	GunProperties cannon			{ "Proton Cannon", 3, 30.f, 2.f };
-	GunProperties rifle				{ "Proton Rifle", 20, 10.f, 0.8f };
-	GunProperties missileLauncher	{ "Missile Launcher", 1, 100.f, 3.f };
-	GunProperties shotgun			{ "Shotgun", 15, 20.f, 2.f };
-	GunProperties machineGun		{ "Machine Gun", 50, 5.f, 0.1f, true };
+	static const GunProperties pistol;
+	static const GunProperties cannon;
+	static const GunProperties rifle;
+	static const GunProperties missileLauncher;
+	static const GunProperties shotgun;
+	static const GunProperties machineGun;
+	static const float shotgunDistance;
 
-
-
-	glm::quat m_startRot = glm::quat(1, 0, 0, 0);
+	//glm::quat m_startRot = glm::quat(1, 0, 0, 0);
 	glm::vec3 m_spawnPos = glm::vec3(0.f);
 	glm::vec3 m_deathPos = glm::vec3(0.f);
 	glm::vec2 m_rot = glm::vec2(0.f);

@@ -36,11 +36,14 @@ public:
 	Sprite& Init(const glm::vec4& colour, float width, float height);
 
 	static void BeginDraw(unsigned amt = 0);
+	static void BeginUIDraw(unsigned UIamt = 0, unsigned camCount = 0);
 
 	void Draw(const glm::mat4& VP, const glm::mat4& model);
 	void DrawSingle(const glm::mat4& VP, const glm::mat4& model);
+	void DrawToUI(const glm::mat4& VP, const glm::mat4& model, short camNum);
 
 	static void PerformDraw();
+	static void PerformUIDraw(int numOfCams);
 
 	void SetScale(float scl) { m_scale = scl; }
 	void SetWidth(float width) { m_width = width; }
@@ -62,6 +65,7 @@ private:
 		glm::mat4 MVP;
 	};
 	static std::vector<DrawData> m_Queue;
+	static std::vector<DrawData> m_UIQueue[4];
 	static VertexArrayObject::sptr m_square;
 	static Shader::sptr m_shader;
 

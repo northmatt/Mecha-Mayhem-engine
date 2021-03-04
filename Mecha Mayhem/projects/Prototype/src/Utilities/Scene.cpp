@@ -74,7 +74,7 @@ Scene* Scene::Reattach()
 		Rendering::hitboxes = nullptr;
 	}
 
-	m_frameEffects.Resize(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
+	m_frameEffects.Resize(BackEnd::GetWidth(), BackEnd::GetHeight());
 
 	Rendering::effects = &m_effects;
 	Rendering::frameEffects = &m_frameEffects;
@@ -85,8 +85,24 @@ Scene* Scene::Reattach()
 void Scene::BackEndUpdate()
 {
 	if (!m_paused) {
-		if (m_world != nullptr) {
+		//update components
+		m_reg.view<ObjMorphLoader, Transform>().each(
+			[](ObjMorphLoader& obj, Transform& trans) {
+				obj.Update(Time::dt);
+			}
+		);
+		m_reg.view<Player, PhysBody, Transform>().each(
+			[](Player& p, PhysBody& body, Transform& trans) {
+				p.Update(body);
+			}
+		);
+		m_reg.view<Spawner, Transform>().each(
+			[&](Spawner& spawn, Transform& trans) {
+				spawn.Update(&m_reg, trans.GetGlobalPosition());
+			}
+		);
 
+		if (m_world != nullptr) {
 			m_world->stepSimulation(Time::dt, 10);
 
 			m_reg.view<PhysBody, Transform>().each(
@@ -99,7 +115,6 @@ void Scene::BackEndUpdate()
 		m_effects.Update();
 	}
 
-
 	//always render
 	if (m_camCount < 1)
 		m_camCount = 1;
@@ -108,10 +123,9 @@ void Scene::BackEndUpdate()
 
 	Rendering::Update(&m_reg, m_camCount, m_paused);
 
-	m_frameEffects.UnBind();
-	m_frameEffects.Draw();
-
 	if (m_paused)   if (m_pauseSprite.IsValid()) {
+		glViewport(0, 0, BackEnd::GetWidth(), BackEnd::GetHeight());
+
 		m_pauseSprite.DrawSingle(Rendering::orthoVP.GetViewProjection(), glm::mat4(
 			1, 0, 0, 0,
 			0, 1, 0, 0,

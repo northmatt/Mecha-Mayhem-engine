@@ -1,6 +1,7 @@
 #pragma once
-#include "Components/ObjMorphLoader.h"
 #include "Components/Transform.h"
+#include "Components/ObjMorphLoader.h"
+#include "Components/SpawnStation.h"
 
 class HitboxGen
 {
@@ -9,10 +10,11 @@ public:
 	~HitboxGen() { m_world = nullptr; }
 
 	bool ToggleDraw() {
-		if (m_draw = !m_draw)		std::cout << "drawing hitboxes    \r";
-		else						std::cout << "not drawing hitboxes\r";
+		return m_draw = !m_draw;
+	}
 
-		return m_draw;
+	bool ToggleDrawSpawns() {
+		return m_drawSpawns = !m_drawSpawns;
 	}
 
 	//gets the physicsworld and reads/create the file.
@@ -49,6 +51,68 @@ public:
 	//Through ImGui
 	void Update(entt::entity cameraEnt = entt::null);
 
+	//only call once please
+	void GenerateSpawners() {
+		for (int i(0); i < m_spawners.size(); ++i) {
+			auto entity = ECS::CreateEntity();
+			ECS::AttachComponent<Spawner>(entity).Init(m_spawners[i].radius, m_spawners[i].delay)
+				.SetBounds(m_spawners[i].bounds[0], m_spawners[i].bounds[1]);
+			ECS::GetComponent<Transform>(entity).SetPosition(m_spawners[i].pos).SetRotation(m_spawners[i].rot);
+		}
+	}
+
+	//returns position
+	glm::vec3 SetSpawnNear(Player& p, glm::vec3 testPos, float range) {
+		if (m_spawnLocations.size() == 0)	return BLM::GLMzero;
+
+		//for loop in case it never hits anything
+		int index = rand() % m_spawnLocations.size();
+		glm::vec3 pos = m_spawnLocations[index].pos;
+		//limit how many tries it does (in case all attempts fail)
+		for (int i(0); i < 25; ++i) {
+			if (glm::length(testPos - pos) < range) {
+				//success
+				break;
+			}
+			//re-get one
+			index = rand() % m_spawnLocations.size();
+			pos = m_spawnLocations[index].pos;
+		}
+
+		p.SetSpawn(pos);
+		p.SetRotation(m_spawnLocations[index].roty, m_spawnLocations[index].rotx);
+
+		return pos;
+	}
+
+	void SetSpawnAvoid(Player& p, std::vector<glm::vec3> tests, float range) {
+		if (m_spawnLocations.size() == 0)	return;
+
+		//test for players or limits or whatever
+		int index = rand() % m_spawnLocations.size();
+		glm::vec3 pos = m_spawnLocations[index].pos;
+		//limit how many tries it does (in case all attempts fail)
+		for (int i(0); i < 25; ++i) {
+			bool works = true;
+			for (int x(0); x < tests.size(); ++x) {
+				//if too close, try again
+				if (glm::length(tests[x] - pos) < range) {
+					works = false;
+					break;
+				}
+			}
+			if (works)
+				break;
+
+			//re-get one
+			index = rand() % m_spawnLocations.size();
+			pos = m_spawnLocations[index].pos;
+		}
+
+		p.SetSpawn(pos);
+		p.SetRotation(m_spawnLocations[index].roty, m_spawnLocations[index].rotx);
+	}
+
 	void Clear() {
 		m_draw = false;
 		m_current = 0;
@@ -58,6 +122,8 @@ public:
 			delete m_boxShape[i];
 		}
 		m_boxShape.clear();
+		m_spawners.clear();
+		m_spawnLocations.clear();
 	}
 
 	//init things
@@ -79,6 +145,8 @@ private:
 	static btCollisionShape* m_planeShape;
 	static Transform m_defaultTrans;
 
+	static const bool printText = false;
+
 	float m_speedModifier = 1.f;
 	float rotAmt = 45.f;
 	float circularRadius = 5.f;
@@ -87,8 +155,11 @@ private:
 	float bound2[2] = { 1.f, 100.f };
 	float bound3[2] = { 0.01f, 100.f };
 	bool m_draw = false;
+	bool m_drawSpawns = false;
 	bool m_lookingAtSelected = false;
 	int m_current = 0;
+	int m_spawnerCurrent = 0;
+	int m_spawnLocCurrent = 0;
 	int selectingScale = 0;
 	std::string m_filename;
 
@@ -100,8 +171,27 @@ private:
 		btRigidBody* body;
 		std::string type = "box";
 	};
-
 	std::vector<Shape> m_objects = {};
+
+	const glm::vec2 __spawnerBounds = { 0, 5 };	//check player.h for more info
+	struct SpawnerData
+	{
+		glm::vec3 pos;
+		glm::quat rot;
+		glm::vec2 bounds;
+		float radius;
+		float delay;
+	};
+	std::vector<SpawnerData> m_spawners = {};
+
+	struct SpawnData
+	{
+		glm::vec3 pos;
+		float rotx;
+		float roty;
+	};
+	std::vector<SpawnData> m_spawnLocations = {};
+
 	std::vector<Transform> m_tempObjects = {};
 	btRigidBody* m_floor = nullptr;
 	btAlignedObjectArray<btCollisionShape*> m_boxShape;

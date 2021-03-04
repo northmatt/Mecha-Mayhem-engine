@@ -23,9 +23,11 @@ namespace Rendering {
 		auto textObjView = reg->view<MultiTextObj, Transform>();
 		auto morphView = reg->view<ObjMorphLoader, Transform>();
 		auto spriteView = reg->view<Sprite, Transform>();
-		auto playerView = reg->view<Player, PhysBody, Transform>();
+		auto playerView = reg->view<Player, Transform>();
 		auto cameraView = reg->view<Camera, Transform>();
 		auto spawnerView = reg->view<Spawner, Transform>();
+
+		Sprite::BeginUIDraw(10, numOfCams);
 
 		int height = BackEnd::GetHalfHeight();
 		int width = BackEnd::GetHalfWidth();
@@ -37,7 +39,7 @@ namespace Rendering {
 			//    width * (numOfCams == 1 ? 2 : 1), height * (numOfCams > 2 ? 1 : 2));
 
 			if (numOfCams > 2)
-				glViewport(((count % 2) * width), (count < 2 ? height : 0), width, height);
+				glViewport(((count % 2) * width), ((count < 2) * height), width, height);
 			else if (numOfCams == 2)
 				glViewport((count * width), 0, width, height * 2);
 			else
@@ -55,7 +57,7 @@ namespace Rendering {
 			ObjLoader::BeginDraw(objView.size());
 			ObjMorphLoader::BeginDraw(morphView.size() + spawnerView.size() + playerView.size());
 			//number of ui elements
-			Sprite::BeginDraw(spriteView.size() + 6);
+			Sprite::BeginDraw(spriteView.size());
 
 			//draw all the objs
 			objView.each(
@@ -66,8 +68,7 @@ namespace Rendering {
 
 			//draw all the morph objs
 			morphView.each(
-				[&](ObjMorphLoader& obj, Transform& trans) {
-					if ((count == 0) && !paused) obj.Update(Time::dt);
+				[](ObjMorphLoader& obj, Transform& trans) {
 					obj.Draw(trans.GetModel());
 				}
 			);
@@ -80,8 +81,7 @@ namespace Rendering {
 			);
 
 			spawnerView.each(
-				[&](Spawner& spawn, Transform& trans) {
-					if ((count == 0) && !paused) spawn.Update(reg, trans.GetGlobalPosition());
+				[](Spawner& spawn, Transform& trans) {
 					spawn.Render(trans.GetModel());
 				}
 			);
@@ -89,11 +89,18 @@ namespace Rendering {
 			//draw all players
 			//int temp = 2;
 			playerView.each(
-				[&](Player& p, PhysBody& body, Transform& trans) {
-					if (count == 0 && !paused) p.Update(body);
+				[&](Player& p, Transform& trans) {
 					p.Draw(trans.GetModel(), count, numOfCams, paused);
-					/*if (p.IsPlayer())
-						Rendering::LightsPos[temp++] = trans.GetGlobalPosition();*/
+				}
+			);
+
+
+			//map drawn first for transparency
+			textObjView.each(
+				[&](MultiTextObj& obj, Transform& trans) {
+					obj.Draw(trans.GetModel(), view, camCam,
+						DefaultColour, LightsPos, LightsColour, LightCount,
+						1, 4, 0.0f, AmbientColour, AmbientStrength);
 				}
 			);
 
@@ -110,20 +117,16 @@ namespace Rendering {
 				1, 4, 0.0f, AmbientColour, AmbientStrength);
 			Sprite::PerformDraw();
 
-			//map drawn last for transparency
-			textObjView.each(
-				[&](MultiTextObj& obj, Transform& trans) {
-					obj.Draw(trans.GetModel(), view, camCam,
-						DefaultColour, LightsPos, LightsColour, LightCount,
-						1, 4, 0.0f, AmbientColour, AmbientStrength);
-				}
-			);
 
 			//exit even if some cams haven't been checked, because only the amount specified should render
 			if (++count >= numOfCams)
 				break;
 		}
-		glViewport(0, 0, BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
+		glViewport(0, 0, BackEnd::GetWidth(), BackEnd::GetHeight());
+
+		frameEffects->UnBind();
+		frameEffects->Draw();
+		Sprite::PerformUIDraw(numOfCams);
 	}
 
 	/*void DrawPauseScreen(Sprite image)

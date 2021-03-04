@@ -58,14 +58,10 @@ private:
 		glm::vec3(-1, 5, -1) },8
 	};
 
-
-	int width = 0;
-	int height = 0;
-
-	size_t killGoal = 11;
+	size_t killGoal = 5;
 
 	float camDistance = 2.5f;
-	glm::quat startQuat = glm::quat(0, 0, 1, 0);
+	float m_timer = 0.f;
 
 	entt::entity bodyEnt[4] = { entt::null, entt::null, entt::null, entt::null };
 	entt::entity Head[4] = { entt::null, entt::null, entt::null, entt::null };
@@ -74,6 +70,5 @@ private:
 	entt::entity lightDrone = entt::null;
 	entt::entity cameraDrone = entt::null;
 	entt::entity speakerDrone = entt::null;
-	entt::entity shieldDrone = entt::null;
 };
 

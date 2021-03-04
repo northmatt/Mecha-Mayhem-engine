@@ -6,9 +6,10 @@ void MapEditor::Init(int windowWidth, int windowHeight)
 	PhysBody::Init(m_world);
 	ECS::AttachWorld(m_world);
 	std::string input = "playtestmap";
-	std::cout << "filename: " + input + "\n";
+	m_colliders.Init(m_world, input, false, false);
+	/*std::cout << "filename: " + input + "\n";
 	if (!m_colliders.Init(m_world, input, false, false))
-		std::cout << input + " failed to load, no collision boxes loaded\n";
+		std::cout << input + " failed to load, no collision boxes loaded\n";*/
 	
 	width = windowWidth;
 	height = windowHeight;
@@ -21,7 +22,7 @@ void MapEditor::Init(int windowWidth, int windowHeight)
 	ECS::GetComponent<Transform>(cameraEnt).SetPosition(glm::vec3(0, 0, 0));
 
 	rayPosEnt = ECS::CreateEntity();
-	ECS::AttachComponent<ObjLoader>(rayPosEnt).LoadMesh("models/GodHimself.obj");
+	ECS::AttachComponent<ObjLoader>(rayPosEnt).LoadMesh("maps/GodHimself.obj");
 	ECS::GetComponent<Transform>(rayPosEnt).SetPosition(glm::vec3(0, 0.f, 0)).SetScale(0.5f);
 	{
 		auto entity = ECS::CreateEntity();
@@ -49,9 +50,13 @@ void MapEditor::Update()
 		QueueSceneChange(0);
 		return;
 	}*/
+	if (Input::GetKeyDown(KEY::ESC)) {
+		QueueSceneChange(0);
+		return;
+	}
 
 	if (Input::GetKeyDown(KEY::F)) {
-		if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
+		if (BackEnd::GetFullscreen())	BackEnd::SetTabbed();
 		else							BackEnd::SetFullscreen();
 	}
 
@@ -67,8 +72,7 @@ void MapEditor::Update()
 		if (Input::GetKey(KEY::A))		{ change.x -= speed * Time::dt; }
 
 		if (Input::GetKey(KEY::SPACE))	{ change.y += speed * Time::dt; }
-		if (Input::GetKey(KEY::LSHIFT) ||
-			Input::GetKey(KEY::LCTRL))	{ change.y -= speed * Time::dt; }
+		if (Input::GetKey(KEY::LSHIFT))	{ change.y -= speed * Time::dt; }
 
 		if (change != BLM::GLMzero) {
 			change = glm::rotate(camTrans.GetLocalRotation(), change);
@@ -135,18 +139,9 @@ void MapEditor::ImGuiFunc()
 		Rendering::LightCount = size_t(1) + size_t(showRay);
 	}
 
-	{
-		int blurCount = _bloomEffect->GetBlurCount();
-		if (ImGui::SliderInt("Blur Count", &blurCount, 0, 16))
-			_bloomEffect->SetBlurCount(blurCount);
-		float radius = _bloomEffect->GetRadius();
-		if (ImGui::SliderFloat("Radius", &radius, 0, 16))
-			_bloomEffect->SetRadius(radius);
-		float threshold = _bloomEffect->GetTreshold();
-		if (ImGui::SliderFloat("Threshold", &threshold, 0, 1))
-			_bloomEffect->SetThreshold(threshold);
+	if (ImGui::Button("Toggle render spawn(ers)(points)") || Input::GetKeyDown(KEY::FSLASH)) {
+		debugText = m_colliders.ToggleDrawSpawns() ? "drawing spawn(ers)(points)" : "not drawing spawn(ers)(points)";
 	}
-
 	if (ImGui::Button("Toggle render hitboxes") || Input::GetKeyDown(KEY::FSLASH)) {
 		debugText = m_colliders.ToggleDraw() ? "drawing hitboxes" : "not drawing hitboxes";
 	}

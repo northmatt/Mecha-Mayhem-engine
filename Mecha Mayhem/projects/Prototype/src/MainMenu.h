@@ -19,8 +19,6 @@ private:
 	bool playerSwapped[4] = {};
 
 	int m_scenePos = 0;
-	int width = 10;
-	int height = 10;
 	const int maxSelect = 4;
 
 	float zoomTime = 1;

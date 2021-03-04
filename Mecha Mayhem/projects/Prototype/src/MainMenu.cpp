@@ -2,16 +2,13 @@
 #include "LeaderBoard.h"
 #include "Effects/Post/BloomEffect.h"
 
-void MainMenu::Init(int windowWidth, int windowHeight)
+void MainMenu::Init(int width, int height)
 {
 	ECS::AttachRegistry(&m_reg);
 
-	width = windowWidth;
-	height = windowHeight;
-
 	camera = ECS::CreateEntity();
 	ECS::AttachComponent<Camera>(camera).SetFovDegrees(60.f)
-		.ResizeWindow(windowWidth, windowHeight).SetNear(0.3f);
+		.ResizeWindow(width, height).SetNear(0.3f);
 
 	title = ECS::CreateEntity();
 	ECS::AttachComponent<ObjMorphLoader>(title).LoadMeshs("title", true);
@@ -79,7 +76,7 @@ void MainMenu::Update()
 		for (int i(0); i < 4; ++i) {
 			if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(i))) {
 				if (ControllerInput::GetButton(BUTTON::RB, CONUSER(i))) {
-					if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
+					if (BackEnd::GetFullscreen())	BackEnd::SetTabbed();
 					else							BackEnd::SetFullscreen();
 				}
 			}
@@ -166,12 +163,25 @@ void MainMenu::Update()
 		int lx = 0, allHolding = 0, playerCount = 0;
 		//exit
 		for (int x(0); x < 4; ++x) {
+			if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(x))) {
+				if (ControllerInput::GetButton(BUTTON::RB, CONUSER(x))) {
+					if (BackEnd::GetFullscreen())	BackEnd::SetTabbed();
+					else							BackEnd::SetFullscreen();
+				}
+			}
+
 			auto &p = ECS::GetComponent<Player>(models[x]);
 
 			if (p.IsPlayer()) {
 				if (Rendering::LightsPos[2 + x] == BLM::GLMzero)
 					Rendering::LightsPos[2 + x] = (ECS::GetComponent<Transform>(models[x]).GetGlobalPosition() + glm::vec3(0, 0, 1.75f));
 
+				++playerCount;
+				if (ControllerInput::GetButton(BUTTON::START, CONUSER(x))) {
+					++allHolding;
+					playerSwapped[x] = true;
+					continue;
+				}
 				if (ControllerInput::GetButtonDown(BUTTON::B, CONUSER(x))) {
 					p.Init(LeaderBoard::players[x].user = CONUSER::NONE, 0);
 					playerSwapped[x] = true;
@@ -209,22 +219,13 @@ void MainMenu::Update()
 				else {
 					playerSwapped[x] = false;
 				}
-
-				++playerCount;
-				allHolding += ControllerInput::GetButton(BUTTON::START, CONUSER(x));
 			}
 			else if (ControllerInput::GetButtonDown(BUTTON::A, CONUSER(x))) {
 				if (LeaderBoard::players[x].model == 0)
 					LeaderBoard::players[x].model = 1;
 				LeaderBoard::players[x].user = CONUSER(x);
 				p.Init(CONUSER::FOUR, LeaderBoard::players[x].model);
-			}
-
-			if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(x))) {
-				if (ControllerInput::GetButton(BUTTON::RB, CONUSER(x))) {
-					if (BackEnd::GetFullscreen())	BackEnd::SetTabbed(width, height);
-					else							BackEnd::SetFullscreen();
-				}
+				playerSwapped[x] = true;
 			}
 
 			if (ControllerInput::GetButton(BUTTON::B, CONUSER(x))) {
@@ -262,7 +263,10 @@ void MainMenu::Update()
 		if (allHolding == playerCount && playerCount > 0) {
 			m_confirmTimer -= Time::dt;
 			if (m_confirmTimer <= 0) {
-				QueueSceneChange(1);
+				//1 is tutorial
+				if (playerCount == 1)	QueueSceneChange(1);
+				//2 is DemoScene
+				else					QueueSceneChange(2);
 				m_scenePos = 0;
 				m_exitHoldTimer = 1.f;
 
@@ -272,6 +276,19 @@ void MainMenu::Update()
 				ECS::GetComponent<Transform>(text).SetRotation(BLM::GLMQuat).ChildTo(camera);
 
 				LeaderBoard::playerCount = playerCount;
+
+
+				// dalettuce
+
+				LeaderBoard::playerCount = 4;
+
+				LeaderBoard::players[0] = { CONUSER::ONE, 1, 0 };
+				LeaderBoard::players[1] = { CONUSER::ONE, 1, 0 };
+				LeaderBoard::players[2] = { CONUSER::ONE, 1, 0 };
+				LeaderBoard::players[3] = { CONUSER::ONE, 1, 0 };
+
+				// dalettuce
+
 			}
 			ECS::GetComponent<Sprite>(backGround).SetHeight(10 * m_confirmTimer);
 		}

@@ -42,7 +42,13 @@ public:
 	void BindShader(int index);
 	void UnbindShader();
 
+	//temporary
+	void SetInfo(std::string words) { _info = words; }
+	std::string Info() { return _info; }
+
 protected:
+	std::string _info = "N/A";
+
 	//Holds all our buffers for the effects
 	std::vector<Framebuffer*> _buffers;
 

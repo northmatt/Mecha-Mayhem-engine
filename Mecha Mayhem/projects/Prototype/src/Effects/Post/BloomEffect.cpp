@@ -240,7 +240,7 @@ void PixelEffect::Reshape(unsigned width, unsigned height)
 void PixelEffect::SetPixelCount(int amt)
 {
 	_pixelCount = amt;
-	Reshape(BackEnd::GetHalfWidth() * 2, BackEnd::GetHalfHeight() * 2);
+	Reshape(BackEnd::GetWidth(), BackEnd::GetHeight());
 }
 
 int PixelEffect::GetPixelCount() const

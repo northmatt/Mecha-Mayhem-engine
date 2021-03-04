@@ -6,7 +6,7 @@
 const btVector3 Player::m_gravity = btVector3(0, -100, 0);
 
 const glm::vec4 Player::m_gunOffset = glm::vec4(
-	0.3f, -0.5f, -0.4f, 1
+	0.3f, -0.3f, -0.4f, 1
 );
 
 const glm::mat4 Player::m_gunOffsetMat = glm::mat4(
@@ -21,6 +21,14 @@ const glm::mat4 Player::m_modelOffset = glm::mat4(
 	0, 0, 0, 0,
 	0, -1, 0, 0
 );
+//Gun stuff												ammo,	damage, cooldown,	auto?
+const Player::GunProperties Player::pistol			{	30,		5,		0.5f };
+const Player::GunProperties Player::cannon			{	3,		30,		2.f };
+const Player::GunProperties Player::rifle			{	20,		10,		0.8f };
+const Player::GunProperties Player::missileLauncher	{	1,		100,	3.f };
+const Player::GunProperties Player::shotgun			{	15,		20,		2.f };
+const Player::GunProperties Player::machineGun		{	50,		5,		0.1f,		true };
+const float Player::shotgunDistance = 25.f;
 
 float Player::m_camDistance = 5.f;
 float Player::m_dashDistance = 7.5f;
@@ -119,9 +127,11 @@ void Player::SetUIAspect(int width, int height)
 	m_orthoCam.ResizeWindow(width, height);
 }
 
-Player& Player::Init(CONUSER user, int characterModel, int camPos)
+Player& Player::Init(CONUSER user, int characterModel, short camPos)
 {
 	m_user = user;
+	m_camPos = camPos;
+
 	switch (characterModel) {
 		//dummy (case 0 is also here)
 	default:	m_charModelIndex = "dummy";	m_charModel.LoadMeshs("dummy/idle", true);	m_user = CONUSER::NONE;	break;
@@ -134,9 +144,6 @@ Player& Player::Init(CONUSER user, int characterModel, int camPos)
 		//Bag
 	case 4:		m_charModelIndex = "char4";	m_charModel.LoadMeshs("char4/idle", true);	break;
 	}
-
-	if (camPos < 4 && camPos >= 0)
-		m_camPos = camPos;
 
 	return *this;
 }
@@ -162,44 +169,57 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 
 		glm::mat4 VP = m_orthoCam.GetViewProjection();
 
-		m_scoreBack.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			x, y, -9.9f, 1		));
+		m_scoreBack.DrawToUI(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			x, y, -9.9f, 1),
+			camNum);
 
 		if (m_killCount < 10) {
-			m_digits[m_killCount].Draw(VP, glm::mat4(
-				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x, y, -10, 1			));
+			m_digits[m_killCount].DrawToUI(VP, glm::mat4(
+				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x, y, -10, 1),
+				camNum);
 		}
 		else if (m_killCount < 100) {
 			int digit2 = m_killCount / 10;
-			m_digits[m_killCount - digit2 * 10].Draw(VP, glm::mat4(
-				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x - 0.65f, y, -10, 1			));
-			m_digits[digit2].Draw(VP, glm::mat4(
-				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x + 0.65f, y, -10, 1			));
+			m_digits[m_killCount - digit2 * 10].DrawToUI(VP, glm::mat4(
+				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x - 0.65f, y, -10, 1),
+				camNum);
+			m_digits[digit2].DrawToUI(VP, glm::mat4(
+				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x + 0.65f, y, -10, 1),
+				camNum);
 		}
 		else {
-			m_digits[0].Draw(VP, glm::mat4(
-				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x - 0.65f, y, -10, 1			));
-			m_digits[0].Draw(VP, glm::mat4(
-				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x + 0.65f, y, -10, 1			));
+			m_digits[0].DrawToUI(VP, glm::mat4(
+				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x - 0.65f, y, -10, 1),
+				camNum);
+			m_digits[0].DrawToUI(VP, glm::mat4(
+				1, 0, 0, 0,				0, 1, 0, 0,				0, 0, 1, 0,				x + 0.65f, y, -10, 1),
+				camNum);
 		}
 
-		m_healthBar.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			(1 - healthPercent) * 7.475f, -8.5f, -9.9f, 1		));
-		m_healthBarBack.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -8.5f, -9.8f, 1		));
-		m_dashBar.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			dashPercent * 4.575f, -7.25f, -9.9f, 1		));
-		m_dashBarBack.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -7.25f, -9.8f, 1		));
+		m_healthBar.DrawToUI(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			(1 - healthPercent) * 7.475f, -8.5f, -9.9f, 1),
+			camNum);
+		m_healthBarBack.DrawToUI(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -8.5f, -9.8f, 1),
+			camNum);
+		m_dashBar.DrawToUI(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			dashPercent * 4.575f, -7.25f, -9.9f, 1),
+			camNum);
+		m_dashBarBack.DrawToUI(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -7.25f, -9.8f, 1),
+			camNum);
 
 		//drawn last cause layering
-		m_healthBarOutline.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -8.5f, -10.f, 1		));
-		m_dashBarOutline.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -7.25f, -10.f, 1		));
+		m_healthBarOutline.DrawToUI(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -8.5f, -10.f, 1),
+			camNum);
+		m_dashBarOutline.DrawToUI(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, -7.25f, -10.f, 1),
+			camNum);
 
-		if (!paused)	m_reticle.Draw(VP, glm::mat4(
-			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, 0, -10, 1		));
+		if (!paused)	m_reticle.DrawToUI(VP, glm::mat4(
+			1, 0, 0, 0,			0, 1, 0, 0,			0, 0, 1, 0,			0, 0, -10, 1),
+			camNum);
 
 		//is false when cam is too close
 		if (!m_drawSelf)	return;
@@ -215,13 +235,20 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 
 void Player::Update(PhysBody& body)
 {
+	if (m_user == CONUSER::NONE) {
+		//rotate even dummies
+		body.SetRotation(glm::angleAxis(-m_rot.y, BLM::GLMup));
+	}
 	m_charModel.Update(Time::dt);
 	//when dead
 	if (m_respawnTimer > 0) {
-		body.SetGravity(BLM::BTzero);
+		body.SetVelocity(BLM::BTzero);
 		m_charModel.BlendTo(m_charModelIndex + "/death", 0.25f);
-		if (m_respawnTimer == m_respawnDelay)
+		if (m_respawnTimer == m_respawnDelay) {
 			m_deathPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
+			body.SetGravity(BLM::BTzero);
+		}
+
 		m_respawnTimer -= Time::dt;
 		if (m_respawnTimer <= 0) {
 			m_charModel.BlendTo(m_charModelIndex + "/idle");
@@ -261,10 +288,11 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 	if (m_user == CONUSER::NONE)	return;
 	if (m_health == 0) {
 		personalCam.SetPosition(glm::vec3(0, 0, m_camDistance));
-		body.SetVelocity(BLM::BTzero);
 		head.SetRotation(glm::quat(-0.71f, 0.71f, 0.f, 0.f));
 		return;
 	}
+
+	float rayOff = 0;
 
 	//Camera Rotation (above punch for user experience)
 	{
@@ -274,131 +302,12 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 		if (m_rot.x > pi)			m_rot.x = pi;
 		else if (m_rot.x < -pi)		m_rot.x = -pi;
 
-		body.SetRotation(glm::rotate(m_startRot, -m_rot.y, BLM::GLMup));
-		head.SetRotation(glm::rotate(m_startRot, m_rot.x, glm::vec3(1, 0, 0)));
-	}
+		body.SetRotation(glm::angleAxis(-m_rot.y, BLM::GLMup));
+		head.SetRotation(glm::angleAxis(m_rot.x, glm::vec3(1, 0, 0)));
+	
 
-	if (m_punched) {
-		m_charModel.BlendTo(m_charModelIndex + "/punch");
+		//camera distance checks
 
-		if (m_charModel.IsDone()) {
-			m_charModel.BlendTo(m_charModelIndex + "/idle");
-			m_punched = false;
-		}
-		else	return;
-	}
-
-	//controls
-	{
-		glm::vec3 vel = glm::vec3(0.f);
-		vel.y = body.SetAwake().GetVelocity().y();
-
-		vel.x += ControllerInput::GetLX(m_user);
-		vel.z -= ControllerInput::GetLY(m_user);
-
-		if (groundTest(vel.y, body)) {
-			vel.y = 0;
-
-			//jump
-			//if (ControllerInput::GetButtonDown(BUTTON::A, m_user)) {
-			if (ControllerInput::GetButton(BUTTON::A, m_user)) {
-				vel.y = 15.f;
-				m_jumpHeld = Time::dt;
-			}
-			else m_jumpHeld = 0;
-
-			if (m_punched = ControllerInput::GetButtonDown(BUTTON::X, m_user)) {
-				//punch only when on ground
-				vel = BLM::BTtoGLM(Melee(BLM::BTtoGLM(body.GetTransform().getOrigin()) - head.GetForwards()));
-			}
-			else {
-				//ground anims
-				if (vel.x != 0 || vel.z != 0) {
-					m_charModel.SetSpeed(std::max(fabsf(vel.x), fabsf(vel.z))).
-						BlendTo(m_charModelIndex + "/walk");
-					if (m_charModel.Getp0() == 0 || m_charModel.Getp0() == 4) {
-						if (!m_stepped) {
-							
-							//m_walk[rand() % 5].play();
-							AudioEngine::Instance().GetEvent("step").Restart();
-
-							m_stepped = true;
-						}
-					}
-					else	m_stepped = false;
-				}
-				else
-					m_charModel.BlendTo(m_charModelIndex + "/idle");
-			}
-		}
-		else {
-			if (m_jumpHeld > 0 && m_jumpHeld < 0.12f) {
-				if (ControllerInput::GetButton(BUTTON::A, m_user)) {
-					vel.y = 15.f;
-					m_jumpHeld += Time::dt;
-				}
-				else m_jumpHeld = 0;
-			}
-			m_charModel.BlendTo(m_charModelIndex + "/air");
-		}
-
-		//only do other input check if not punching
-		if (!m_punched) {
-			if (ControllerInput::GetButtonDown(BUTTON::B, m_user)) {
-				if (m_offhand == OFFHAND::EMPTY)
-					TakeDamage(1);
-				UseHeal();
-			}
-
-			//dash if moving and velocity adjustment
-			if (vel.x != 0 || vel.z != 0) {
-				glm::vec3 normalized = glm::normalize(glm::vec3(vel.x, 0, vel.z));
-				float percent = std::max(fabsf(vel.x), fabsf(vel.z));
-				vel.x = normalized.x * m_speed * percent;
-				vel.z = normalized.z * m_speed * percent;
-
-				vel = glm::vec4(vel, 1) * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup);
-
-				if (m_dashTimer == 0) {
-					//if (ControllerInput::GetLTDown(m_user)) {
-					if (ControllerInput::GetLTRaw(m_user)) {
-						m_dashTimer = m_dashDelay;
-						glm::vec3 ogPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
-						btVector3 pos = PhysBody::GetRaycastWithDistanceLimit(
-							ogPos, glm::vec3(vel.x, 0, vel.z) * m_dashDistance * 10.f, m_dashDistance);
-
-						glm::vec3 newPos = BLM::BTtoGLM(pos);
-						Rendering::effects->ShootDash(glm::rotation(
-							glm::normalize(glm::vec3(vel.x, 0, -vel.z)), glm::vec3(0, 0, 1)),
-							newPos, glm::length(newPos - ogPos));
-						body.SetPosition(pos);
-					}
-				}
-			}
-			//dash without moving
-			else if (m_dashTimer == 0) {
-				//if (ControllerInput::GetLTDown(m_user)) {
-				if (ControllerInput::GetLTRaw(m_user)) {
-					m_dashTimer = m_dashDelay;
-					glm::vec3 ogPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
-					btVector3 pos = PhysBody::GetRaycastWithDistanceLimit(ogPos,
-						glm::vec4(0, 0, m_dashDistance * -50.f, 1)
-						* glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup), m_dashDistance);
-
-					glm::vec3 newPos = BLM::BTtoGLM(pos);
-					Rendering::effects->ShootDash(BLM::BTtoGLM(body.GetTransform().getRotation()),
-						newPos, glm::length(newPos - ogPos));
-					body.SetPosition(pos);
-				}
-			}
-		}
-		body.SetVelocity(vel);
-	}
-
-	float rayOff = 0;
-
-	//camera
-	{
 		glm::vec3 rayPos = head.GetGlobalPosition();
 		btVector3 test = PhysBody::GetRaycast(rayPos, head.GetForwards() * (m_camDistance * 50.f));
 		if (m_rot.x < pi * 0.25f) {
@@ -433,17 +342,139 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 		}
 	}
 
-	//gun
-	{
-		if (ControllerInput::GetButtonDown(BUTTON::Y, m_user) && m_secWeapon != WEAPON::FIST) {
-			SwapWeapon();
+	if (m_punched) {
+		m_charModel.BlendTo(m_charModelIndex + "/punch");
+
+		if (m_charModel.IsDone()) {
+			m_charModel.BlendTo(m_charModelIndex + "/idle");
+			m_punched = false;
 		}
-		if (m_weaponCooldown == 0) {
-			if (ControllerInput::GetRTRaw(m_user)) {
-				UseWeapon(body, head, rayOff);
+		else	return;
+	}
+
+	//controls
+	{
+		glm::vec3 vel = glm::vec3(0.f);
+		vel.y = body.SetAwake().GetVelocity().y();
+
+		vel.x += ControllerInput::GetLX(m_user);
+		vel.z -= ControllerInput::GetLY(m_user);
+
+		if (groundTest(vel.y, body)) {
+			vel.y = 0;
+
+			//jump
+			//if (ControllerInput::GetButtonDown(BUTTON::A, m_user)) {
+			if (ControllerInput::GetButton(BUTTON::A, m_user)) {
+				vel.y = 15.f;
+				m_jumpHeld = Time::dt;
+			}
+			else m_jumpHeld = 0;
+
+			if (m_punched = ControllerInput::GetButtonDown(BUTTON::X, m_user)) {
+				//punch only when on ground
+				body.SetVelocity(BLM::BTtoGLM(
+					Melee(BLM::BTtoGLM(body.GetTransform().getOrigin()) - head.GetForwards())
+				));
+				return;
+			}
+			else {
+				//ground anims
+				if (vel.x != 0 || vel.z != 0) {
+					m_charModel.SetSpeed(std::max(fabsf(vel.x), fabsf(vel.z))).
+						BlendTo(m_charModelIndex + "/walk");
+					if (m_charModel.Getp0() == 0 || m_charModel.Getp0() == 4) {
+						if (!m_stepped) {
+							
+							//m_walk[rand() % 5].play();
+							AudioEngine::Instance().GetEvent("step").Restart();
+
+							m_stepped = true;
+						}
+					}
+					else	m_stepped = false;
+				}
+				else
+					m_charModel.BlendTo(m_charModelIndex + "/idle");
 			}
 		}
+		else {
+			if (m_jumpHeld > 0 && m_jumpHeld < 0.12f) {
+				if (ControllerInput::GetButton(BUTTON::A, m_user)) {
+					vel.y = 15.f;
+					m_jumpHeld += Time::dt;
+				}
+				else m_jumpHeld = 0;
+			}
+			m_charModel.BlendTo(m_charModelIndex + "/air");
+		}
+
+		//dash and other stuff
+		{
+			if (ControllerInput::GetButtonDown(BUTTON::B, m_user)) {
+				//this is for testing
+				/*if (m_offhand == OFFHAND::EMPTY)
+					TakeDamage(1);*/
+				if (m_offhand == OFFHAND::HEALPACK1 || m_offhand == OFFHAND::HEALPACK2)
+					UseHeal();
+			}
+
+			//dash if moving and velocity adjustment
+			if (vel.x != 0 || vel.z != 0) {
+				glm::vec3 normalized = glm::normalize(glm::vec3(vel.x, 0, vel.z));
+				float percent = std::max(fabsf(vel.x), fabsf(vel.z));
+				vel.x = normalized.x * m_speed * percent;
+				vel.z = normalized.z * m_speed * percent;
+
+				vel = glm::vec4(vel, 1) * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup);
+
+				if (m_dashTimer == 0) {
+					//if (ControllerInput::GetLTDown(m_user)) {
+					if (ControllerInput::GetLTRaw(m_user)) {
+						m_dashTimer = m_dashDelay;
+						glm::vec3 ogPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
+						btVector3 pos = PhysBody::GetRaycastWithDistanceLimit(ogPos,
+							glm::vec3(vel.x, 0, vel.z) * m_dashDistance * 10.f, m_dashDistance);
+
+						glm::vec3 newPos = BLM::BTtoGLM(pos);
+						Rendering::effects->ShootDash(glm::rotation(
+							glm::normalize(glm::vec3(vel.x, 0, -vel.z)), glm::vec3(0, 0, 1)),
+							newPos, glm::length(newPos - ogPos));
+						body.SetPosition(pos);
+					}
+				}
+			}
+			//dash without moving
+			else if (m_dashTimer == 0) {
+				//if (ControllerInput::GetLTDown(m_user)) {
+				if (ControllerInput::GetLTRaw(m_user)) {
+					m_dashTimer = m_dashDelay;
+					glm::vec3 ogPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
+					btVector3 pos = PhysBody::GetRaycastWithDistanceLimit(ogPos,
+						glm::vec4(0, 0, m_dashDistance * -50.f, 1)
+						* glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup), m_dashDistance);
+
+					glm::vec3 newPos = BLM::BTtoGLM(pos);
+					Rendering::effects->ShootDash(BLM::BTtoGLM(body.GetTransform().getRotation()),
+						newPos, glm::length(newPos - ogPos));
+					body.SetPosition(pos);
+				}
+			}
+		}
+		body.SetVelocity(vel);
 	}
+
+	//guns
+	{
+		if (m_secWeapon != WEAPON::FIST) if(ControllerInput::GetButtonDown(BUTTON::Y, m_user)) {
+			SwapWeapon();
+		}
+		if (m_weaponCooldown == 0) if (ControllerInput::GetRTRaw(m_user)) {
+			UseWeapon(body, head, rayOff);
+		}
+	}
+
+	return;
 }
 
 //used this: https://gamedev.stackexchange.com/questions/58012/detect-when-a-bullet-rigidbody-is-on-ground
@@ -504,9 +535,10 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 	switch (m_currWeapon) {
 	case WEAPON::FIST:
 		if (m_grounded)
-			body.SetVelocity(BLM::BTtoGLM(Melee(BLM::BTtoGLM(body.GetBody()->getWorldTransform().getOrigin())
-				- head.GetForwards())));
-		break;
+			body.SetVelocity(BLM::BTtoGLM(
+				Melee(BLM::BTtoGLM(body.GetBody()->getWorldTransform().getOrigin()) - head.GetForwards())
+			));
+		return;
 	case WEAPON::PISTOL:
 	{
 		m_weaponCooldown = pistol.cooldown;
@@ -524,11 +556,13 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 	case WEAPON::SHOTGUN:
 	{
 		m_weaponCooldown = shotgun.cooldown;
-		LaserGun(offset, head, shotgun.damage, 25.f);
-		LaserGun(offset, head, shotgun.damage, 25.f);
-		LaserGun(offset, head, shotgun.damage, 25.f);
-		LaserGun(offset, head, shotgun.damage, 25.f);
-		LaserGun(offset, head, shotgun.damage, 25.f);
+
+		//lots of shots lol
+		LaserGun(offset, head, shotgun.damage, shotgunDistance);
+		LaserGun(offset, head, shotgun.damage, shotgunDistance);
+		LaserGun(offset, head, shotgun.damage, shotgunDistance);
+		LaserGun(offset, head, shotgun.damage, shotgunDistance);
+		LaserGun(offset, head, shotgun.damage, shotgunDistance);
 		break;
 	}
 	case WEAPON::MACHINEGUN:
@@ -547,15 +581,16 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 	}
 	default:	//break;	for demo, all guns do the same
 	//case WEAPON::PISTOL:
-		{
+	{
 		m_weaponCooldown = 1.f;
 		LaserGun(offset, head, 3);
-		}
 		break;
+	}
+
 	}
 	//deal with ammo here
 	if (--m_currWeaponAmmo <= 0) {
-		SwapWeapon(true);
+		SwapWeapon();
 	}
 }
 
@@ -565,8 +600,8 @@ void Player::LaserGun(float offset, Transform& head, short damage, float distanc
 	AudioEngine::Instance().GetEvent("shoot").Restart();
 
 	glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
-	//shotgun range = 30.f therefore we can do spread
-	if (distance < 26.f)
+	//shotgun range < 30.f therefore we can do spread
+	if (distance <= 30.f)
 	{
 		//shotgun spread
 		offsetQuat = glm::angleAxis(glm::radians(rand() % 15 - 7.f), glm::normalize(glm::vec3(rand() % 21 - 10.f, rand() % 21 - 10.f, 0)));
@@ -579,7 +614,6 @@ void Player::LaserGun(float offset, Transform& head, short damage, float distanc
 	
 	if (p.hasHit()) if (p.m_closestHitFraction <= 0.01f)
 	{
-		std::cout << "hit\n";
 		entt::entity playerIdTest = p.m_collisionObject->getUserIndex();
 		if (ECS::Exists(playerIdTest)) {
 			if (ECS::HasComponent<Player>(playerIdTest)) {
@@ -595,7 +629,7 @@ void Player::LaserGun(float offset, Transform& head, short damage, float distanc
 	}
 }
 
-void Player::SwapWeapon(bool outOfAmmo)
+void Player::SwapWeapon()
 {
 	//m_swapWeapon.play();
 	AudioEngine::Instance().GetEvent("reload").Restart();
@@ -606,10 +640,11 @@ void Player::SwapWeapon(bool outOfAmmo)
 	short tempAmmo = m_currWeaponAmmo;
 	m_currWeaponAmmo = m_secWeaponAmmo;
 
-	if (outOfAmmo) { m_secWeapon = WEAPON::FIST; m_secWeaponAmmo = 0; }
+	if (tempAmmo <= 0) { m_secWeapon = WEAPON::FIST; m_secWeaponAmmo = 0; }
 	else { m_secWeapon = tempWeap; m_secWeaponAmmo = tempAmmo; }
 
-	m_weaponCooldown = 1.f;
+	if (m_weaponCooldown < 2.f)
+		m_weaponCooldown += 1.f;
 }
 
 void Player::UseHeal()
@@ -638,11 +673,6 @@ void Player::UseHeal()
 	}
 }
 
-void Player::ShootLazer(glm::quat offsetQuat, glm::quat rotation, glm::vec3 rayPos, glm::vec3 forwards, short damage)
-{
-
-}
-
 btVector3 Player::Melee(const glm::vec3& pos)
 {
 	m_punched = true;
@@ -651,7 +681,8 @@ btVector3 Player::Melee(const glm::vec3& pos)
 
 	ECS::GetRegistry()->view<Player, PhysBody>().each(
 		[&](Player& p, PhysBody& body) {
-			if (p.m_user != m_user) if (body.TestAABB(pos, 0.5f)) {
+			//if (p.m_user != m_user) if (body.TestAABB(pos, 0.5f)) {
+			if (p.m_camPos != m_camPos) if (body.TestAABB(pos, 0.5f)) {
 				if (p.TakeDamage(2))
 					++m_killCount;
 				hit = true;
@@ -675,24 +706,12 @@ bool Player::PickUpWeapon(WEAPON pickup)
 		//based on weapon, add ammo
 		switch (pickup)
 		{
-		case WEAPON::PISTOL:
-			m_currWeaponAmmo = pistol.ammoCapacity;
-			break;
-		case WEAPON::RIFLE:
-			m_currWeaponAmmo = rifle.ammoCapacity;
-			break;
-		case WEAPON::SHOTGUN:
-			m_currWeaponAmmo = shotgun.ammoCapacity;
-			break;
-		case WEAPON::MACHINEGUN:
-			m_currWeaponAmmo = machineGun.ammoCapacity;
-			break;
-		case WEAPON::CANNON:
-			m_currWeaponAmmo = cannon.ammoCapacity;
-			break;
-		default:
-			m_currWeaponAmmo = 20;
-			break;
+		case WEAPON::PISTOL:		m_currWeaponAmmo = pistol.ammoCapacity;		break;
+		case WEAPON::RIFLE:			m_currWeaponAmmo = rifle.ammoCapacity;		break;
+		case WEAPON::SHOTGUN:		m_currWeaponAmmo = shotgun.ammoCapacity;	break;
+		case WEAPON::MACHINEGUN:	m_currWeaponAmmo = machineGun.ammoCapacity;	break;
+		case WEAPON::CANNON:		m_currWeaponAmmo = cannon.ammoCapacity;		break;
+		default:					m_currWeaponAmmo = 20;						break;
 		}
 
 		//m_swapWeapon.play();
