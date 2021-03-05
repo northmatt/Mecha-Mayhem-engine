@@ -20,14 +20,13 @@ const glm::mat4 Player::m_modelOffset = glm::mat4(
 	0, 0, 0, 0,
 	0, -1, 0, 0
 );
-//Gun stuff												ammo,	damage, cooldown,	auto?
-const Player::GunProperties Player::pistol			{	30,		5,		0.5f };
-const Player::GunProperties Player::cannon			{	3,		30,		2.f };
-const Player::GunProperties Player::rifle			{	20,		10,		0.8f };
-const Player::GunProperties Player::missileLauncher	{	1,		100,	3.f };
-const Player::GunProperties Player::shotgun			{	15,		20,		2.f };
-const Player::GunProperties Player::machineGun		{	50,		5,		0.1f,		true };
-const float Player::shotgunDistance = 25.f;
+//Gun stuff												type,				ammo,	damage, cooldown,	maxRange (default 2000)
+const Player::GunProperties Player::pistol			{	WEAPON::PISTOL,		30,		50,		0.3f,		50.f};
+const Player::GunProperties Player::rifle			{	WEAPON::RIFLE,		20,		80,		3.f };
+const Player::GunProperties Player::cannon			{	WEAPON::CANNON,		3,		30,		2.f };
+const Player::GunProperties Player::missileLauncher	{	WEAPON::MISSILE,	1,		100,	3.f };
+const Player::GunProperties Player::shotgun			{	WEAPON::SHOTGUN,	15,		20,		2.f,		25.f};
+const Player::GunProperties Player::machineGun		{	WEAPON::MACHINEGUN,	50,		5,		0.1f};
 
 float Player::m_camDistance = 5.f;
 float Player::m_dashDistance = 7.5f;
@@ -612,14 +611,14 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 	{
 		m_weaponCooldown = pistol.cooldown;
 
-		LaserGun(offset, head, pistol.damage);
+		LaserGun(offset, head, pistol.damage, pistol.maxRange, pistol.type);
 		break;
 	}
 	case WEAPON::RIFLE:
 	{
 		m_weaponCooldown = rifle.cooldown;
 
-		LaserGun(offset, head, rifle.damage);
+		LaserGun(offset, head, rifle.damage, rifle.maxRange, rifle.type);
 		break;
 	}
 	case WEAPON::SHOTGUN:
@@ -627,32 +626,32 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 		m_weaponCooldown = shotgun.cooldown;
 
 		//lots of shots lol
-		LaserGun(offset, head, shotgun.damage, shotgunDistance);
-		LaserGun(offset, head, shotgun.damage, shotgunDistance);
-		LaserGun(offset, head, shotgun.damage, shotgunDistance);
-		LaserGun(offset, head, shotgun.damage, shotgunDistance);
-		LaserGun(offset, head, shotgun.damage, shotgunDistance);
+		LaserGun(offset, head, shotgun.damage, shotgun.maxRange, shotgun.type);
+		LaserGun(offset, head, shotgun.damage, shotgun.maxRange, shotgun.type);
+		LaserGun(offset, head, shotgun.damage, shotgun.maxRange, shotgun.type);
+		LaserGun(offset, head, shotgun.damage, shotgun.maxRange, shotgun.type);
+		LaserGun(offset, head, shotgun.damage, shotgun.maxRange, shotgun.type);
 		break;
 	}
 	case WEAPON::MACHINEGUN:
 	{
 		m_weaponCooldown = machineGun.cooldown;
 
-		LaserGun(offset, head, machineGun.damage);
+		LaserGun(offset, head, machineGun.damage, machineGun.maxRange, machineGun.type);
 		break;
 	}
 	case WEAPON::CANNON:
 	{
 		m_weaponCooldown = cannon.cooldown;
 
-		LaserGun(offset, head, cannon.damage);
+		LaserGun(offset, head, cannon.damage, cannon.maxRange, cannon.type);
 		break;
 	}
-	default:	//break;	for demo, all guns do the same
+	default:	
 	//case WEAPON::PISTOL:
 	{
 		m_weaponCooldown = 1.f;
-		LaserGun(offset, head, 3);
+		LaserGun(offset, head, 3, 2000.f, WEAPON::PISTOL);
 		break;
 	}
 
@@ -664,13 +663,13 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 }
 
 //does direction math for the shooting, ShootLazer does the actual projectile
-void Player::LaserGun(float offset, Transform& head, short damage, float distance)
+void Player::LaserGun(float offset, Transform& head, short damage, float distance, WEAPON type)
 {
 	AudioEngine::Instance().GetEvent("shoot").Restart();
 
 	glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
 	//shotgun range < 30.f therefore we can do spread
-	if (distance <= 30.f)
+	if (type == WEAPON::SHOTGUN)
 	{
 		//shotgun spread
 		offsetQuat = glm::angleAxis(glm::radians(rand() % 15 - 7.f), glm::normalize(glm::vec3(rand() % 21 - 10.f, rand() % 21 - 10.f, 0)));
@@ -683,6 +682,10 @@ void Player::LaserGun(float offset, Transform& head, short damage, float distanc
 	
 	if (p.hasHit()) if (p.m_closestHitFraction <= 0.01f)
 	{
+		if (type == WEAPON::PISTOL)
+		{
+			damage *= 1 - p.m_closestHitFraction * 0.01f;
+		}
 		entt::entity playerIdTest = p.m_collisionObject->getUserIndex();
 		if (ECS::Exists(playerIdTest)) {
 			if (ECS::HasComponent<Player>(playerIdTest)) {

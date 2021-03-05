@@ -280,6 +280,13 @@ void MainMenu::Update()
 
 
 				// dalettuce
+				//
+				//LeaderBoard::playerCount = 4;
+				//
+				//LeaderBoard::players[0] = { CONUSER::ONE, 1, 0 };
+				//LeaderBoard::players[1] = { CONUSER::ONE, 1, 0 };
+				//LeaderBoard::players[2] = { CONUSER::ONE, 1, 0 };
+				//LeaderBoard::players[3] = { CONUSER::ONE, 1, 0 };
 
 				/*LeaderBoard::playerCount = 4;
 
