@@ -67,9 +67,9 @@ int main() {
 			}
 
 			ControllerInput::ControllerRefresh();
-			Scene::doSceneChange(window);
 
 			Scene::m_activeScene->Update();
+			Scene::doSceneChange(window);
 
 			//do not touch plz
 			Scene::m_activeScene->BackEndUpdate();

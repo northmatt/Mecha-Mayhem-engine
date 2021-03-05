@@ -21,12 +21,12 @@ const glm::mat4 Player::m_modelOffset = glm::mat4(
 	0, -1, 0, 0
 );
 //Gun stuff												type,				ammo,	damage, cooldown,	maxRange (default 2000)
-const Player::GunProperties Player::pistol			{	WEAPON::PISTOL,		30,		50,		0.3f,		50.f};
-const Player::GunProperties Player::rifle			{	WEAPON::RIFLE,		20,		80,		3.f };
-const Player::GunProperties Player::cannon			{	WEAPON::CANNON,		3,		30,		2.f };
+const Player::GunProperties Player::pistol			{	WEAPON::PISTOL,		30,		35,		0.4f,		50.f};
+const Player::GunProperties Player::rifle			{	WEAPON::RIFLE,		7,		80,		3.5f };
+const Player::GunProperties Player::cannon			{	WEAPON::CANNON,		3,		50,		2.f };
 const Player::GunProperties Player::missileLauncher	{	WEAPON::MISSILE,	1,		100,	3.f };
-const Player::GunProperties Player::shotgun			{	WEAPON::SHOTGUN,	15,		20,		2.f,		25.f};
-const Player::GunProperties Player::machineGun		{	WEAPON::MACHINEGUN,	50,		5,		0.1f};
+const Player::GunProperties Player::shotgun			{	WEAPON::SHOTGUN,	10,		30,		2.f,		25.f};
+const Player::GunProperties Player::machineGun		{	WEAPON::MACHINEGUN,	50,		7,		0.1f};
 
 float Player::m_camDistance = 5.f;
 float Player::m_dashDistance = 7.5f;
@@ -661,6 +661,10 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 		SwapWeapon();
 	}
 }
+//Not forward declared
+float HalfCurve(float input) {
+	return ((input - 1) * (input - 1) * (input - 1) * (input - 1) * 0.5f + 0.5f);
+}
 
 //does direction math for the shooting, ShootLazer does the actual projectile
 void Player::LaserGun(float offset, Transform& head, short damage, float distance, WEAPON type)
@@ -684,11 +688,16 @@ void Player::LaserGun(float offset, Transform& head, short damage, float distanc
 	{
 		if (type == WEAPON::PISTOL)
 		{
-			damage *= 1 - p.m_closestHitFraction * 0.01f;
+			damage *= 1 - p.m_closestHitFraction * 100.f;
+		}
+		else if (type == WEAPON::SHOTGUN)
+		{
+			damage *= HalfCurve(p.m_closestHitFraction * 100.f);
 		}
 		entt::entity playerIdTest = p.m_collisionObject->getUserIndex();
 		if (ECS::Exists(playerIdTest)) {
 			if (ECS::HasComponent<Player>(playerIdTest)) {
+				std::cout << damage << "\n";
 				if (ECS::GetComponent<Player>(playerIdTest).TakeDamage(damage))
 					++m_killCount;
 			}
