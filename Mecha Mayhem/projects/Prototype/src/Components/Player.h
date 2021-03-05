@@ -6,21 +6,14 @@
 class Player
 {
 public:
-	// Overloads: (name, ammo, damage, cooldown, isAuto)
-	struct GunProperties 
-	{
-		short ammoCapacity;
-		short damage;
-		float cooldown;
-		bool isAuto = false;
-	};
 	enum class WEAPON {
 		FIST,
 		PISTOL,
 		RIFLE,
 		CANNON,
 		MACHINEGUN,
-		SHOTGUN//,
+		SHOTGUN,
+		MISSILE
 		//SWORD
 	};
 	enum class OFFHAND {
@@ -29,7 +22,15 @@ public:
 		HEALPACK2//,
 		//SWORD
 	};
-
+	// Overloads: (name, ammo, damage, cooldown, Range)
+	struct GunProperties
+	{
+		WEAPON type;
+		short ammoCapacity;
+		short damage;
+		float cooldown;
+		float maxRange = 2000;
+	};
 	Player() { }
 
 	//inits the UI cam as well as lods the player anims
@@ -134,7 +135,7 @@ private:
 	//attacking
 	btVector3 Melee(const glm::vec3& pos);
 	void UseWeapon(PhysBody& body, Transform& head, float offset);
-	void LaserGun(float offset, Transform& head, short damage, float distance = 2000.f);
+	void LaserGun(float offset, Transform& head, short damage, float distance, WEAPON type);
 
 	//other things
 	void SwapWeapon();
@@ -223,7 +224,7 @@ private:
 	static const GunProperties missileLauncher;
 	static const GunProperties shotgun;
 	static const GunProperties machineGun;
-	static const float shotgunDistance;
+	//static const float shotgunDistance;
 
 	//glm::quat m_startRot = glm::quat(1, 0, 0, 0);
 	glm::vec3 m_spawnPos = glm::vec3(0.f);
