@@ -19,4 +19,4 @@ private:
 //Delta Time
 inline float Time::dt = 0;
 inline float Time::m_lastClock = 0;
-inline const float Time::tooLong = 1.f;
+inline const float Time::tooLong = 0.5f;

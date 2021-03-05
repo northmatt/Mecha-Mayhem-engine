@@ -7,7 +7,8 @@
 
 int main() {
 	int width = 1280, height = 720;
-	const bool usingImGui = true;
+	const bool usingImGui = false;
+	Logger::outputLogger = false;
 
 	GLFWwindow* window = Gameloop::Start("Mecha Mayhem", width, height, usingImGui);
 	if (!window)	return 1;
@@ -26,14 +27,20 @@ int main() {
 		Scene::m_scenes[2]->Init(width, height);
 		Scene::m_scenes[3]->Init(width, height);
 
-		Scene::m_scenes.push_back(new MapEditor("uh, not for playing"));
+		Scene::m_activeScene = Scene::m_scenes[0]->Reattach();
+		/*Scene::m_scenes.push_back(new MapEditor("uh, not for playing"));
 		Scene::m_scenes[4]->Init(width, height);
 
-		Scene::m_activeScene = Scene::m_scenes[4]->Reattach();
-		//Scene::m_activeScene = Scene::m_scenes[0]->Reattach();
-		glfwSetWindowTitle(window, Scene::m_activeScene->GetName().c_str());
+		Scene::m_activeScene->Exit();
 
+		Scene::m_activeScene = Scene::m_scenes[4]->Reattach();*/
+		glfwSetWindowTitle(window, Scene::m_activeScene->GetName().c_str());
+		
 		bool paused = false;
+
+		//called after init because init takes time, which breaks intro anim
+		Time::Update(glfwGetTime());
+		Time::dt = 0;
 
 		while (!glfwWindowShouldClose(window)) {
 			glfwPollEvents();
@@ -45,10 +52,11 @@ int main() {
 			if (!BackEnd::HasFocus()) {
 				if (!paused) {
 					AudioEngine::Instance().PauseEverything();
+					AudioEngine::Instance().Update();
 					paused = true;
 				}
 				//has to update all the time
-				AudioEngine::Instance().Update();
+				Time::Update(glfwGetTime());
 				if (usingImGui)
 					Gameloop::ImGuiWindow(window, Scene::m_activeScene);
 				continue;

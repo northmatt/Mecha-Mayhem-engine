@@ -200,7 +200,7 @@ void Tutorial::Update()
 			ECS::GetComponent<Transform>(cameraEnt[i])
 		);
 
-		if (p.GetScore() >= killGoal)
+		if (ControllerInput::GetButtonDown(BUTTON::SELECT, p.GetUser()))
 			winner = true;
 	}
 
@@ -240,6 +240,8 @@ void Tutorial::Update()
 		}
 	}
 	else if (winner) {
+		AudioEngine::Instance().GetEvent("shoot").Restart();
+
 		for (int i(0), temp(0); i < 4; ++i) {
 			if (LeaderBoard::players[i].user != CONUSER::NONE) {
 				LeaderBoard::players[i].score = ECS::GetComponent<Player>(bodyEnt[temp]).GetScore();

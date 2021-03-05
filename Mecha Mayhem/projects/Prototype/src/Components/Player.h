@@ -2,7 +2,9 @@
 #include "Utilities/ControllerInput.h"
 #include "PhysBody.h"
 #include "ObjMorphLoader.h"
+#include "Utilities/Time.h"
 #include <AudioEngine.h>
+
 class Player
 {
 public:
@@ -16,12 +18,12 @@ public:
 	};
 	enum class WEAPON {
 		FIST,
+		SWORD,
 		PISTOL,
 		RIFLE,
 		CANNON,
 		MACHINEGUN,
-		SHOTGUN//,
-		//SWORD
+		SHOTGUN
 	};
 	enum class OFFHAND {
 		EMPTY = 0,	//continues from WEAPON to allow for rand() choice
@@ -51,7 +53,7 @@ public:
 	static void SetSkyPos(glm::vec3 pos) { m_skyPos = pos; }
 
 	//get the weapon Obj, returns pistol if empty
-	static ObjLoader GetWeaponModel(WEAPON choice);
+	static ObjLoader& GetWeaponModel(WEAPON choice);
 	static ObjMorphLoader& GetOffhandModel(OFFHAND choice);
 
 	/*
@@ -81,12 +83,22 @@ public:
 	//make the player move, returns true if player is currently dead
 	void GetInput(PhysBody& body, Transform& head, Transform& personalCam);
 
+	CONUSER GetUser() { return m_user; }
+
 	void ClearWeapons() {
 		m_currWeapon = WEAPON::FIST;
 		m_secWeapon = WEAPON::FIST;
 		m_currWeaponAmmo = 0;
 		m_secWeaponAmmo = 0;
 		m_offhand = OFFHAND::EMPTY;
+		m_meleeDmg = m_punchDmg;
+	}
+
+	void GameEnd() {
+		MakeInvincible(true);
+		GainHealth(100);
+		if (!IsAlive())
+			m_respawnTimer = Time::dt;
 	}
 
 	void MakeInvincible(bool choice) { m_invincible = choice; }
@@ -128,6 +140,17 @@ public:
 
 	//returns true if successful
 	bool PickUpOffhand(OFFHAND pickup);
+
+	bool PickUpSword() {
+		if (m_meleeDmg == m_punchDmg) {
+			m_meleeDmg = m_swordDmg;
+
+			AudioEngine::Instance().GetEvent("pickup").Restart();
+
+			return true;
+		}
+		return false;
+	}
 
 	bool HasWon(size_t scoreGoal) { return m_killCount >= scoreGoal; }
 	short GetScore() { return m_killCount; }
@@ -176,9 +199,20 @@ private:
 	static Sprite m_scoreBack;
 	static Sprite m_digits[10];
 
+	static Sprite m_heal2;
+	static Sprite m_heal1;
+	static Sprite m_fistIcon;
+	static Sprite m_pistolIcon;
+	static Sprite m_rifleIcon;
+	static Sprite m_canonIcon;
+	static Sprite m_machineGunIcon;
+	static Sprite m_shotgunIcon;
+
+	static Sprite& GetIcon(WEAPON choice);
+
 	static ObjLoader m_pistol;
-	static ObjLoader m_canon;
 	static ObjLoader m_rifle;
+	static ObjLoader m_canon;
 	static ObjLoader m_machineGun;
 	static ObjLoader m_shotgun;
 	static ObjLoader m_sword;
@@ -198,6 +232,11 @@ private:
 	bool m_stepped = false;
 	bool m_invincible = false;
 
+	static const short m_punchDmg = 8;
+	static const short m_swordDmg = 16;
+
+	short m_meleeDmg = m_punchDmg;
+
 	short m_camPos = -1;
 	short m_maxHealth = 100;
 	short m_health = m_maxHealth;
@@ -210,14 +249,15 @@ private:
 
 	OFFHAND m_offhand = OFFHAND::EMPTY;
 
-	float m_dashDelay = 1.f;
+	float m_dashDelay = 15.f;
 	float m_dashTimer = 0.f;
 
 	float m_respawnDelay = 5.f;
 	float m_respawnTimer = 0.f;
 
+	float m_dropTimer = 0;
 	float m_jumpHeld = 0;
-	float m_speed = 15.f;
+	float m_speed = 10.f;
 	float m_weaponCooldown = 0.f;
 
 	//Gun stuff

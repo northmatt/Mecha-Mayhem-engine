@@ -77,11 +77,14 @@ void DemoScene::Update()
 	bool winner = false;
 	for (int i(0); i < LeaderBoard::playerCount; ++i) {
 		auto& p = ECS::GetComponent<Player>(bodyEnt[i]);
+		auto& body = ECS::GetComponent<PhysBody>(bodyEnt[i]);
 		p.GetInput(
-			ECS::GetComponent<PhysBody>(bodyEnt[i]),
+			body,
 			ECS::GetComponent<Transform>(Head[i]),
 			ECS::GetComponent<Transform>(cameraEnt[i])
 		);
+
+		Rendering::LightsPos[2 + i] = BLM::BTtoGLM(body.GetTransform().getOrigin()) - BLM::GLMup;
 
 		if (!p.IsAlive()) {
 			//check if respawn time is about to say dead
@@ -140,8 +143,7 @@ void DemoScene::Update()
 	else if (winner) {
 		for (int i(0), temp(0); i < 4; ++i) {
 			if (LeaderBoard::players[i].user != CONUSER::NONE) {
-				ECS::GetComponent<Player>(bodyEnt[temp]).MakeInvincible(true);
-				ECS::GetComponent<Player>(bodyEnt[temp]).GainHealth(100);
+				ECS::GetComponent<Player>(bodyEnt[temp]).GameEnd();
 				LeaderBoard::players[i].score = ECS::GetComponent<Player>(bodyEnt[temp]).GetScore();
 				++temp;
 			}
@@ -169,9 +171,9 @@ Scene* DemoScene::Reattach()
 	Rendering::frameEffects = &m_frameEffects;
 	Rendering::DefaultColour = glm::vec4(0.75f, 0.75f, 0.75f, 1.f);
 	Rendering::LightsColour[0] = glm::vec3(200.f);
-	Rendering::LightCount = 2;
-	Rendering::LightsPos[0] = glm::vec3(0, 10, -42.5f);
-	Rendering::LightsPos[1] = glm::vec3(0, 2, 0);
+	Rendering::LightCount = 2 + LeaderBoard::playerCount;
+	Rendering::LightsPos[0] = glm::vec3(20.5, 10, -21.8f);
+	Rendering::LightsPos[1] = glm::vec3(20.5, 10, -21.8f);
 	Rendering::AmbientStrength = 1.f;
 
 	m_camCount = LeaderBoard::playerCount;
@@ -180,6 +182,8 @@ Scene* DemoScene::Reattach()
 	//prob wanna improve on this
 	{
 		if (LeaderBoard::playerCount > 2) {
+			killGoal = 10;
+
 			for (int i(0); i < 4;) {
 				glm::vec3 tempPos;
 				switch (rand() % 4) {
@@ -204,11 +208,13 @@ Scene* DemoScene::Reattach()
 			}
 		}
 		else {
+			killGoal = 5;
+
 			if (rand() % 50 < 25) {
 				for (int i(0); i < 2;) {
 					glm::vec3 tempPos;
 					if (rand() % 50 < 25)	tempPos = glm::vec3(70, -20, 30);
-					else	tempPos = glm::vec3(-30, -20, 20);	break;
+					else	tempPos = glm::vec3(-30, -20, 20);
 
 					bool valid = true;
 					for (int x(0); x < spawntests.size(); ++x) {

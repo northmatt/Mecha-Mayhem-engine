@@ -41,24 +41,22 @@ public:
 				m_timer = 0;
 				m_spawnerModel.SetDirection(true);
 				//decide on what spawns
-				switch (lowerBound + rand() % upperBound) {
-				case 0:		m_currWeapon = Player::WEAPON::FIST;		break;
-				case 1:		m_currWeapon = Player::WEAPON::PISTOL;		break;
-				case 2:		m_currWeapon = Player::WEAPON::RIFLE;		break;
-				case 3:		m_currWeapon = Player::WEAPON::CANNON;		break;
-				case 4:		m_currWeapon = Player::WEAPON::MACHINEGUN;	break;
-				case 5:		m_currWeapon = Player::WEAPON::SHOTGUN;		break;
-				//case 6:		m_currWeapon = Player::WEAPON::SWORD;		break;
-				}
+				m_currWeapon = Player::WEAPON(lowerBound + rand() % upperBound);
 			}
 			return;
 		}
 
 		reg->view<Player, PhysBody>().each(
 			[&](Player& p, PhysBody& body) {
-				if (p.IsPlayer())	if (body.TestAABB(pos + BLM::GLMup, m_radius)) {
+				if (p.IsPlayer() && p.IsAlive())	if (body.TestAABB(pos + BLM::GLMup, m_radius)) {
 					if (m_currWeapon == Player::WEAPON::FIST) {
 						if (p.PickUpOffhand(Player::OFFHAND::HEALPACK2)) {
+							m_timer = m_delay;
+							m_spawnerModel.SetDirection(false);
+						}
+					}
+					else if (m_currWeapon == Player::WEAPON::SWORD) {
+						if (p.PickUpSword()) {
 							m_timer = m_delay;
 							m_spawnerModel.SetDirection(false);
 						}
