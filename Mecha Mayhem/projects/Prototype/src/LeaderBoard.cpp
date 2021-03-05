@@ -70,6 +70,7 @@ void LeaderBoard::Exit()
 
 Scene* LeaderBoard::Reattach()
 {
+	std::cout << "This Round's score:\n";
 	for (int i(0); i < 4; ++i) {
 		if (players[i].user != CONUSER::NONE) {
 			std::cout << "Player " << (int(players[i].user) + 1) << ": " << players[i].score << '\n';

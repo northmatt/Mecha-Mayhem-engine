@@ -140,7 +140,7 @@ bool HitboxGen::Init(btDiscreteDynamicsWorld* world, const std::string& filename
 					glm::vec3 pos(0.f);
 					glm::quat rot(1.f, 0.f, 0.f, 0.f);
 					glm::vec2 bounds = __spawnerBounds;
-					float radius = 1.f;
+					float radius = 0.3f;
 					float delay = 5.f;
 					while (!ss.eof()) {
 						ss >> input;
@@ -398,9 +398,9 @@ void HitboxGen::Render()
 
 	if (m_drawSpawns) {
 		for (short i(0); i < m_spawners.size(); ++i) {
-			glm::mat4 model = glm::scale(glm::mat4(1.f),
+			glm::mat4 model = glm::toMat4(m_spawners[i].rot);
+			model = glm::scale(model,
 				glm::vec3(m_spawners[i].radius * 1.5f, m_spawners[i].radius * 2.f, m_spawners[i].radius * 2.f));
-			model *= glm::toMat4(m_spawners[i].rot);
 			model[3] = glm::vec4(m_spawners[i].pos + BLM::GLMup, 1);
 			m_cubeCurrent.Draw(model);
 

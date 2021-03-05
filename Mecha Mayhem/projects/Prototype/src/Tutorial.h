@@ -58,8 +58,6 @@ private:
 		glm::vec3(-1, 5, -1) },8
 	};
 
-	size_t killGoal = 5;
-
 	float camDistance = 2.5f;
 	float m_timer = 0.f;
 

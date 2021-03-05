@@ -173,7 +173,8 @@ private:
 	};
 	std::vector<Shape> m_objects = {};
 
-	const glm::vec2 __spawnerBounds = { 0, 5 };	//check player.h for more info
+	const glm::vec2 __spawnerBounds = { 0, 6 };	//check player.h for more info
+
 	struct SpawnerData
 	{
 		glm::vec3 pos;
