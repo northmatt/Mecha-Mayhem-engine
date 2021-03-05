@@ -180,10 +180,10 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		if (paused && numOfCams > 2) {
 			x = 12.f;
 			y = 5.f;
-			x2 = 12.f;
-			y2 = 2.f;
-			x3 = 9.f;
+			x2 = 15.f;
 			y2 = 5.f;
+			x3 = 9.f;
+			y3 = 5.f;
 		}
 		if (numOfCams == 2) {
 			x = 6.88889f;	//0.88 * 10 - 2

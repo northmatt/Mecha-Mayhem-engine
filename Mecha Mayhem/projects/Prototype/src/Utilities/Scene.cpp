@@ -85,6 +85,9 @@ Scene* Scene::Reattach()
 void Scene::BackEndUpdate()
 {
 	if (!m_paused) {
+		//only update these when paused, so put here
+		Player::Update();
+
 		//update components
 		m_reg.view<ObjMorphLoader, Transform>().each(
 			[](ObjMorphLoader& obj, Transform& trans) {

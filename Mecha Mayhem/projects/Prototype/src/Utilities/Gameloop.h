@@ -87,8 +87,8 @@ namespace Gameloop
 		ControllerInput::ControllerUpdate();
 		//this
 		AudioEngine::Instance().Update();
-
-		Player::Update();
+		//updated in Scene.cpp
+		//Player::Update();
 		//update the static dt
 		Time::Update(glfwGetTime());
 	}

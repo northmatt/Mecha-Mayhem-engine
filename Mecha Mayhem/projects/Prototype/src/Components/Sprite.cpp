@@ -28,10 +28,15 @@ Sprite& Sprite::Init(const std::string& textureName, float width, float height)
 	}
 
 	Texture2D::sptr tex = Texture2D::LoadFromFile("textures/" + textureName);
+
 	if (!tex)
 	{
 		throw std::runtime_error("Failed to open texture\nError 0: " + textureName);
 	}
+	//all sprites should be not wrapping
+	tex->SetWrapS(WrapMode::ClampToBorder);
+	tex->SetWrapT(WrapMode::ClampToBorder);
+
 	m_index = m_textures.size();
 	m_textures.push_back({ textureName, tex });
 
