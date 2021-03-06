@@ -1,8 +1,6 @@
 #include "Transform.h"
 #include "ECS.h"
 
-glm::mat4 one = glm::mat4(1.f);
-
 Transform::Transform()
 {
 	m_dirty = true;
@@ -102,7 +100,7 @@ Transform& Transform::ComputeGlobal()
 		else	UnChild();
 
 	}
-	else	m_global = one;
+	else	m_global = BLM::GLMMat;
 
 	m_global = glm::translate(m_global, m_position);
 	m_global *= glm::toMat4(m_rotation);
@@ -124,7 +122,7 @@ Transform& Transform::ComputeScalessGlobal()
 		else	UnChild();
 
 	}
-	else	m_global = one;
+	else	m_global = BLM::GLMMat;
 
 	m_global = glm::translate(m_global, m_position);
 	m_global *= glm::toMat4(m_rotation);
@@ -144,7 +142,7 @@ glm::mat4 Transform::GetModel()
 
 glm::mat4 Transform::GetScalessModel()
 {
-	glm::mat4 temp = one;
+	glm::mat4 temp = BLM::GLMMat;
 	//parent stuff
 	if (m_parent != entt::null) {
 		//check if the parent exists, just in case

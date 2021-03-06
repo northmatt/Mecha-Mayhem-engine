@@ -285,17 +285,35 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 void Player::Update(PhysBody& body)
 {
 	if (m_user == CONUSER::NONE) {
-		//rotate even dummies
-		body.SetRotation(glm::angleAxis(-m_rot.y, BLM::GLMup));
+		//rotate dummies once (rot.x is not used in dummies)
+		if (m_rot.x == 0) {
+			body.SetRotation(glm::angleAxis(-m_rot.y, BLM::GLMup));
+			m_rot.x = 1.f;
+		}
 	}
 	m_charModel.Update(Time::dt);
 	//when dead
 	if (m_respawnTimer > 0) {
-		body.SetVelocity(BLM::BTzero);
 		m_charModel.BlendTo(m_charModelIndex + "/death", 0.25f);
 		if (m_respawnTimer == m_respawnDelay) {
+			m_drawSelf = true;
+
+			//fix rotation because deathlerp
+			while (m_rot.y > pi * 2)	m_rot.y -= pi * 4;
+			while (m_rot.y < -pi * 2)	m_rot.y += pi * 4;
+
+			//store position of death
 			m_deathPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
+			m_deathRot = glm::vec2(-pi,  m_rot.y + glm::radians(rand() % 360 - 179.5f));
+
+			//stop falling
 			body.SetGravity(BLM::BTzero);
+
+			//put somewhere inaccessible
+			body.SetPosition(btVector3(0, -100, 0));
+
+			ClearWeapons();
+			//m_deathSound.play();
 		}
 
 		m_respawnTimer -= Time::dt;
@@ -310,10 +328,6 @@ void Player::Update(PhysBody& body)
 			body.SetPosition(m_spawnPos);
 			body.SetGravity(m_gravity);
 			body.SetAwake();
-		}
-		else {
-			float percent = m_respawnTimer / m_respawnDelay;
-			body.SetPosition((1 - percent) * m_skyPos + percent * m_deathPos);
 		}
 		return;
 	}
@@ -331,13 +345,33 @@ void Player::Update(PhysBody& body)
 	}
 }
 
+//lol is to avoid overwriting existing function lol
+template<class T>
+T lolSmoothStep(T a, T b, float percent) {
+	percent = glm::smoothstep(0.f, 1.f, percent);
+	return (1 - percent) * a + percent * b;
+}
+
+void Player::LateUpdate(Transform& body)
+{
+	if (m_respawnTimer > 0) {
+		float percent = m_respawnTimer / m_respawnDelay;
+
+		body.SetPosition(lolSmoothStep(m_skyPos, m_deathPos, percent));
+
+		body.SetRotation(glm::angleAxis(-lolSmoothStep(m_deathRot.y, m_rot.y, percent), BLM::GLMup));
+	}
+}
+
 void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 {
 	//dont care if not a player or dead
 	if (m_user == CONUSER::NONE)	return;
 	if (m_health == 0) {
-		personalCam.SetPosition(glm::vec3(0, 0, m_camDistance));
-		head.SetRotation(glm::quat(-0.71f, 0.71f, 0.f, 0.f));
+		float percent = m_respawnTimer / m_respawnDelay;
+
+		head.SetRotation(glm::angleAxis(lolSmoothStep(m_deathRot.x, m_rot.x, percent), glm::vec3(1, 0, 0)));
+		personalCam.SetPosition(glm::vec3(0, 0, m_camDistance + 1.f - percent));
 		return;
 	}
 
@@ -349,9 +383,9 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 		m_rot.x += ControllerInput::GetRY(m_user) * multiplier * Time::dt;
 		m_rot.y += ControllerInput::GetRX(m_user) * multiplier * Time::dt;
 
+		//clamping vertical axis
 		if (m_rot.x > pi)			m_rot.x = pi;
 		else if (m_rot.x < -pi)		m_rot.x = -pi;
-
 		body.SetRotation(glm::angleAxis(-m_rot.y, BLM::GLMup));
 		head.SetRotation(glm::angleAxis(m_rot.x, glm::vec3(1, 0, 0)));
 	
@@ -476,7 +510,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 				vel.x = normalized.x * m_speed * percent;
 				vel.z = normalized.z * m_speed * percent;
 
-				vel = glm::vec4(vel, 1) * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup);
+				vel = glm::vec4(vel, 1) * glm::rotate(BLM::GLMMat, m_rot.y, BLM::GLMup);
 
 				if (m_dashTimer == 0) {
 					//if (ControllerInput::GetButtonDown(BUTTON::RB, m_user)) {
@@ -502,7 +536,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 					glm::vec3 ogPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
 					btVector3 pos = PhysBody::GetRaycastWithDistanceLimit(ogPos,
 						glm::vec4(0, 0, m_dashDistance * -50.f, 1)
-						* glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup), m_dashDistance);
+						* glm::rotate(BLM::GLMMat, m_rot.y, BLM::GLMup), m_dashDistance);
 
 					glm::vec3 newPos = BLM::BTtoGLM(pos);
 					Rendering::effects->ShootDash(BLM::BTtoGLM(body.GetTransform().getRotation()),
@@ -679,7 +713,7 @@ void Player::LaserGun(float offset, Transform& head, short damage, float distanc
 		offsetQuat = glm::angleAxis(glm::radians(rand() % 15 - 7.f), glm::normalize(glm::vec3(rand() % 21 - 10.f, rand() % 21 - 10.f, 0)));
 	}
 	glm::vec3 rayPos = 
-		head.GetGlobalPosition() + glm::vec3(m_gunOffset * glm::rotate(glm::mat4(1.f), m_rot.y, BLM::GLMup));
+		head.GetGlobalPosition() + glm::vec3(m_gunOffset * glm::rotate(BLM::GLMMat, m_rot.y, BLM::GLMup));
 
 	RayResult p = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos),
 		BLM::GLMtoBT(glm::rotate(offsetQuat, -head.GetForwards()) * distance * 100.f));
@@ -697,7 +731,6 @@ void Player::LaserGun(float offset, Transform& head, short damage, float distanc
 		entt::entity playerIdTest = p.m_collisionObject->getUserIndex();
 		if (ECS::Exists(playerIdTest)) {
 			if (ECS::HasComponent<Player>(playerIdTest)) {
-				std::cout << damage << "\n";
 				if (ECS::GetComponent<Player>(playerIdTest).TakeDamage(damage))
 					++m_killCount;
 			}

@@ -94,8 +94,8 @@ void Scene::BackEndUpdate()
 				obj.Update(Time::dt);
 			}
 		);
-		m_reg.view<Player, PhysBody, Transform>().each(
-			[](Player& p, PhysBody& body, Transform& trans) {
+		m_reg.view<Player, PhysBody>().each(
+			[](Player& p, PhysBody& body) {
 				p.Update(body);
 			}
 		);
@@ -115,8 +115,17 @@ void Scene::BackEndUpdate()
 				}
 			);
 		}
+
+		m_reg.view<Player, Transform>().each(
+			[](Player& p, Transform& trans) {
+				p.LateUpdate(trans);
+			}
+		);
+
 		m_effects.Update();
 	}
+
+	LateUpdate();
 
 	//always render
 	if (m_camCount < 1)

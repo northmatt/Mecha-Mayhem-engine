@@ -56,7 +56,6 @@ namespace Rendering {
 			//reserve some queue size
 			ObjLoader::BeginDraw(objView.size());
 			ObjMorphLoader::BeginDraw(morphView.size() + spawnerView.size() + playerView.size());
-			//number of ui elements
 			Sprite::BeginDraw(spriteView.size());
 
 			//draw all the objs
@@ -87,7 +86,6 @@ namespace Rendering {
 			);
 
 			//draw all players
-			//int temp = 2;
 			playerView.each(
 				[&](Player& p, Transform& trans) {
 					p.Draw(trans.GetModel(), count, numOfCams, paused);
@@ -127,6 +125,57 @@ namespace Rendering {
 		frameEffects->UnBind();
 		frameEffects->Draw();
 		Sprite::PerformUIDraw(numOfCams);
+	}
+
+	void RenderForShading(entt::registry* reg, const glm::mat4& lightVPMatrix)
+	{
+		auto objView = reg->view<ObjLoader, Transform>();
+		auto textObjView = reg->view<MultiTextObj, Transform>();
+		auto morphView = reg->view<ObjMorphLoader, Transform>();
+		auto spriteView = reg->view<Sprite, Transform>();
+		auto playerView = reg->view<Player, Transform>();
+		auto spawnerView = reg->view<Spawner, Transform>();
+
+		//reserve some queue size
+		ObjLoader::BeginDraw(objView.size());
+		ObjMorphLoader::BeginDraw(morphView.size() + spawnerView.size() + playerView.size());
+		Sprite::BeginDraw(spriteView.size());
+
+		objView.each([](ObjLoader& obj, Transform& trans) {
+			obj.Draw(trans.GetModel());
+		});
+
+		morphView.each([](ObjMorphLoader& obj, Transform& trans) {
+			obj.Draw(trans.GetModel());
+		});
+
+		spriteView.each([](Sprite& spr, Transform& trans) {
+			spr.Draw(BLM::GLMMat, trans.GetModel());
+		});
+
+		spawnerView.each([](Spawner& spawn, Transform& trans) {
+			spawn.Render(trans.GetModel());
+		});
+
+		//draw all players, cams are limited from 0-3, so this ignores all cams
+		playerView.each([](Player& p, Transform& trans) {
+			p.Draw(trans.GetModel(), 4, 0, false);
+		});
+
+		//draw scene specific stuff (might want to remove this, if you don't want lasers to cast shadows)
+		if (effects != nullptr) effects->Render();
+
+		//do all the draws
+		ObjLoader::PerformDrawShadow(lightVPMatrix);
+		ObjMorphLoader::PerformDrawShadow(lightVPMatrix);
+
+		//make sure this runs after ObjDraw
+		Sprite::PerformDrawShadow(/*lightVPMatrix*/);
+
+		//map drawn last becuase shader reuse lol
+		textObjView.each([](MultiTextObj& obj, Transform& trans) {
+				obj.DrawShadow(trans.GetModel());
+			});
 	}
 
 	/*void DrawPauseScreen(Sprite image)

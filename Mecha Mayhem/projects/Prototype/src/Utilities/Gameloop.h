@@ -9,6 +9,9 @@ namespace Gameloop
 		srand(time(0));
 		// We'll borrow the logger from the toolkit, but we need to initialize it
 		Logger::Init();
+		GLFWwindow* window = BackEnd::Init("Mecha Mayhem", width, height);
+		if (!window)	return nullptr;
+
 		AudioEngine& engine = AudioEngine::Instance();
 		engine.Init();
 		engine.LoadBankWithString("Master");
@@ -22,9 +25,6 @@ namespace Gameloop
 		engine.CreateSoundEvent("pickup", "event:/pickup");
 
 		engine.GetListener().SetPosition(glm::vec3(0, 0, 0));
-
-		GLFWwindow* window = BackEnd::Init("Mecha Mayhem", width, height);
-		if (!window)	return nullptr;
 
 		if (usingImGui)	BackEnd::InitImGui();
 

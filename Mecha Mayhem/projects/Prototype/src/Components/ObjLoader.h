@@ -4,6 +4,7 @@
 class ObjLoader
 {
 	friend class MultiTextObj;
+	friend class Sprite;
 public:
 	//contructor
 	ObjLoader() {}
@@ -23,6 +24,7 @@ public:
 		float specularStrength = 1.f, float shininess = 4,
 		float ambientLightStrength = 0.05f, const glm::vec3& ambientColour = glm::vec3(0.f), float ambientStrength = 0.f
 	);
+	static void PerformDrawShadow(const glm::mat4& lightVPMatrix);
 
 	void Enable() { m_enabled = true; }
 	void Disable() { m_enabled = false; }
@@ -52,6 +54,7 @@ private:
 	static Shader::sptr m_shader;
 	static Shader::sptr m_matShader;
 	static Shader::sptr m_texShader;
+	static Shader::sptr m_shadowShader;
 
 	static std::vector<BufferAttribute> m_posAttrib;
 	static std::vector<BufferAttribute> m_normAttrib;

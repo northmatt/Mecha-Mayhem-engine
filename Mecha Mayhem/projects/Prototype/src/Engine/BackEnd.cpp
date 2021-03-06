@@ -143,6 +143,7 @@ GLFWwindow* BackEnd::Init(std::string name, int width, int height)
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);
 	glCullFace(GL_FRONT); //GL_BACK, GL_FRONT_AND_BACK
+	glDepthFunc(GL_LEQUAL);
 
     return window;
 }

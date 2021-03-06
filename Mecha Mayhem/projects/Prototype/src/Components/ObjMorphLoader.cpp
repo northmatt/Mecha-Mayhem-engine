@@ -17,6 +17,7 @@ std::vector<BufferAttribute> ObjMorphLoader::UVBuff = { BufferAttribute(8, 3, GL
 Shader::sptr ObjMorphLoader::m_shader = nullptr;
 Shader::sptr ObjMorphLoader::m_matShader = nullptr;
 Shader::sptr ObjMorphLoader::m_texShader = nullptr;
+Shader::sptr ObjMorphLoader::m_shadowShader = nullptr;
 
 struct Materials
 {
@@ -586,6 +587,11 @@ void ObjMorphLoader::Init()
 	m_shader->LoadShaderPartFromFile("shaders/frag_none.glsl", GL_FRAGMENT_SHADER);
 	m_shader->Link();
 
+	m_shadowShader = Shader::Create();
+	m_shadowShader->LoadShaderPartFromFile("shaders/vert_depth_morph.glsl", GL_VERTEX_SHADER);
+	m_shadowShader->LoadShaderPartFromFile("shaders/frag_depth.glsl", GL_FRAGMENT_SHADER);
+	m_shadowShader->Link();
+
 	m_texQueue.clear();
 	m_matQueue.clear();
 	m_defaultQueue.clear();
@@ -609,6 +615,7 @@ void ObjMorphLoader::Unload()
 	m_shader = nullptr;
 	m_matShader = nullptr;
 	m_texShader = nullptr;
+	m_shadowShader = nullptr;
 }
 
 ObjMorphLoader& ObjMorphLoader::ToggleDirection()
@@ -930,4 +937,32 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 		}
 		Shader::UnBind();
 	}
+}
+
+void ObjMorphLoader::PerformDrawShadow(const glm::mat4& lightVPMatrix)
+{
+	m_shadowShader->Bind();
+	m_shadowShader->SetUniformMatrix("lightVPMatrix", lightVPMatrix);
+
+	for (int i(0); i < m_matQueue.size(); ++i) {
+		m_shadowShader->SetUniformMatrix("model", m_matQueue[i].model);
+		m_shadowShader->SetUniform("t", m_matQueue[i].t);
+
+		m_matQueue[i].vao->Render();
+	}
+	for (int i(0); i < m_texQueue.size(); ++i) {
+		m_shadowShader->SetUniformMatrix("model", m_texQueue[i].model);
+		m_shadowShader->SetUniform("t", m_texQueue[i].t);
+
+		m_texQueue[i].vao->Render();
+	}
+	for (int i(0); i < m_defaultQueue.size(); ++i) {
+		m_shadowShader->SetUniformMatrix("model", m_defaultQueue[i].model);
+		m_shadowShader->SetUniform("t", m_defaultQueue[i].t);
+
+		m_defaultQueue[i].vao->Render();
+	}
+
+	Shader::UnBind();
+
 }

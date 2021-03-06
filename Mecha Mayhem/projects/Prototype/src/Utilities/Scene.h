@@ -20,18 +20,26 @@ public:
 
 	virtual void Init(int windowWidth, int windowHeight);
 
+	//called on scene change
 	virtual Scene* Reattach();
 
+	//everyframe
 	virtual void Update() {}
+	//after physics update, mainly for lights and stuff
+	virtual void LateUpdate() {}
+
+	//called on scene change
 	virtual void Exit() {
 		AudioEngine::Instance().StopAllSounds();
 	}
 
+	//put ImGui stuff here
 	virtual void ImGuiFunc() {
 		ImGui::SetWindowSize(ImVec2(150, 50));
 		ImGui::Text("Empty");
 	};
 
+	//can't override
 	virtual void BackEndUpdate() final;
 	static bool GetExit() {
 		return m_exitGame;

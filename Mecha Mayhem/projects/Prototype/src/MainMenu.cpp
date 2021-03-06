@@ -80,6 +80,7 @@ void MainMenu::Update()
 					else							BackEnd::SetFullscreen();
 				}
 			}
+
 			lx += ControllerInput::GetLX(CONUSER(i));
 			ly += ControllerInput::GetLY(CONUSER(i));
 			rx += ControllerInput::GetRX(CONUSER(i));

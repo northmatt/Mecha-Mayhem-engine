@@ -39,7 +39,7 @@ void DemoScene::Init(int width, int height)
 	Player::SetUIAspect(width, height);
 	Player::SetCamDistance(camDistance);
 
-	Player::SetSkyPos(glm::vec3(0, 50, -45));
+	Player::SetSkyPos(glm::vec3(20.5f, 10, 21.8f));
 
 	m_pauseSprite = Sprite("Pause.png", 8.952f, 3);
 }
@@ -48,7 +48,7 @@ void DemoScene::Update()
 {
 	for (size_t i(0); i < 4; ++i) {
 		if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(i))) {
-			if (ControllerInput::GetButton(BUTTON::RB, CONUSER(i))) {
+			if (m_paused && ControllerInput::GetButton(BUTTON::RB, CONUSER(i))) {
 				if (BackEnd::GetFullscreen())	BackEnd::SetTabbed();
 				else							BackEnd::SetFullscreen();
 			}
@@ -64,7 +64,7 @@ void DemoScene::Update()
 					if (m_frameEffects.size() == 0) {
 						m_frameEffects.AddEffect(new PixelEffect());
 						m_frameEffects[0]->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
-						((PixelEffect*)(m_frameEffects[0]))->SetPixelCount(64);
+						((PixelEffect*)(m_frameEffects[0]))->SetPixelCount(128);
 					}
 				}
 			}
@@ -77,14 +77,11 @@ void DemoScene::Update()
 	bool winner = false;
 	for (int i(0); i < LeaderBoard::playerCount; ++i) {
 		auto& p = ECS::GetComponent<Player>(bodyEnt[i]);
-		auto& body = ECS::GetComponent<PhysBody>(bodyEnt[i]);
 		p.GetInput(
-			body,
+			ECS::GetComponent<PhysBody>(bodyEnt[i]),
 			ECS::GetComponent<Transform>(Head[i]),
 			ECS::GetComponent<Transform>(cameraEnt[i])
 		);
-
-		Rendering::LightsPos[2 + i] = BLM::BTtoGLM(body.GetTransform().getOrigin()) - BLM::GLMup;
 
 		if (!p.IsAlive()) {
 			//check if respawn time is about to say dead
@@ -152,6 +149,13 @@ void DemoScene::Update()
 	}
 }
 
+void DemoScene::LateUpdate()
+{
+	for (int i(0); i < LeaderBoard::playerCount; ++i) {
+		Rendering::LightsPos[2 + i] = ECS::GetComponent<Transform>(bodyEnt[i]).GetGlobalPosition() - BLM::GLMup;
+	}
+}
+
 Scene* DemoScene::Reattach()
 {
 	ECS::AttachRegistry(&m_reg);
@@ -172,8 +176,8 @@ Scene* DemoScene::Reattach()
 	Rendering::DefaultColour = glm::vec4(0.75f, 0.75f, 0.75f, 1.f);
 	Rendering::LightsColour[0] = glm::vec3(200.f);
 	Rendering::LightCount = 2 + LeaderBoard::playerCount;
-	Rendering::LightsPos[0] = glm::vec3(20.5, 10, -21.8f);
-	Rendering::LightsPos[1] = glm::vec3(20.5, 10, -21.8f);
+	Rendering::LightsPos[0] = glm::vec3(20.5f, -1, -21.8f);
+	Rendering::LightsPos[1] = glm::vec3(20.5f, 3, -21.8f);
 	Rendering::AmbientStrength = 1.f;
 
 	m_camCount = LeaderBoard::playerCount;
@@ -286,7 +290,7 @@ Scene* DemoScene::Reattach()
 		Player::SetUIAspect(BackEnd::GetWidth(), BackEnd::GetHeight());
 
 	Player::SetCamDistance(camDistance);
-	Player::SetSkyPos(glm::vec3(0, 50, -45));
+	Player::SetSkyPos(glm::vec3(20.5f, 10, 21.8f));
 
 	return this;
 }
