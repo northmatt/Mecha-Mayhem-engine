@@ -151,6 +151,8 @@ void DemoScene::Update()
 
 void DemoScene::LateUpdate()
 {
+	//this makes the light match the player's position
+
 	for (int i(0); i < LeaderBoard::playerCount; ++i) {
 		Rendering::LightsPos[2 + i] = ECS::GetComponent<Transform>(bodyEnt[i]).GetGlobalPosition() - BLM::GLMup;
 	}

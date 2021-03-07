@@ -1,7 +1,7 @@
 #pragma once
 #include "PostEffect.h"
 
-class BloomEffect : public PostEffect
+class PixelEffect : public PostEffect
 {
 public:
 	//Initializes framebuffer
@@ -14,20 +14,9 @@ public:
 
 	void Reshape(unsigned width, unsigned height) override;
 
-	void SetThreshold(float threshold);
-	float GetTreshold() const;
-
-	void SetRadius(float radius);
-	float GetRadius() const;
-
-	void SetBlurCount(int amt);
-	int GetBlurCount() const;
+	void SetPixelCount(int amt);
+	int GetPixelCount() const;
 
 private:
-	float _threshold = 0.9f;
-	float _radius = 1.f;
-	int _blurCount = 5;
-
-	//reduces resolution of the blur buffers
-	const float _scalar = 4.f;
+	int _pixelCount = 64.f;
 };

@@ -24,7 +24,7 @@ void MainMenu::Init(int width, int height)
 
 	{
 		auto entity = ECS::CreateEntity();
-		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/cringe.obj", true);
+		ECS::AttachComponent<ObjLoader>(entity).LoadMesh("models/cringe.obj");
 		ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(0, -5, 0));
 	}
 
@@ -50,7 +50,7 @@ void MainMenu::Init(int width, int height)
 	ECS::GetComponent<Transform>(backGround).SetPosition(glm::vec3(0, 100, -10));
 
 	Rendering::frameEffects = &m_frameEffects;
-	Rendering::DefaultColour = glm::vec4(1.f, 0.5f, 0.5f, 1.f);
+	Rendering::DefaultColour = glm::vec4(0.2f, 0.2f, 0.2f, 1.f);
 	Rendering::LightCount = 6;
 	Rendering::LightsColour[0] = glm::vec3(3.f);
 	Rendering::LightsPos[2] = BLM::GLMzero;
@@ -305,7 +305,7 @@ Scene* MainMenu::Reattach()
 {
 	AudioEngine::Instance().GetEvent("MainMenu").Restart();
 
-	Rendering::DefaultColour = glm::vec4(1.f, 0.5f, 0.5f, 1.f);
+	Rendering::DefaultColour = glm::vec4(0.2f, 0.2f, 0.2f, 1.f);
 	Rendering::LightCount = 6;
 	Rendering::LightsColour[0] = glm::vec3(3.f);
 	Rendering::LightsPos[2] = BLM::GLMzero;

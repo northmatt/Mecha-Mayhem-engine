@@ -4,6 +4,9 @@
 std::vector<ObjMorphLoader::DrawData> ObjMorphLoader::m_texQueue = {};
 std::vector<ObjMorphLoader::DrawData> ObjMorphLoader::m_matQueue = {};
 std::vector<ObjMorphLoader::DrawData> ObjMorphLoader::m_defaultQueue = {};
+std::vector<ObjMorphLoader::DrawData> ObjMorphLoader::m_texTempQueue = {};
+std::vector<ObjMorphLoader::DrawData> ObjMorphLoader::m_matTempQueue = {};
+std::vector<ObjMorphLoader::DrawData> ObjMorphLoader::m_defaultTempQueue = {};
 std::vector<ObjMorphLoader::Animations> ObjMorphLoader::m_anims = {};
 std::vector<BufferAttribute> ObjMorphLoader::pos1Buff = { BufferAttribute(0, 3, GL_FLOAT, false, NULL, NULL) };
 std::vector<BufferAttribute> ObjMorphLoader::pos2Buff = { BufferAttribute(1, 3, GL_FLOAT, false, NULL, NULL) };
@@ -595,10 +598,20 @@ void ObjMorphLoader::Init()
 	m_texQueue.clear();
 	m_matQueue.clear();
 	m_defaultQueue.clear();
+	m_texTempQueue.clear();
+	m_matTempQueue.clear();
+	m_defaultTempQueue.clear();
 }
 
 void ObjMorphLoader::Unload()
 {
+	m_texQueue.clear();
+	m_matQueue.clear();
+	m_defaultQueue.clear();
+	m_texTempQueue.clear();
+	m_matTempQueue.clear();
+	m_defaultTempQueue.clear();
+
 	for (int i(0); i < m_anims.size(); ++i) {
 		auto& frames = m_anims[i].frames;
 		for (int x(0); x < frames.size(); ++x) {
@@ -845,6 +858,13 @@ void ObjMorphLoader::BeginDraw(unsigned amt)
 	m_defaultQueue.reserve(amt);
 }
 
+void ObjMorphLoader::BeginTempDraw()
+{
+	m_texTempQueue.resize(0);
+	m_matTempQueue.resize(0);
+	m_defaultTempQueue.resize(0);
+}
+
 void ObjMorphLoader::Draw(const glm::mat4& model)
 {
 	if (!m_enabled)	return;
@@ -857,13 +877,25 @@ void ObjMorphLoader::Draw(const glm::mat4& model)
 		m_defaultQueue.push_back({ m_t, m_vao, model, 0 });
 }
 
+void ObjMorphLoader::DrawTemp(const glm::mat4& model)
+{
+	if (!m_enabled)	return;
+
+	if (m_anims[m_index].text)
+		m_texTempQueue.push_back({ m_t, m_vao, model, m_anims[m_index].texture });
+	else if (m_anims[m_index].mat)
+		m_matTempQueue.push_back({ m_t, m_vao, model, 0 });
+	else
+		m_defaultTempQueue.push_back({ m_t, m_vao, model, 0 });
+}
+
 void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour,
 	const std::array<glm::vec3, MAX_LIGHTS>& lightPos, const std::array<glm::vec3, MAX_LIGHTS>& lightColour, const int& lightCount, float specularStrength, float shininess,
 	float ambientLightStrength, const glm::vec3& ambientColour, float ambientStrength)
 {
 	glm::mat4 VP = camera.GetProjection() * view;
 
-	if (m_defaultQueue.size() != 0) {
+	if (m_defaultQueue.size() || m_defaultTempQueue.size()) {
 		//global stuff
 		m_shader->Bind();
 		m_shader->SetUniform("camPos", camera.GetPosition());
@@ -887,10 +919,18 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 
 			m_defaultQueue[i].vao->Render();
 		}
+
+		for (int i(0); i < m_defaultTempQueue.size(); ++i) {
+			m_shader->SetUniformMatrix("MVP", VP * m_defaultTempQueue[i].model);
+			m_shader->SetUniformMatrix("transform", m_defaultTempQueue[i].model);
+			m_shader->SetUniform("t", m_defaultTempQueue[i].t);
+
+			m_defaultTempQueue[i].vao->Render();
+		}
 		Shader::UnBind();
 	}
 
-	if (m_texQueue.size() != 0) {
+	if (m_texQueue.size() || m_texTempQueue.size()) {
 		//global stuff
 		m_texShader->Bind();
 		m_texShader->SetUniform("camPos", camera.GetPosition());
@@ -912,10 +952,20 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 
 			m_texQueue[i].vao->Render();
 		}
+
+		for (int i(0); i < m_texTempQueue.size(); ++i) {
+			m_texShader->SetUniformMatrix("MVP", VP * m_texTempQueue[i].model);
+			m_texShader->SetUniformMatrix("transform", m_texTempQueue[i].model);
+			m_texShader->SetUniform("t", m_texTempQueue[i].t);
+
+			Sprite::m_textures[m_texTempQueue[i].texture].texture->Bind(0);
+
+			m_texTempQueue[i].vao->Render();
+		}
 		Shader::UnBind();
 	}
 
-	if (m_matQueue.size() != 0) {
+	if (m_matQueue.size() || m_matTempQueue.size()) {
 		//global stuff
 		m_matShader->Bind();
 		m_matShader->SetUniform("camPos", camera.GetPosition());
@@ -934,6 +984,14 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 			m_matShader->SetUniform("t", m_matQueue[i].t);
 
 			m_matQueue[i].vao->Render();
+		}
+
+		for (int i(0); i < m_matTempQueue.size(); ++i) {
+			m_matShader->SetUniformMatrix("MVP", VP * m_matTempQueue[i].model);
+			m_matShader->SetUniformMatrix("transform", m_matTempQueue[i].model);
+			m_matShader->SetUniform("t", m_matTempQueue[i].t);
+
+			m_matTempQueue[i].vao->Render();
 		}
 		Shader::UnBind();
 	}

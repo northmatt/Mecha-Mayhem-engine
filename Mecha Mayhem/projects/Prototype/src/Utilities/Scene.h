@@ -6,6 +6,8 @@
 
 //post effect stuff
 #include "Effects/Post/BloomEffect.h"
+#include "Effects/Post/ToonEffect.h"
+#include "Effects/Post/PixelEffect.h"
 #include "Effects/Post/SepiaEffect.h"
 #include "Effects/Post/GreyscaleEffect.h"
 

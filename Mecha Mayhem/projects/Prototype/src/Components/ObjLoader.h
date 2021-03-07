@@ -18,7 +18,10 @@ public:
 
 	static void BeginDraw(unsigned amt = 0);
 
+	static void BeginTempDraw();
+
 	void Draw(const glm::mat4& model);
+	void DrawTemp(const glm::mat4& model);
 
 	static void PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour, const std::array<glm::vec3, MAX_LIGHTS>& lightPos, const std::array<glm::vec3, MAX_LIGHTS>& lightColour, const int& lightCount,
 		float specularStrength = 1.f, float shininess = 4,
@@ -50,6 +53,9 @@ private:
 	static std::vector<DrawData> m_matQueue;
 	static std::vector<DrawData> m_texQueue;
 	static std::vector<DrawData> m_defaultQueue;
+	static std::vector<DrawData> m_matTempQueue;
+	static std::vector<DrawData> m_texTempQueue;
+	static std::vector<DrawData> m_defaultTempQueue;
 	static std::vector<Models> m_models;
 	static Shader::sptr m_shader;
 	static Shader::sptr m_matShader;

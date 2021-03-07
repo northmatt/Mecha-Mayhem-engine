@@ -33,7 +33,7 @@ public:
 
 	//for drawing purposes
 	void Clear();
-	void Draw();
+	void Draw(/*bool paused*/);
 
 	//removes all effects
 	void RemoveAllEffects();
@@ -49,5 +49,6 @@ public:
 
 private:
 	PostEffect baseEffect;
+	//BufferCombiner pauseEffect;
 	std::vector<PostEffect*> layersOfEffects = {};
 };

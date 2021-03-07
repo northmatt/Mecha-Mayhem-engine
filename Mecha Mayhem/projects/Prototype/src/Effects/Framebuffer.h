@@ -90,10 +90,15 @@ public:
 	//Draws our fullscreen quad
 	static void DrawFullscreenQuad();
 
+	void SetAsDepthBuffer(bool choice) { if (_isDepthBuffer = choice) AddDepthTarget(); }
+	void SetWrapMode(WrapMode choice) { _wrap = GLenum(choice); }
+	void SetFilter(MinFilter choice) { _filter = GLenum(choice); }
+	void SetFilter(MagFilter choice) { _filter = GLenum(choice); }
+protected:
 	//Initial width and height is zero
 	unsigned int _width = 0;
 	unsigned int _height = 0;
-protected:
+
 	//OpenGL framebuffer handle
 	GLuint _FBO;
 	//Depth attachment (either one or none)
@@ -113,6 +118,8 @@ protected:
 	bool _isInit = false;
 	//Depth attachment?
 	bool _depthActive = false;
+	//depthbuffer
+	bool _isDepthBuffer = false;
 
 	//Full screen quad VBO handle
 	static GLuint _fullscreenQuadVBO;
