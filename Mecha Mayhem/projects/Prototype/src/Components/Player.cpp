@@ -14,6 +14,14 @@ const glm::mat4 Player::m_gunOffsetMat = glm::mat4(
 	0, 0, 1, 0,
 	0.3f, 0.1f, -0.3f, 1
 );
+
+const glm::mat4 Player::m_swordOffsetMat = glm::mat4(
+	0, 0, 1, 0,
+	glm::sin(glm::radians(140.f)), glm::cos(glm::radians(140.f)), 0, 0,
+	-glm::cos(glm::radians(140.f)), glm::sin(glm::radians(140.f)), 0, 0,
+	-0.2f, 0.5f, 0.4f, 1
+);
+
 const glm::mat4 Player::m_modelOffset = glm::mat4(
 	0, 0, 0, 0,
 	0, 0, 0, 0,
@@ -256,7 +264,7 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 			else if (m_offhand == OFFHAND::HEALPACK1)	m_heal1.DrawToUI(VP, UIMat, camNum);
 		}
 
-		if (!paused || IsAlive()) {
+		if (!paused && IsAlive()) {
 			UIMat[3] = glm::vec4(0, 0, -10, 1);
 			m_reticle.DrawToUI(VP, UIMat, camNum);
 		}
@@ -264,9 +272,9 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		//is false when cam is too close
 		if (!m_drawSelf)	return;
 	}
-	if (m_punched) {
-		if (m_meleeDmg == m_swordDmg)
-			m_sword.DrawTemp(model * m_gunOffsetMat);
+	if (m_meleeDmg == m_swordDmg) {
+		if (m_punched)		m_sword.DrawTemp(model * m_gunOffsetMat);
+		else		m_sword.DrawTemp(model * m_swordOffsetMat);
 	}
 	else if (m_currWeapon != WEAPON::FIST) {
 		GetWeaponModel(m_currWeapon).DrawTemp(model * m_gunOffsetMat);
@@ -356,7 +364,9 @@ void Player::LateUpdate(Transform& body)
 
 		body.SetPosition(lolSmoothStep(m_skyPos, m_deathPos, percent));
 
-		body.SetRotation(glm::angleAxis(-lolSmoothStep(m_deathRot.y, m_rot.y, percent), BLM::GLMup));
+		body.SetRotation(glm::angleAxis(
+			-lolSmoothStep(m_deathRot.y, m_rot.y, glm::clamp(percent * 2.f - 0.5f, 0.f, 1.f)),
+			BLM::GLMup));
 	}
 }
 
@@ -866,7 +876,7 @@ bool Player::PickUpWeapon(WEAPON pickup)
 
 bool Player::PickUpOffhand(OFFHAND pickup)
 {
-	if (m_offhand == OFFHAND::EMPTY) {
+	if (m_offhand == OFFHAND::EMPTY || m_offhand == OFFHAND::HEALPACK1) {
 		m_offhand = pickup;
 
 		AudioEngine::Instance().GetEvent("pickup").Restart();

@@ -113,6 +113,8 @@ public:
 			m_health = m_maxHealth;
 	}
 
+	//void GivePoints(int amt) { m_killCount += amt; }
+
 	//returns true if kill shot
 	bool TakeDamage(short dmg) {
 		if (m_health <= 0 || m_invincible)	return false;
@@ -183,6 +185,7 @@ private:
 
 	static const glm::mat4 m_modelOffset;
 	static const glm::mat4 m_gunOffsetMat;
+	static const glm::mat4 m_swordOffsetMat;
 	static constexpr float pi = glm::half_pi<float>() - 0.01f;
 
 	static const glm::vec4 m_gunOffset;
