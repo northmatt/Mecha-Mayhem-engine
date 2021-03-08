@@ -64,6 +64,7 @@ void FrameEffects::Clear()
 	for (int i(0); i < layersOfEffects.size(); ++i) {
 		layersOfEffects[i]->Clear();
 	}
+	//pauseEffect.Clear();
 }
 
 void FrameEffects::Bind()
@@ -76,13 +77,17 @@ void FrameEffects::UnBind()
 	baseEffect.UnbindBuffer();
 }
 
-void FrameEffects::Draw()
+void FrameEffects::Draw(/*bool paused*/)
 {
 	PostEffect* prev = &baseEffect;
 	for (int i(0); i < layersOfEffects.size(); ++i) {
 		layersOfEffects[i]->ApplyEffect(prev);
 		prev = layersOfEffects[i];
 	}
+	/*if (paused) {
+		pauseEffect->ApplyEffect(prev);
+		prev = &pauseEffect;
+	}*/
 	prev->DrawToScreen();
 }
 

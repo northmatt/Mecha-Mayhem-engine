@@ -418,7 +418,7 @@ void HitboxGen::Render()
 		}
 
 		for (short i(0); i < m_spawnLocations.size(); ++i) {
-			glm::mat4 model = glm::translate(glm::mat4(1.f), m_spawnLocations[i].pos + glm::vec3(0, 0.5f, 0));
+			glm::mat4 model = glm::translate(BLM::GLMMat, m_spawnLocations[i].pos + glm::vec3(0, 0.5f, 0));
 			model *= glm::toMat4(glm::angleAxis(-m_spawnLocations[i].roty, BLM::GLMup));
 			model *= glm::toMat4(glm::angleAxis(m_spawnLocations[i].rotx, glm::vec3(1, 0, 0)));
 			model = glm::translate(model, glm::vec3(0, 0, -1.f));
@@ -953,18 +953,26 @@ void HitboxGen::Update(entt::entity cameraEnt)
 
 					if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on x").c_str())) {
 						m_spawnLocations[m_spawnLocCurrent].roty += glm::radians(rotAmt);
+						if (m_spawnLocations[m_spawnLocCurrent].roty > glm::radians(180.f))
+							m_spawnLocations[m_spawnLocCurrent].roty -= glm::radians(360.f);
 					}
 					ImGui::SameLine();
 					if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on x").c_str())) {
 						m_spawnLocations[m_spawnLocCurrent].roty -= glm::radians(rotAmt);
+						if (m_spawnLocations[m_spawnLocCurrent].roty < glm::radians(180.f))
+							m_spawnLocations[m_spawnLocCurrent].roty += glm::radians(360.f);
 					}
 
 					if (ImGui::Button(("Rotate " + std::to_string((int)rotAmt) + " on y").c_str())) {
 						m_spawnLocations[m_spawnLocCurrent].rotx += glm::radians(rotAmt);
+						if (m_spawnLocations[m_spawnLocCurrent].rotx > glm::radians(90.f))
+							m_spawnLocations[m_spawnLocCurrent].rotx = glm::radians(90.f);
 					}
 					ImGui::SameLine();
 					if (ImGui::Button(("Rotate -" + std::to_string((int)rotAmt) + " on y").c_str())) {
 						m_spawnLocations[m_spawnLocCurrent].rotx -= glm::radians(rotAmt);
+						if (m_spawnLocations[m_spawnLocCurrent].rotx < -glm::radians(90.f))
+							m_spawnLocations[m_spawnLocCurrent].rotx = -glm::radians(90.f);
 					}
 
 					ImGui::TreePop();

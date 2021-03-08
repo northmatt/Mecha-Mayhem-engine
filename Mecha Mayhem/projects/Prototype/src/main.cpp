@@ -3,7 +3,7 @@
 #include "Tutorial.h"
 #include "MainMenu.h"
 #include "LeaderBoard.h"
-#include "MapEditorScene.h"
+//#include "MapEditorScene.h"
 
 int main() {
 	int width = 1280, height = 720;

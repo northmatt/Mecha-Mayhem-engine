@@ -4,6 +4,7 @@
 class ObjLoader
 {
 	friend class MultiTextObj;
+	friend class Sprite;
 public:
 	//contructor
 	ObjLoader() {}
@@ -17,12 +18,16 @@ public:
 
 	static void BeginDraw(unsigned amt = 0);
 
+	static void BeginTempDraw();
+
 	void Draw(const glm::mat4& model);
+	void DrawTemp(const glm::mat4& model);
 
 	static void PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour, const std::array<glm::vec3, MAX_LIGHTS>& lightPos, const std::array<glm::vec3, MAX_LIGHTS>& lightColour, const int& lightCount,
 		float specularStrength = 1.f, float shininess = 4,
 		float ambientLightStrength = 0.05f, const glm::vec3& ambientColour = glm::vec3(0.f), float ambientStrength = 0.f
 	);
+	static void PerformDrawShadow(const glm::mat4& lightVPMatrix);
 
 	void Enable() { m_enabled = true; }
 	void Disable() { m_enabled = false; }
@@ -48,10 +53,14 @@ private:
 	static std::vector<DrawData> m_matQueue;
 	static std::vector<DrawData> m_texQueue;
 	static std::vector<DrawData> m_defaultQueue;
+	static std::vector<DrawData> m_matTempQueue;
+	static std::vector<DrawData> m_texTempQueue;
+	static std::vector<DrawData> m_defaultTempQueue;
 	static std::vector<Models> m_models;
 	static Shader::sptr m_shader;
 	static Shader::sptr m_matShader;
 	static Shader::sptr m_texShader;
+	static Shader::sptr m_shadowShader;
 
 	static std::vector<BufferAttribute> m_posAttrib;
 	static std::vector<BufferAttribute> m_normAttrib;

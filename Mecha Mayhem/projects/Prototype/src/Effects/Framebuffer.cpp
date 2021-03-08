@@ -74,6 +74,11 @@ void Framebuffer::Init()
 		//Sets the texture data
 		glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT24, _width, _height);
 
+		if (_isDepthBuffer) {
+			glTextureParameterfv(_depth._texture.GetHandle(), GL_TEXTURE_BORDER_COLOR, &glm::vec4(1.f, 1.f, 1.f, 1.f)[0]);
+			_wrap = GL_CLAMP_TO_BORDER;
+		}
+
 		//Set texture parameters
 		glTextureParameteri(_depth._texture.GetHandle(), GL_TEXTURE_MIN_FILTER, _filter);
 		glTextureParameteri(_depth._texture.GetHandle(), GL_TEXTURE_MAG_FILTER, _filter);
@@ -147,7 +152,7 @@ void Framebuffer::AddColorTarget(GLenum format)
 	_color._formats.push_back(format);
 	//Add the color attachment buffer number
 	_color._buffers.push_back(GL_COLOR_ATTACHMENT0 + _color._numAttachments);
-	//Incremenets number of attachments
+	//Increments number of attachments
 	_color._numAttachments++;
 }
 

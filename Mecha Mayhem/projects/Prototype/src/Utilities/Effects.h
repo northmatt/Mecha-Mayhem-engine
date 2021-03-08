@@ -18,7 +18,7 @@ public:
 	}
 
 	void ShootLaser(const glm::quat& rotation, const glm::vec3& position, float length) {
-		glm::mat4 model = glm::translate(one, position);
+		glm::mat4 model = glm::translate(BLM::GLMMat, position);
 		model = model * glm::toMat4(rotation);
 		model = glm::scale(model, glm::vec3(1, 1, length));
 
@@ -26,7 +26,7 @@ public:
 	}
 
 	void ShootDash(const glm::quat& rotation, const glm::vec3& position, float length) {
-		glm::mat4 model = glm::translate(one, position);
+		glm::mat4 model = glm::translate(BLM::GLMMat, position);
 		model = model * glm::toMat4(rotation);
 		model = glm::scale(model, glm::vec3(1, 1, length));
 
@@ -52,7 +52,6 @@ public:
 	}
 
 private:
-	static const glm::mat4 one;
 	static ObjMorphLoader laser;
 	static ObjMorphLoader dash;
 
@@ -65,6 +64,5 @@ private:
 	std::vector<DrawData> m_effects = {};
 };
 
-inline const glm::mat4 Effects::one = glm::mat4(1.f);
 inline ObjMorphLoader Effects::laser{};
 inline ObjMorphLoader Effects::dash{};

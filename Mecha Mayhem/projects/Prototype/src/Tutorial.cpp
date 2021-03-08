@@ -110,10 +110,9 @@ void Tutorial::Init(int width, int height)
 
 	m_frameEffects.Init(width, height);
 
-	Player::SetUIAspect(width, height);
 	Player::SetCamDistance(camDistance);
 
-	Player::SetSkyPos(glm::vec3(0, 50, -45));
+	Player::SetSkyPos(glm::vec3(0, 25, -45));
 
 	m_pauseSprite = Sprite("Pause.png", 8.952f, 3);
 }
@@ -136,7 +135,7 @@ void Tutorial::Update()
 
 	for (size_t i(0); i < 4; ++i) {
 		if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(i))) {
-			if (ControllerInput::GetButton(BUTTON::RB, CONUSER(i))) {
+			if (m_paused && ControllerInput::GetButton(BUTTON::RB, CONUSER(i))) {
 				if (BackEnd::GetFullscreen())	BackEnd::SetTabbed();
 				else							BackEnd::SetFullscreen();
 			}
@@ -299,7 +298,8 @@ Scene* Tutorial::Reattach() {
 		bodyEnt[i] = ECS::CreateEntity();
 		ECS::AttachComponent<PhysBody>(bodyEnt[i]).CreatePlayer(bodyEnt[i], BLM::GLMQuat, glm::vec3(0, 1.5f, 0));
 		ECS::AttachComponent<Player>(bodyEnt[i]).Init(
-			LeaderBoard::players[temp].user, LeaderBoard::players[temp].model, i).SetRotation(glm::radians(180.f), 0);
+			LeaderBoard::players[temp].user, LeaderBoard::players[temp].model, i
+		).SetRotation(glm::radians(180.f), 0).SetSpawn(glm::vec3(0, 1.5f, 0));
 
 		Head[i] = ECS::CreateEntity();
 		ECS::GetComponent<Transform>(Head[i]).SetPosition(glm::vec3(0, 0.75f, 0)).
@@ -314,7 +314,7 @@ Scene* Tutorial::Reattach() {
 		Player::SetUIAspect(BackEnd::GetWidth(), BackEnd::GetHeight());
 
 	Player::SetCamDistance(camDistance);
-	Player::SetSkyPos(glm::vec3(0, 50, -45));
+	Player::SetSkyPos(glm::vec3(0, 25, -45));
 
 	return this;
 }

@@ -1,4 +1,5 @@
 #include "Sprite.h"
+#include "ObjLoader.h"
 std::vector<Sprite::Texture> Sprite::m_textures = {};
 std::vector<Sprite::DrawData> Sprite::m_Queue = {};
 std::vector<Sprite::DrawData> Sprite::m_UIQueue[4] = {};
@@ -28,10 +29,15 @@ Sprite& Sprite::Init(const std::string& textureName, float width, float height)
 	}
 
 	Texture2D::sptr tex = Texture2D::LoadFromFile("textures/" + textureName);
+
 	if (!tex)
 	{
 		throw std::runtime_error("Failed to open texture\nError 0: " + textureName);
 	}
+	//all sprites should be not wrapping
+	tex->SetWrapS(WrapMode::ClampToBorder);
+	tex->SetWrapT(WrapMode::ClampToBorder);
+
 	m_index = m_textures.size();
 	m_textures.push_back({ textureName, tex });
 
@@ -148,6 +154,22 @@ void Sprite::PerformUIDraw(int numOfCams)
 
 				m_square->Render();
 			}
+		}
+
+		Shader::UnBind();
+	}
+}
+
+void Sprite::PerformDrawShadow(/*const glm::mat4& lightVPMatrix*/)
+{
+	if (m_Queue.size() != 0) {
+		ObjLoader::m_shadowShader->Bind();
+		//ObjLoader::m_shadowShader->SetUniform("lightVPMatrix", lightVPMatrix);
+
+		for (int i(0); i < m_Queue.size(); ++i) {
+			ObjLoader::m_shadowShader->SetUniformMatrix("model", m_Queue[i].MVP);
+
+			m_square->Render();
 		}
 
 		Shader::UnBind();

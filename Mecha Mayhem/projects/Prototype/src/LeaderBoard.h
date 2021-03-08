@@ -21,7 +21,7 @@ public:
 	};
 
 	static PlayerChoice players[4];
-	static int playerCount;
+	static size_t playerCount;
 
 private:
 
@@ -37,4 +37,4 @@ private:
 inline LeaderBoard::PlayerChoice LeaderBoard::players[4] = {
 	{}, {}, {}, {}
 };
-inline int LeaderBoard::playerCount = 0;
+inline size_t LeaderBoard::playerCount = 0;

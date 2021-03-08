@@ -80,6 +80,9 @@ public:
 
 	//update the morph animator and stuff like health
 	void Update(PhysBody& body);
+	
+	//exists to render death better lol
+	void LateUpdate(Transform& body);
 
 	//make the player move, returns true if player is currently dead
 	void GetInput(PhysBody& body, Transform& head, Transform& personalCam);
@@ -118,8 +121,7 @@ public:
 			m_health = 0;
 			m_respawnTimer = m_respawnDelay;
 			
-			//m_deathSound.play();
-			ClearWeapons();
+			//do death management in Update()
 
 			return true;
 		}
@@ -274,5 +276,6 @@ private:
 	glm::vec3 m_spawnPos = glm::vec3(0.f);
 	glm::vec3 m_deathPos = glm::vec3(0.f);
 	glm::vec2 m_rot = glm::vec2(0.f);
+	glm::vec2 m_deathRot = glm::vec2(0.f);
 };
 

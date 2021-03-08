@@ -4,10 +4,14 @@
 std::vector<ObjLoader::DrawData> ObjLoader::m_matQueue = {};
 std::vector<ObjLoader::DrawData> ObjLoader::m_texQueue = {};
 std::vector<ObjLoader::DrawData> ObjLoader::m_defaultQueue = {};
+std::vector<ObjLoader::DrawData> ObjLoader::m_matTempQueue = {};
+std::vector<ObjLoader::DrawData> ObjLoader::m_texTempQueue = {};
+std::vector<ObjLoader::DrawData> ObjLoader::m_defaultTempQueue = {};
 std::vector<ObjLoader::Models> ObjLoader::m_models = {};
 Shader::sptr ObjLoader::m_shader = nullptr;
 Shader::sptr ObjLoader::m_matShader = nullptr;
 Shader::sptr ObjLoader::m_texShader = nullptr;
+Shader::sptr ObjLoader::m_shadowShader = nullptr;
 
 std::vector<BufferAttribute> ObjLoader::m_posAttrib = { BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) };
 std::vector<BufferAttribute> ObjLoader::m_normAttrib = { BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) };
@@ -479,13 +483,28 @@ void ObjLoader::Init()
 	m_shader->LoadShaderPartFromFile("shaders/frag_none.glsl", GL_FRAGMENT_SHADER);
 	m_shader->Link();
 
+	m_shadowShader = Shader::Create();
+	m_shadowShader->LoadShaderPartFromFile("shaders/vert_depth.glsl", GL_VERTEX_SHADER);
+	m_shadowShader->LoadShaderPartFromFile("shaders/frag_depth.glsl", GL_FRAGMENT_SHADER);
+	m_shadowShader->Link();
+
 	m_matQueue.clear();
 	m_texQueue.clear();
 	m_defaultQueue.clear();
+	m_texTempQueue.clear();
+	m_matTempQueue.clear();
+	m_defaultTempQueue.clear();
 }
 
 void ObjLoader::Unload()
 {
+	m_matQueue.clear();
+	m_texQueue.clear();
+	m_defaultQueue.clear();
+	m_texTempQueue.clear();
+	m_matTempQueue.clear();
+	m_defaultTempQueue.clear();
+
 	for (int i(0); i < m_models.size(); ++i) {
 		m_models[i].vao = nullptr;
 	}
@@ -494,6 +513,7 @@ void ObjLoader::Unload()
 	m_shader = nullptr;
 	m_matShader = nullptr;
 	m_texShader = nullptr;
+	m_shadowShader = nullptr;
 }
 
 void ObjLoader::BeginDraw(unsigned amt)
@@ -504,6 +524,13 @@ void ObjLoader::BeginDraw(unsigned amt)
 	m_matQueue.reserve(amt);
 	m_defaultQueue.resize(0);
 	m_defaultQueue.reserve(amt);
+}
+
+void ObjLoader::BeginTempDraw()
+{
+	m_texTempQueue.resize(0);
+	m_matTempQueue.resize(0);
+	m_defaultTempQueue.resize(0);
 }
 
 void ObjLoader::Draw(const glm::mat4& model)
@@ -519,8 +546,21 @@ void ObjLoader::Draw(const glm::mat4& model)
 	else {
 		m_defaultQueue.push_back({ m_index, model });
 	}
+}
 
-	return;
+void ObjLoader::DrawTemp(const glm::mat4& model)
+{
+	if (!m_enabled)	return;
+
+	if (m_models[m_index].text) {
+		m_texTempQueue.push_back({ m_index, model });
+	}
+	else if (m_models[m_index].mat) {
+		m_matTempQueue.push_back({ m_index, model });
+	}
+	else {
+		m_defaultTempQueue.push_back({ m_index, model });
+	}
 }
 
 void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour, const std::array<glm::vec3, MAX_LIGHTS>& lightPos, const std::array<glm::vec3, MAX_LIGHTS>& lightColour, const int& lightCount,
@@ -537,7 +577,7 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 	}
 	*/
 
-	if (m_defaultQueue.size() != 0) {
+	if (m_defaultQueue.size() || m_defaultTempQueue.size()) {
 		//global stuff
 		m_shader->Bind();
 		m_shader->SetUniform("camPos", camera.GetPosition());
@@ -560,10 +600,18 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 
 			m_models[m_defaultQueue[i].modelIndex].vao->Render();
 		}
+
+		for (int i(0); i < m_defaultTempQueue.size(); ++i) {
+			m_shader->SetUniformMatrix("MVP", VP * m_defaultTempQueue[i].model);
+			m_shader->SetUniformMatrix("transform", m_defaultTempQueue[i].model);
+
+			m_models[m_defaultTempQueue[i].modelIndex].vao->Render();
+		}
+
 		Shader::UnBind();
 	}
 
-	if (m_texQueue.size() != 0) {
+	if (m_texQueue.size() || m_texTempQueue.size()) {
 		m_texShader->Bind();
 		m_texShader->SetUniform("camPos", camera.GetPosition());
 
@@ -583,10 +631,19 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 
 			m_models[m_texQueue[i].modelIndex].vao->Render();
 		}
+
+		for (int i(0); i < m_texTempQueue.size(); ++i) {
+			m_texShader->SetUniformMatrix("MVP", VP * m_texTempQueue[i].model);
+			m_texShader->SetUniformMatrix("transform", m_texTempQueue[i].model);
+
+			Sprite::m_textures[m_models[m_texTempQueue[i].modelIndex].texture].texture->Bind(0);
+
+			m_models[m_texTempQueue[i].modelIndex].vao->Render();
+		}
 		Shader::UnBind();
 	}
 
-	if (m_matQueue.size() != 0) {
+	if (m_matQueue.size() || m_matTempQueue.size()) {
 		//global stuff
 		m_matShader->Bind();
 		m_matShader->SetUniform("camPos", camera.GetPosition());
@@ -605,6 +662,37 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 
 			m_models[m_matQueue[i].modelIndex].vao->Render();
 		}
+
+		for (int i(0); i < m_matTempQueue.size(); ++i) {
+			m_matShader->SetUniformMatrix("MVP", VP * m_matTempQueue[i].model);
+			m_matShader->SetUniformMatrix("transform", m_matTempQueue[i].model);
+
+			m_models[m_matTempQueue[i].modelIndex].vao->Render();
+		}
 		Shader::UnBind();
 	}
+}
+
+void ObjLoader::PerformDrawShadow(const glm::mat4& lightVPMatrix)
+{
+	m_shadowShader->Bind();
+	m_shadowShader->SetUniformMatrix("lightVPMatrix", lightVPMatrix);
+
+	for (int i(0); i < m_matQueue.size(); ++i) {
+		m_shadowShader->SetUniformMatrix("model", m_matQueue[i].model);
+
+		m_models[m_matQueue[i].modelIndex].vao->Render();
+	}
+	for (int i(0); i < m_texQueue.size(); ++i) {
+		m_shadowShader->SetUniformMatrix("model", m_texQueue[i].model);
+
+		m_models[m_texQueue[i].modelIndex].vao->Render();
+	}
+	for (int i(0); i < m_defaultQueue.size(); ++i) {
+		m_shadowShader->SetUniformMatrix("model", m_defaultQueue[i].model);
+
+		m_models[m_defaultQueue[i].modelIndex].vao->Render();
+	}
+
+	Shader::UnBind();
 }

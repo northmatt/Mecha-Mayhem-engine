@@ -85,14 +85,17 @@ Scene* Scene::Reattach()
 void Scene::BackEndUpdate()
 {
 	if (!m_paused) {
+		//only update these when paused, so put here
+		Player::Update();
+
 		//update components
 		m_reg.view<ObjMorphLoader, Transform>().each(
 			[](ObjMorphLoader& obj, Transform& trans) {
 				obj.Update(Time::dt);
 			}
 		);
-		m_reg.view<Player, PhysBody, Transform>().each(
-			[](Player& p, PhysBody& body, Transform& trans) {
+		m_reg.view<Player, PhysBody>().each(
+			[](Player& p, PhysBody& body) {
 				p.Update(body);
 			}
 		);
@@ -112,8 +115,17 @@ void Scene::BackEndUpdate()
 				}
 			);
 		}
+
+		m_reg.view<Player, Transform>().each(
+			[](Player& p, Transform& trans) {
+				p.LateUpdate(trans);
+			}
+		);
+
 		m_effects.Update();
 	}
+
+	LateUpdate();
 
 	//always render
 	if (m_camCount < 1)
@@ -121,17 +133,26 @@ void Scene::BackEndUpdate()
 	else if (m_camCount > 4)
 		m_camCount = 4;
 
+	Sprite::BeginUIDraw(10, m_camCount);
+
 	Rendering::Update(&m_reg, m_camCount, m_paused);
+
+	//once pause buffer works, we can move this or smt
+	m_frameEffects.Draw();
+
+	Sprite::PerformUIDraw(m_camCount);
 
 	if (m_paused)   if (m_pauseSprite.IsValid()) {
 		glViewport(0, 0, BackEnd::GetWidth(), BackEnd::GetHeight());
 
-		m_pauseSprite.DrawSingle(Rendering::orthoVP.GetViewProjection(), glm::mat4(
+		static const glm::mat4 pauseMat = glm::mat4(
 			1, 0, 0, 0,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, -100, 1
-		));
+		);
+
+		m_pauseSprite.DrawSingle(Rendering::orthoVP.GetViewProjection(), pauseMat);
 		//Rendering::DrawPauseScreen(m_pauseSprite);
 	}
 }

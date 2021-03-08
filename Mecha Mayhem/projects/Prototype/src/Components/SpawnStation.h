@@ -46,28 +46,38 @@ public:
 			return;
 		}
 
-		reg->view<Player, PhysBody>().each(
-			[&](Player& p, PhysBody& body) {
-				if (p.IsPlayer() && p.IsAlive())	if (body.TestAABB(pos + BLM::GLMup, m_radius)) {
-					if (m_currWeapon == Player::WEAPON::FIST) {
-						if (p.PickUpOffhand(Player::OFFHAND::HEALPACK2)) {
-							m_timer = m_delay;
-							m_spawnerModel.SetDirection(false);
-						}
-					}
-					else if (m_currWeapon == Player::WEAPON::SWORD) {
-						if (p.PickUpSword()) {
-							m_timer = m_delay;
-							m_spawnerModel.SetDirection(false);
-						}
-					}
-					else if (p.PickUpWeapon(m_currWeapon)) {
-						m_timer = m_delay;
-						m_spawnerModel.SetDirection(false);
+		Player* touched = nullptr;
+		float distance = 100;
+		reg->view<Player, PhysBody>().each([&](Player& p, PhysBody& body) {
+			if (p.IsPlayer() && p.IsAlive()) {
+				if (body.TestAABB(pos + BLM::GLMup, m_radius)) {
+					float temp = glm::length(pos - BLM::BTtoGLM(body.GetTransform().getOrigin()));
+					if (temp <= distance) {
+						distance = temp;
+						touched = &p;
 					}
 				}
 			}
-		);
+		});
+
+		if (touched != nullptr) {
+			if (m_currWeapon == Player::WEAPON::FIST) {
+				if (touched->PickUpOffhand(Player::OFFHAND::HEALPACK2)) {
+					m_timer = m_delay;
+					m_spawnerModel.SetDirection(false);
+				}
+			}
+			else if (m_currWeapon == Player::WEAPON::SWORD) {
+				if (touched->PickUpSword()) {
+					m_timer = m_delay;
+					m_spawnerModel.SetDirection(false);
+				}
+			}
+			else if (touched->PickUpWeapon(m_currWeapon)) {
+				m_timer = m_delay;
+				m_spawnerModel.SetDirection(false);
+			}
+		}
 	}
 
 private:

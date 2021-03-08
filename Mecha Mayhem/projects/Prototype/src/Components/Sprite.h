@@ -44,6 +44,9 @@ public:
 
 	static void PerformDraw();
 	static void PerformUIDraw(int numOfCams);
+	
+	//lightVPMatrix sent in ObjLoader
+	static void PerformDrawShadow(/*const glm::mat4& lightVPMatrix*/);
 
 	void SetScale(float scl) { m_scale = scl; }
 	void SetWidth(float width) { m_width = width; }
