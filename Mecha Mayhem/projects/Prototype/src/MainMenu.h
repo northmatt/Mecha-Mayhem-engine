@@ -1,6 +1,7 @@
 #pragma once
 #include "Utilities/Scene.h"
-#include "Utilities/Catmull.h"
+#include "LeaderBoard.h"
+//#include "Utilities/Catmull.h"
 
 class MainMenu : public Scene
 {
@@ -12,8 +13,33 @@ public:
 	virtual void Update() override;
 
 	virtual Scene* Reattach() override;
+	virtual void ImGuiFunc() override {
+		if (m_scenePos != 1)	return;
+
+		for (int i(0); i < 4; ++i) {
+			if (!ECS::GetComponent<Player>(models[i]).IsPlayer()) {
+				if (ImGui::Button(("Add player " + std::to_string(i + 1)).c_str())) {
+					if (LeaderBoard::players[i].model == 0)
+						LeaderBoard::players[i].model = 1;
+					LeaderBoard::players[i].user = CONUSER(i);
+					ECS::GetComponent<Player>(models[i]).Init(CONUSER::FOUR, LeaderBoard::players[i].model);
+					playerSwapped[i] = true;
+					m_confirmTimer = 1.f;
+				}
+			}
+			else {
+				if (ImGui::Button(("Remove player " + std::to_string(i + 1)).c_str())) {
+					ECS::GetComponent<Player>(models[i]).Init(LeaderBoard::players[i].user = CONUSER::NONE, 0);
+					playerSwapped[i] = true;
+					Rendering::LightsPos[2 + i] = BLM::GLMzero;
+				}
+			}
+		}
+	}
 
 private:
+	void FixDigits(int number);
+
 	bool m_exit = false;
 	bool playerSwapped[4] = {};
 
@@ -36,6 +62,8 @@ private:
 	entt::entity text = entt::null;
 	entt::entity charSelect = entt::null;
 	entt::entity backGround = entt::null;
+	entt::entity digit1 = entt::null;
+	entt::entity digit2 = entt::null;
 	entt::entity models[4] = {
 		entt::null,
 		entt::null,

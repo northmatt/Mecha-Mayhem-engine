@@ -4,80 +4,204 @@ void LeaderBoard::Init(int windowWidth, int windowHeight)
 {
 	ECS::AttachRegistry(&m_reg);
 
-	width = windowWidth;
-	height = windowHeight;
-
 	camera = ECS::CreateEntity();
 	ECS::AttachComponent<Camera>(camera).SetFovDegrees(60.f)
 		.ResizeWindow(windowWidth, windowHeight).SetNear(0.3f);
 
-	title = ECS::CreateEntity();
-	ECS::AttachComponent<ObjMorphLoader>(title).LoadMeshs("title", true);
-	ECS::GetComponent<Transform>(title).SetPosition(glm::vec3(0.f, 0.15f, -0.9f)).SetScale(0.25f).ChildTo(camera);
+	for (int i(0); i < 4; ++i) {
+		//start parents off offscreen
+		playerScores[i].parent = ECS::CreateEntity();
+		ECS::GetComponent<Transform>(playerScores[i].parent).SetPosition(glm::vec3(0, 100, 0));
 
+		//number is here because yea
+		playerScores[i].number = ECS::CreateEntity();
+		ECS::AttachComponent<Sprite>(playerScores[i].number);
+		ECS::GetComponent<Transform>(playerScores[i].number).SetPosition(glm::vec3(-2, 0, 0)).ChildTo(playerScores[i].parent);
+
+		//create digits and parent with the right position
+		playerScores[i].digit2 = ECS::CreateEntity();
+		ECS::AttachComponent<Sprite>(playerScores[i].digit2);
+		ECS::GetComponent<Transform>(playerScores[i].digit2).SetPosition(glm::vec3(0, 0, 0)).ChildTo(playerScores[i].parent);
+
+		playerScores[i].digit1 = ECS::CreateEntity();
+		ECS::AttachComponent<Sprite>(playerScores[i].digit1);					//0.8f unit to the right of digit2
+		ECS::GetComponent<Transform>(playerScores[i].digit1).SetPosition(glm::vec3(0.8f, 0, 0)).ChildTo(playerScores[i].parent);
+
+
+		{	//P is a constant
+			auto entity = ECS::CreateEntity();
+			ECS::AttachComponent<Sprite>(entity).Init("P.png", -1.81f, 1.f);
+			ECS::GetComponent<Transform>(entity).SetPosition(glm::vec3(-2.275f, 0, -0.1f)).ChildTo(playerScores[i].parent);
+		}
+
+		SetDigits(0, i);
+	}
+
+	//continue text
 	text = ECS::CreateEntity();
-	ECS::AttachComponent<Sprite>(text).Init("CharSelect.png", -4, 1).SetScale(0.075f);
-	ECS::GetComponent<Transform>(text).SetPosition(glm::vec3(0.f, -0.1f, -0.35f)).ChildTo(camera);
+	ECS::AttachComponent<Sprite>(text).Init("Start Text.png", -4.f, 1.f).SetWidth(0);
+	ECS::GetComponent<Transform>(text).SetPosition(glm::vec3(0.f, -3.25f, -8.f));
+
+	{	//background
+		auto backGround = ECS::CreateEntity();
+		//ECS::AttachComponent<Sprite>(backGround).Init(glm::vec4(0.5f, 0.5f, 1.f, 1.f), -19, 10);
+		ECS::AttachComponent<Sprite>(backGround).Init("genericbg.png", -19, 10);
+		ECS::GetComponent<Transform>(backGround).SetPosition(glm::vec3(0, 0, -10));
+	}
 	
 	Rendering::frameEffects = &m_frameEffects;
 	Rendering::LightCount = 0;
 
-	m_frameEffects.Init(width, height);
+	m_frameEffects.Init(windowWidth, windowHeight);
+}
+
+//lol is to avoid overwriting existing function lol
+template<class T>
+T lolSmoothStep(T a, T b, float percent) {
+	percent = glm::smoothstep(0.f, 1.f, percent);
+	return (1 - percent) * a + percent * b;
 }
 
 void LeaderBoard::Update()
 {
-	if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER::ONE)) {
-		if (BackEnd::GetFullscreen())	BackEnd::SetTabbed();
-		else							BackEnd::SetFullscreen();
+	float /*lx = 0, ly = 0,*/ rx = 0, ry = 0;
+	for (int i(0); i < 4; ++i) {
+		if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(i))) {
+			if (ControllerInput::GetButton(BUTTON::RB, CONUSER(i))) {
+				if (BackEnd::GetFullscreen())	BackEnd::SetTabbed();
+				else							BackEnd::SetFullscreen();
+			}
+		}
 	}
 
-	float lx = ControllerInput::GetLX(CONUSER::ONE) + ControllerInput::GetLX(CONUSER::TWO) +
-		ControllerInput::GetLX(CONUSER::THREE) + ControllerInput::GetLX(CONUSER::FOUR);
-	float ly = ControllerInput::GetLY(CONUSER::ONE) + ControllerInput::GetLY(CONUSER::TWO) +
-		ControllerInput::GetLY(CONUSER::THREE) + ControllerInput::GetLY(CONUSER::FOUR);
-
-	float rx = ControllerInput::GetRX(CONUSER::ONE) + ControllerInput::GetRX(CONUSER::TWO) +
-		ControllerInput::GetRX(CONUSER::THREE) + ControllerInput::GetRX(CONUSER::FOUR);
-	float ry = ControllerInput::GetRY(CONUSER::ONE) + ControllerInput::GetRY(CONUSER::TWO) +
-		ControllerInput::GetRY(CONUSER::THREE) + ControllerInput::GetRY(CONUSER::FOUR);
-
-
-	Rendering::LightsPos[2] = ECS::GetComponent<Transform>(title).SetRotation(
-		glm::angleAxis(glm::radians(lx * 6), BLM::GLMup) * glm::angleAxis(glm::radians(ly * 6), glm::vec3(-1, 0, 0))
-	).GetGlobalPosition();
-
-	Rendering::LightsPos[3] = ECS::GetComponent<Transform>(text).SetRotation(
-		glm::angleAxis(glm::radians(lx * 3), BLM::GLMup) * glm::angleAxis(glm::radians(ly * 3), glm::vec3(-1, 0, 0))
-	).GetGlobalPosition();
-
-	Rendering::LightsPos[4] = Rendering::LightsPos[5] = ECS::GetComponent<Transform>(camera).GetLocalPosition();
-
-	if (ControllerInput::GetButtonDown(BUTTON::A, CONUSER::ONE) ||
-		ControllerInput::GetButtonDown(BUTTON::A, CONUSER::TWO) ||
-		ControllerInput::GetButtonDown(BUTTON::A, CONUSER::THREE) ||
-		ControllerInput::GetButtonDown(BUTTON::A, CONUSER::FOUR)) {
-
-		QueueSceneChange(0);
+	if (m_timer > 0) {
+		m_timer -= Time::dt;
+		if (m_timer <= 0) {
+			m_timer = 0;
+			//anything else here
+		}
+		if (m_timer < 1) {
+			//press A to continue here
+			ECS::GetComponent<Sprite>(text).SetWidth(lolSmoothStep(-4.f, 0.f, m_timer));
+		}
+		for (int i(0); i < 4; ++i) {
+			if (m_timer < 2) {
+				//move the things
+				if (playerScores[i].finalPos != BLM::GLMzero) {
+					//lerp
+					ECS::GetComponent<Transform>(playerScores[i].parent).SetPosition(lolSmoothStep(
+						playerScores[i].finalPos, playerScores[i].startingPos, glm::clamp(m_timer - 1, 0.f, 1.f)
+					));
+				}
+			}
+			if (m_timer < 3) {
+				//display digits (takes a second)
+				float percent = (m_timer - 2) * 2.f;
+				ECS::GetComponent<Sprite>(playerScores[i].digit2).SetWidth(-0.75f * glm::clamp(2.f - percent, 0.f, 1.f));
+				ECS::GetComponent<Sprite>(playerScores[i].digit1).SetWidth(-0.75f * glm::clamp(1.f - percent, 0.f, 1.f));
+			}
+		}
+		return;
 	}
 
+	for (int i(0); i < 4; ++i) {
+		rx += ControllerInput::GetRX(CONUSER(i));
+		ry += ControllerInput::GetRY(CONUSER(i));
+
+		if (i < LeaderBoard::playerCount) {
+			float lx = ControllerInput::GetLX(players[playerIndexes[i]].user);
+			float ly = ControllerInput::GetLY(players[playerIndexes[i]].user);
+
+			ECS::GetComponent<Transform>(playerScores[i].parent).SetRotation(
+				glm::angleAxis(glm::radians(lx * 2.f), glm::vec3(0, -1, 0))
+				* glm::angleAxis(glm::radians(ly * 2.f), glm::vec3(1, 0, 0)));
+		}
+
+
+		if (ControllerInput::GetButtonDown(BUTTON::A, CONUSER(i))) {
+
+			QueueSceneChange(0);
+		}
+	}
+
+	ECS::GetComponent<Transform>(camera).SetRotation(glm::angleAxis(glm::radians(rx), glm::vec3(0, -1, 0))
+		* glm::angleAxis(glm::radians(ry * 0.5f), glm::vec3(1, 0, 0)));
 }
 
 void LeaderBoard::Exit()
 {
+	//reset all entity positions
+	ECS::GetComponent<Transform>(camera).SetRotation(BLM::GLMQuat);
+	ECS::GetComponent<Sprite>(text).SetWidth(0);
+	for (int i(0); i < 4; ++i) {
+		ECS::GetComponent<Transform>(playerScores[i].parent).SetPosition(glm::vec3(0, 100, 0)).SetRotation(BLM::GLMQuat);
+		playerScores[i].startingPos = BLM::GLMzero;
+		playerScores[i].finalPos = BLM::GLMzero;
+		players[i].score = 0;
+	}
+
 	Scene::Exit();
 }
 
 Scene* LeaderBoard::Reattach()
 {
-	std::cout << "This Round's score:\n";
-	for (int i(0); i < 4; ++i) {
-		if (players[i].user != CONUSER::NONE) {
-			std::cout << "Player " << (int(players[i].user) + 1) << ": " << players[i].score << '\n';
-			players[i].score = 0;
+	Scene::Reattach();
+
+	playerIndexes.clear();
+
+	//add score indexes
+	for (int i(0), tempCounter(0); i < 4; ++i) {
+		if (players[i].user != CONUSER::NONE)
+			playerIndexes.push_back(i);
+	}
+	//sorts playerIndexes using splitting
+	SortPlayers(playerIndexes);
+	
+	//set final pos here (final pos is based on actual order)
+	for (int i(0); i < LeaderBoard::playerCount; ++i) {
+		ECS::GetComponent<Sprite>(playerScores[i].number).Init(
+			"num/" + std::to_string(playerIndexes[i] + 1) + ".png", -0.75f, 1.f);
+		SetDigits(players[playerIndexes[i]].score, i);
+
+		ECS::GetComponent<Transform>(playerScores[i].parent).SetPosition(
+			playerScores[i].startingPos = glm::vec3(0, 1.5f - playerIndexes[i] * 1.25f, -8));
+
+		playerScores[i].finalPos = glm::vec3(0, 1.5f - i * 1.25f, i * -0.5f - 7.f);
+	}
+
+	Rendering::LightCount = 0;
+	Rendering::BackColour = glm::vec4(0.5f, 0.5f, 1.f, 1.f);
+
+	m_timer = 3.25f;
+
+	return this;
+}
+
+void LeaderBoard::SetDigits(int number, int index)
+{
+	if (number > 99)	return;
+	if (index < 0 || index > 3)	return;
+
+	int val = number / 10;
+	ECS::GetComponent<Sprite>(playerScores[index].digit1).Init(
+		"num/" + std::to_string(number - val * 10) + ".png", 0.f, 1.f);
+	ECS::GetComponent<Sprite>(playerScores[index].digit2).Init("num/" + std::to_string(val) + ".png", 0.f, 1.f);
+}
+
+void LeaderBoard::SortPlayers(std::vector<int>& playerIndices)
+{
+	int size = playerIndices.size() - 1;
+	//1 player would be 0, 2 player minimum
+	if (size) {
+		//simple sorting:
+		for (int i(0); i < size; ++i) {
+			for (int j(0); j < size; ++j) {
+				if (players[playerIndices[j]].score < players[playerIndices[j + 1]].score) {
+					int temp = playerIndices[j];
+					playerIndices[j] = playerIndices[j + 1];
+					playerIndices[j + 1] = temp;
+				}
+			}
 		}
 	}
-	Rendering::LightCount = 0;
-
-	return Scene::Reattach();
 }

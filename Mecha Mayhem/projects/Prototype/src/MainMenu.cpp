@@ -45,8 +45,16 @@ void MainMenu::Init(int width, int height)
 		ECS::GetComponent<Transform>(models[x]).SetPosition(glm::vec3(x * 4 - 6, 99, -8)).SetRotation(glm::angleAxis(BLM::pi, BLM::GLMup)).SetScale(1.5f);
 	}
 
+	digit1 = ECS::CreateEntity();
+	ECS::AttachComponent<Sprite>(digit1);
+	ECS::GetComponent<Transform>(digit1).SetPosition(glm::vec3(0.4f, 96.75f, -8));
+	digit2 = ECS::CreateEntity();
+	ECS::AttachComponent<Sprite>(digit2);
+	ECS::GetComponent<Transform>(digit2).SetPosition(glm::vec3(-0.4f, 96.75f, -8));
+
 	backGround = ECS::CreateEntity();
-	ECS::AttachComponent<Sprite>(backGround).Init(glm::vec4(0.5f, 0.5f, 1.f, 1.f), -19, 10);
+	//ECS::AttachComponent<Sprite>(backGround).Init(glm::vec4(0.5f, 0.5f, 1.f, 1.f), -19, 10);
+	ECS::AttachComponent<Sprite>(backGround).Init("genericbg.png", -19, 10);
 	ECS::GetComponent<Transform>(backGround).SetPosition(glm::vec3(0, 100, -10));
 
 	Rendering::frameEffects = &m_frameEffects;
@@ -87,6 +95,12 @@ void MainMenu::Update()
 			ry += ControllerInput::GetRY(CONUSER(i));
 		}
 
+
+		Rendering::LightsPos[0] = ECS::GetComponent<Transform>(camera).SetPosition(
+			cameraPath.Update(Time::dt).GetPosition()).SetRotation(
+				cameraPath.GetLookingForwards(Time::dt) * glm::angleAxis(glm::radians(rx * 8), glm::vec3(0, -1, 0))
+				* glm::angleAxis(glm::radians(ry * 4), glm::vec3(1, 0, 0))).GetGlobalPosition() + glm::vec3(0, -0.5f, 0);
+
 		Rendering::LightsPos[1] = ECS::GetComponent<Transform>(title).SetRotation(
 			glm::angleAxis(glm::radians(lx * 6), BLM::GLMup) * glm::angleAxis(glm::radians(ly * 6), glm::vec3(-1, 0, 0))
 		).GetGlobalPosition() + glm::vec3(0, -1, 0);
@@ -95,15 +109,10 @@ void MainMenu::Update()
 			glm::angleAxis(glm::radians(lx * 3), BLM::GLMup) * glm::angleAxis(glm::radians(ly * 3), glm::vec3(-1, 0, 0))
 		).GetGlobalPosition();
 
-		Rendering::LightsPos[0] = ECS::GetComponent<Transform>(camera).SetPosition(
-			cameraPath.Update(Time::dt).GetPosition()).SetRotation(
-				cameraPath.GetLookingForwards(Time::dt) * glm::angleAxis(glm::radians(rx * 8), glm::vec3(0, -1, 0))
-				* glm::angleAxis(glm::radians(ry * 4), glm::vec3(1, 0, 0))).GetGlobalPosition() + glm::vec3(0, -0.5f, 0);
-
 
 		if (m_exit) {
 			cameraPath.SetSpeed(zoomTime += 8 * Time::dt);
-			ECS::GetComponent<Transform>(text).SetScale(1.f / zoomTime);
+			ECS::GetComponent<Transform>(text).SetScale(glm::clamp(1.1f / zoomTime - 0.1f, 0.f, 1.f));
 			if (ECS::GetComponent<ObjMorphLoader>(title).IsDone()) {
 				ECS::GetComponent<ObjMorphLoader>(title).ToggleDirection();
 				ECS::GetComponent<ObjMorphLoader>(title).SetSpeed(100.f);
@@ -113,10 +122,13 @@ void MainMenu::Update()
 				ECS::GetComponent<Transform>(title).SetRotation(BLM::GLMQuat).UnChild(false);
 				ECS::GetComponent<Transform>(text).SetRotation(BLM::GLMQuat).UnChild(false);
 
+				FixDigits(LeaderBoard::scoreGoal);
+
 				cameraPath.SetSpeed(1);
 				m_exit = false;
 				zoomTime = 1;
 				m_scenePos = 1;
+				Rendering::BackColour = glm::vec4(0.5f, 0.5f, 1.f, 1.f);
 				Rendering::LightsPos[0] = glm::vec3(0, 100, -5);
 				Rendering::LightsPos[2] = BLM::GLMzero;
 				Rendering::LightsPos[3] = BLM::GLMzero;
@@ -177,12 +189,22 @@ void MainMenu::Update()
 				if (Rendering::LightsPos[2 + x] == BLM::GLMzero)
 					Rendering::LightsPos[2 + x] = (ECS::GetComponent<Transform>(models[x]).GetGlobalPosition() + glm::vec3(0, 0, 1.75f));
 
+				if (ControllerInput::GetButtonDown(BUTTON::DDOWN, CONUSER(x))) {
+					if (LeaderBoard::scoreGoal > 3)
+						FixDigits(--LeaderBoard::scoreGoal);
+				}
+				if (ControllerInput::GetButtonDown(BUTTON::DUP, CONUSER(x))) {
+					if (LeaderBoard::scoreGoal < 20)
+						FixDigits(++LeaderBoard::scoreGoal);
+				}
+
 				++playerCount;
 				if (ControllerInput::GetButton(BUTTON::START, CONUSER(x))) {
 					++allHolding;
 					playerSwapped[x] = true;
 					continue;
 				}
+
 				if (ControllerInput::GetButtonDown(BUTTON::B, CONUSER(x))) {
 					p.Init(LeaderBoard::players[x].user = CONUSER::NONE, 0);
 					playerSwapped[x] = true;
@@ -227,11 +249,12 @@ void MainMenu::Update()
 				LeaderBoard::players[x].user = CONUSER(x);
 				p.Init(CONUSER::FOUR, LeaderBoard::players[x].model);
 				playerSwapped[x] = true;
+				m_confirmTimer = 1.f;
 			}
 
-			if (ControllerInput::GetButton(BUTTON::B, CONUSER(x))) {
+			if (ControllerInput::GetButton(BUTTON::SELECT, CONUSER(x))) {
 				if (!playerSwapped[x]) {
-					if (ControllerInput::GetButtonDown(BUTTON::B, CONUSER(x))) {
+					if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER(x))) {
 						m_exitHoldTimer = 1.f;
 					}
 					m_exitHoldTimer -= Time::dt;
@@ -240,6 +263,7 @@ void MainMenu::Update()
 						m_exitHoldTimer = 1.f;
 						playerSwapped[x] = true;
 
+						Rendering::BackColour = glm::vec4(0.2f, 0.2f, 0.2f, 1.f);
 						Rendering::LightsPos[2] = BLM::GLMzero;
 						Rendering::LightsPos[3] = BLM::GLMzero;
 						Rendering::LightsPos[4] = BLM::GLMzero;
@@ -255,13 +279,14 @@ void MainMenu::Update()
 					ECS::GetComponent<Sprite>(charSelect).SetWidth(-12.326f * m_exitHoldTimer);
 				}
 			}
-			else if (ControllerInput::GetButtonUp(BUTTON::B, CONUSER(x))) {
+			else if (ControllerInput::GetButtonUp(BUTTON::SELECT, CONUSER(x))) {
 				playerSwapped[x] = false;
 				ECS::GetComponent<Sprite>(charSelect).SetWidth(-12.326f);
 			}
 		}
 
-		if (allHolding == playerCount && playerCount > 0) {
+		if (allHolding && playerCount > 0) {
+		//if (allHolding == playerCount && playerCount > 0) {
 			m_confirmTimer -= Time::dt;
 			if (m_confirmTimer <= 0) {
 				//1 is tutorial
@@ -276,8 +301,9 @@ void MainMenu::Update()
 
 				ECS::GetComponent<Transform>(title).SetRotation(BLM::GLMQuat).ChildTo(camera);
 				ECS::GetComponent<Transform>(text).SetRotation(BLM::GLMQuat).ChildTo(camera);
-
+				ECS::GetComponent<Transform>(camera).SetPosition(cameraPath.GetPosition());
 				LeaderBoard::playerCount = playerCount;
+				Rendering::BackColour = glm::vec4(0.2f, 0.2f, 0.2f, 1.f);
 
 
 				// dalettuce
@@ -285,9 +311,9 @@ void MainMenu::Update()
 				/*LeaderBoard::playerCount = 4;
 
 				LeaderBoard::players[0] = { CONUSER::ONE, 1, 0 };
-				LeaderBoard::players[1] = { CONUSER::ONE, 1, 0 };
-				LeaderBoard::players[2] = { CONUSER::ONE, 1, 0 };
-				LeaderBoard::players[3] = { CONUSER::ONE, 1, 0 };*/
+				LeaderBoard::players[1] = { CONUSER::TWO, 1, 0 };
+				LeaderBoard::players[2] = { CONUSER::THREE, 1, 0 };
+				LeaderBoard::players[3] = { CONUSER::FOUR, 1, 0 };*/
 
 				// dalettuce
 
@@ -305,6 +331,7 @@ Scene* MainMenu::Reattach()
 {
 	AudioEngine::Instance().GetEvent("MainMenu").Restart();
 
+	Rendering::BackColour = glm::vec4(0.2f, 0.2f, 0.2f, 1.f);
 	Rendering::DefaultColour = glm::vec4(0.2f, 0.2f, 0.2f, 1.f);
 	Rendering::LightCount = 6;
 	Rendering::LightsColour[0] = glm::vec3(3.f);
@@ -316,4 +343,14 @@ Scene* MainMenu::Reattach()
 	((BloomEffect*)m_frameEffects[0])->SetThreshold(0.9f);
 
 	return Scene::Reattach();
+}
+
+void MainMenu::FixDigits(int number)
+{
+	if (number > 99)	return;
+
+	int val = number / 10;
+	ECS::GetComponent<Sprite>(digit1).Init(
+		"num/" + std::to_string(number - val * 10) + ".png", -0.75f, 1.f);
+	ECS::GetComponent<Sprite>(digit2).Init("num/" + std::to_string(val) + ".png", -0.75f, 1.f);
 }

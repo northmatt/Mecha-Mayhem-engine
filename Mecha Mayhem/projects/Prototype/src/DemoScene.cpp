@@ -27,8 +27,8 @@ void DemoScene::Init(int width, int height)
 	Rendering::DefaultColour = glm::vec4(0.75f, 0.75f, 0.75f, 1.f);
 	Rendering::LightCount = 2;
 	Rendering::LightsColour[0] = glm::vec3(200.f);
-	Rendering::LightsPos[0] = glm::vec3(0, 10, -42.5f);
-	Rendering::LightsPos[1] = glm::vec3(0, 2, 0);
+	Rendering::LightsPos[0] = glm::vec3(20.5f, -1, 21.8f);
+	Rendering::LightsPos[1] = glm::vec3(20.5f, 3, 21.8f);
 
 	Rendering::hitboxes = &m_colliders;
 	Rendering::effects = &m_effects;
@@ -46,7 +46,7 @@ void DemoScene::Init(int width, int height)
 
 void DemoScene::Update()
 {
-	for (size_t i(0); i < 4; ++i) {
+	for (int i(0); i < 4; ++i) {
 		if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(i))) {
 			if (m_paused && ControllerInput::GetButton(BUTTON::RB, CONUSER(i))) {
 				if (BackEnd::GetFullscreen())	BackEnd::SetTabbed();
@@ -71,10 +71,22 @@ void DemoScene::Update()
 		}
 	}
 
-	if (m_paused)
-		return;
-
 	bool winner = false;
+	if (m_paused) {
+		int allHolding = 0;
+		for (int i(0); i < LeaderBoard::playerCount; ++i) {
+			allHolding += ControllerInput::GetButton(BUTTON::SELECT, CONUSER(i));
+		}
+
+		if (allHolding == LeaderBoard::playerCount) {
+			m_paused = false;
+			//remove effects or smt
+			m_frameEffects.RemoveEffect(0);
+			winner = true;
+		}
+		else			return;
+	}
+
 	for (int i(0); i < LeaderBoard::playerCount; ++i) {
 		auto& p = ECS::GetComponent<Player>(bodyEnt[i]);
 		p.GetInput(
@@ -140,8 +152,22 @@ void DemoScene::Update()
 	else if (winner) {
 		for (int i(0), temp(0); i < 4; ++i) {
 			if (LeaderBoard::players[i].user != CONUSER::NONE) {
-				ECS::GetComponent<Player>(bodyEnt[temp]).GameEnd();
-				LeaderBoard::players[i].score = ECS::GetComponent<Player>(bodyEnt[temp]).GetScore();
+				auto& p = ECS::GetComponent<Player>(bodyEnt[temp]);
+
+				p.GameEnd();
+				LeaderBoard::players[i].score = p.GetScore();
+
+				if (!p.IsAlive()) {
+					std::vector<glm::vec3> tests = {};
+					for (int x(0); x < LeaderBoard::playerCount; ++x) {
+						if (x == i)	continue;
+
+						//only add to list if alive
+						if (ECS::GetComponent<Player>(bodyEnt[x]).IsAlive())
+							tests.push_back(BLM::BTtoGLM(ECS::GetComponent<PhysBody>(bodyEnt[x]).GetTransform().getOrigin()));
+					}
+					m_colliders.SetSpawnAvoid(p, tests, 20.f);
+				}
 				++temp;
 			}
 		}
@@ -164,10 +190,6 @@ Scene* DemoScene::Reattach()
 	if (m_world) {
 		PhysBody::Init(m_world);
 		ECS::AttachWorld(m_world);
-		std::string input = "playtestmap";
-		std::cout << "filename: " + input + "\n";
-		if (!m_colliders.Init(m_world, input, false, false))
-			std::cout << input + " failed to load, no collision boxes loaded\n";
 		Rendering::hitboxes = &m_colliders;
 	}
 
@@ -178,83 +200,42 @@ Scene* DemoScene::Reattach()
 	Rendering::DefaultColour = glm::vec4(0.75f, 0.75f, 0.75f, 1.f);
 	Rendering::LightsColour[0] = glm::vec3(200.f);
 	Rendering::LightCount = 2 + LeaderBoard::playerCount;
-	Rendering::LightsPos[0] = glm::vec3(20.5f, -1, -21.8f);
-	Rendering::LightsPos[1] = glm::vec3(20.5f, 3, -21.8f);
+	Rendering::LightsPos[0] = glm::vec3(20.5f, -1, 21.8f);
+	Rendering::LightsPos[1] = glm::vec3(20.5f, 3, 21.8f);
 	Rendering::AmbientStrength = 1.f;
 
 	m_camCount = LeaderBoard::playerCount;
 
+	killGoal = LeaderBoard::scoreGoal;
+
 	std::vector<glm::vec3> spawntests = {};
 	//prob wanna improve on this
 	{
-		if (LeaderBoard::playerCount > 2) {
-			killGoal = 10;
-
-			for (int i(0); i < 4;) {
-				glm::vec3 tempPos;
-				switch (rand() % 4) {
-				case 0:	tempPos = glm::vec3(70, -20, 30);	break;
-				case 1:	tempPos = glm::vec3(-30, -20, 20);	break;
-				case 2:	tempPos = glm::vec3(20, -20, -30);	break;
-				case 3:	tempPos = glm::vec3(25, -20, 75);	break;
-				}
-
-				bool valid = true;
-				for (int x(0); x < spawntests.size(); ++x) {
-					if (spawntests[x] == tempPos) {
-						valid = false;
-						break;
-					}
-				}
-
-				if (valid) {
-					spawntests.push_back(tempPos);
-					++i;
-				}
-			}
+		int offset = 0;
+		if (LeaderBoard::playerCount <= 2) {
+			//only in 2-player mode do we add the chance for offset
+			offset = (rand() % 2) * 2;
 		}
-		else {
-			killGoal = 5;
+		for (int i(0); i < LeaderBoard::playerCount;) {
+			glm::vec3 tempPos;
+			switch (offset + rand() % LeaderBoard::playerCount) {
+			case 0:	tempPos = glm::vec3(60, -20, 20);	break;
+			case 1:	tempPos = glm::vec3(-30, -20, 30);	break;
+			case 2:	tempPos = glm::vec3(20, -20, -40);	break;
+			case 3:	tempPos = glm::vec3(20, -20, 80);	break;
+			}
 
-			if (rand() % 50 < 25) {
-				for (int i(0); i < 2;) {
-					glm::vec3 tempPos;
-					if (rand() % 50 < 25)	tempPos = glm::vec3(70, -20, 30);
-					else	tempPos = glm::vec3(-30, -20, 20);
-
-					bool valid = true;
-					for (int x(0); x < spawntests.size(); ++x) {
-						if (spawntests[x] == tempPos) {
-							valid = false;
-							break;
-						}
-					}
-
-					if (valid) {
-						spawntests.push_back(tempPos);
-						++i;
-					}
+			bool valid = true;
+			for (int x(0); x < spawntests.size(); ++x) {
+				if (spawntests[x] == tempPos) {
+					valid = false;
+					break;
 				}
 			}
-			else {
-				for (int i(0); i < 2;) {
-					glm::vec3 tempPos;
-					if (rand() % 50 < 25) tempPos = glm::vec3(20, -20, -30);
-					else	tempPos = glm::vec3(25, -20, 75);
 
-					bool valid = true;
-					for (int x(0); x < spawntests.size(); ++x) {
-						if (spawntests[x] == tempPos) {
-							valid = false;
-							break;
-						}
-					}
-
-					if (valid) {
-						spawntests.push_back(tempPos);
-						++i;
-					}
-				}
+			if (valid) {
+				spawntests.push_back(tempPos);
+				++i;
 			}
 		}
 	}
@@ -275,7 +256,7 @@ Scene* DemoScene::Reattach()
 			m_colliders.SetSpawnNear(
 				ECS::AttachComponent<Player>(bodyEnt[i]).Init(
 					LeaderBoard::players[temp].user, LeaderBoard::players[temp].model, i).SetRotation(glm::radians(180.f), 0),
-				spawntests[i], 20
+				spawntests[i], 15.f
 			)
 		);
 

@@ -235,11 +235,11 @@ void Tutorial::Update()
 			m_colliders.Clear();
 
 			Init(BackEnd::GetWidth(), BackEnd::GetHeight());
-			QueueSceneChange(3);
+			QueueSceneChange(0);
 		}
 	}
 	else if (winner) {
-		AudioEngine::Instance().GetEvent("shoot").Restart();
+		AudioEngine::Instance().GetEvent("reload").Restart();
 
 		for (int i(0), temp(0); i < 4; ++i) {
 			if (LeaderBoard::players[i].user != CONUSER::NONE) {
@@ -255,7 +255,7 @@ void Tutorial::Update()
 			}
 		);
 
-		m_timer = 5.f;
+		m_timer = 1.f;
 	}
 
 	ECS::GetComponent<Transform>(lightDrone).SetPosition(dronePath.Update(Time::dt).GetPosition()).SetRotation(dronePath.GetLookingForwards(0.5f));

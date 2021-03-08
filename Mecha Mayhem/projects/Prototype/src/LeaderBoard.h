@@ -13,6 +13,10 @@ public:
 	virtual void Exit() override;
 
 	virtual Scene* Reattach() override;
+	virtual void ImGuiFunc() override {
+		//insert functions here
+
+	}
 
 	struct PlayerChoice {
 		CONUSER user = CONUSER::NONE;
@@ -22,19 +26,33 @@ public:
 
 	static PlayerChoice players[4];
 	static size_t playerCount;
+	static int scoreGoal;
 
 private:
+	void SetDigits(int number, int index);
+	void SortPlayers(std::vector<int>& playerIndices);
 
-	int width = 10;
-	int height = 10;
+	//digit2 is leftmost, digit1 is rightmost, only support double digits
+	struct DigitData {
+		glm::vec3 startingPos = BLM::GLMzero;
+		glm::vec3 finalPos =BLM::GLMzero ;
+		entt::entity parent = entt::null;
+		entt::entity number = entt::null;
+		entt::entity digit1 = entt::null;
+		entt::entity digit2 = entt::null;
+		entt::entity bar = entt::null;
+	};
+	
+	std::vector<int> playerIndexes = {};
 
-
+	DigitData playerScores[4] = {};
 	entt::entity camera = entt::null;
-	entt::entity title = entt::null;
 	entt::entity text = entt::null;
+
+	float m_timer = 0.f;
+
 };
 
-inline LeaderBoard::PlayerChoice LeaderBoard::players[4] = {
-	{}, {}, {}, {}
-};
+inline LeaderBoard::PlayerChoice LeaderBoard::players[4] = {};
 inline size_t LeaderBoard::playerCount = 0;
+inline int LeaderBoard::scoreGoal = 5;

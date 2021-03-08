@@ -113,6 +113,8 @@ public:
 			m_health = m_maxHealth;
 	}
 
+	//void GivePoints(int amt) { m_killCount += amt; }
+
 	//returns true if kill shot
 	bool TakeDamage(short dmg) {
 		if (m_health <= 0 || m_invincible)	return false;

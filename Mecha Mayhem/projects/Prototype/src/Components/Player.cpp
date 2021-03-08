@@ -256,7 +256,7 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 			else if (m_offhand == OFFHAND::HEALPACK1)	m_heal1.DrawToUI(VP, UIMat, camNum);
 		}
 
-		if (!paused || IsAlive()) {
+		if (!paused && IsAlive()) {
 			UIMat[3] = glm::vec4(0, 0, -10, 1);
 			m_reticle.DrawToUI(VP, UIMat, camNum);
 		}
@@ -356,7 +356,9 @@ void Player::LateUpdate(Transform& body)
 
 		body.SetPosition(lolSmoothStep(m_skyPos, m_deathPos, percent));
 
-		body.SetRotation(glm::angleAxis(-lolSmoothStep(m_deathRot.y, m_rot.y, percent), BLM::GLMup));
+		body.SetRotation(glm::angleAxis(
+			-lolSmoothStep(m_deathRot.y, m_rot.y, glm::clamp(percent * 2.f - 0.5f, 0.f, 1.f)),
+			BLM::GLMup));
 	}
 }
 
@@ -866,7 +868,7 @@ bool Player::PickUpWeapon(WEAPON pickup)
 
 bool Player::PickUpOffhand(OFFHAND pickup)
 {
-	if (m_offhand == OFFHAND::EMPTY) {
+	if (m_offhand == OFFHAND::EMPTY || m_offhand == OFFHAND::HEALPACK1) {
 		m_offhand = pickup;
 
 		AudioEngine::Instance().GetEvent("pickup").Restart();
