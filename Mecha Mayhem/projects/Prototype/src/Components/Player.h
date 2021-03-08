@@ -185,6 +185,7 @@ private:
 
 	static const glm::mat4 m_modelOffset;
 	static const glm::mat4 m_gunOffsetMat;
+	static const glm::mat4 m_swordOffsetMat;
 	static constexpr float pi = glm::half_pi<float>() - 0.01f;
 
 	static const glm::vec4 m_gunOffset;

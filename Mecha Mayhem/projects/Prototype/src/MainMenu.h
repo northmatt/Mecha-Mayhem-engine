@@ -13,7 +13,7 @@ public:
 	virtual void Update() override;
 
 	virtual Scene* Reattach() override;
-	virtual void ImGuiFunc() override {
+	/*virtual void ImGuiFunc() override {
 		if (m_scenePos != 1)	return;
 
 		for (int i(0); i < 4; ++i) {
@@ -35,7 +35,7 @@ public:
 				}
 			}
 		}
-	}
+	}*/
 
 private:
 	void FixDigits(int number);

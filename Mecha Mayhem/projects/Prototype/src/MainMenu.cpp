@@ -285,8 +285,8 @@ void MainMenu::Update()
 			}
 		}
 
-		if (allHolding && playerCount > 0) {
-		//if (allHolding == playerCount && playerCount > 0) {
+		//if (allHolding && playerCount > 0) {
+		if (allHolding == playerCount && playerCount > 0) {
 			m_confirmTimer -= Time::dt;
 			if (m_confirmTimer <= 0) {
 				//1 is tutorial

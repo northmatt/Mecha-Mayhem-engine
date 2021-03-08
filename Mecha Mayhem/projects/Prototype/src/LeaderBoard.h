@@ -48,6 +48,7 @@ private:
 	DigitData playerScores[4] = {};
 	entt::entity camera = entt::null;
 	entt::entity text = entt::null;
+	entt::entity playerEnt = entt::null;
 
 	float m_timer = 0.f;
 
