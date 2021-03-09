@@ -19,7 +19,7 @@ const glm::mat4 Player::m_swordOffsetMat = glm::mat4(
 	0, 0, 1, 0,
 	glm::sin(glm::radians(140.f)), glm::cos(glm::radians(140.f)), 0, 0,
 	-glm::cos(glm::radians(140.f)), glm::sin(glm::radians(140.f)), 0, 0,
-	-0.2f, 0.5f, 0.4f, 1
+	-0.2f, 0.4f, 0.4f, 1
 );
 
 const glm::mat4 Player::m_modelOffset = glm::mat4(
@@ -276,7 +276,7 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		if (m_punched)		m_sword.DrawTemp(model * m_gunOffsetMat);
 		else		m_sword.DrawTemp(model * m_swordOffsetMat);
 	}
-	else if (m_currWeapon != WEAPON::FIST) {
+	if (!m_punched && m_currWeapon != WEAPON::FIST) {
 		GetWeaponModel(m_currWeapon).DrawTemp(model * m_gunOffsetMat);
 	}
 	m_charModel.DrawTemp(model + m_modelOffset);
@@ -401,22 +401,26 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 
 		glm::vec3 rayPos = head.GetGlobalPosition();
 		btVector3 test = PhysBody::GetRaycast(rayPos, head.GetForwards() * (m_camDistance * 50.f));
+		float distance = m_camDistance;
+		float xPos = 0.4f;
 		if (m_rot.x < pi * 0.25f) {
 			if (test != btVector3()) {
-				float distance = glm::length(rayPos - BLM::BTtoGLM(test));
+				distance = glm::length(rayPos - BLM::BTtoGLM(test));
 
 				if (distance > m_camDistance) {
-					personalCam.SetPosition(glm::vec3(0.4f, 0, m_camDistance));
+					//personalCam.SetPosition(glm::vec3(0.4f, 0, m_camDistance));
+					distance = m_camDistance;
 					rayOff = -0.0075f;
 				}
 				else {
-					personalCam.SetPosition(glm::vec3(0.4f, 0, distance));
+					//personalCam.SetPosition(glm::vec3(0.4f, 0, distance));
 					rayOff = -0.0075f * (distance / m_camDistance);
 				}
 				m_drawSelf = (distance > 0.75f);
 			}
 			else {
-				personalCam.SetPosition(glm::vec3(0.4f, 0, m_camDistance));
+				//personalCam.SetPosition(glm::vec3(0.4f, 0, m_camDistance * multiplier * 0.333f));
+				distance = m_camDistance;
 				rayOff = -0.0075f;
 				m_drawSelf = true;
 			}
@@ -424,13 +428,19 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 		else if (m_rot.x < pi * 0.5f) {
 			float t = (m_rot.x / pi - 0.25f) * 4;
 			rayOff = -0.0075f * (1 - t);
-			personalCam.SetPosition(glm::vec3(0.4f * (1 - t), 0, (1 - t) * m_camDistance - t * 0.5f));
+			//personalCam.SetPosition(glm::vec3(0.4f * (1 - t), 0, ((1 - t) * m_camDistance - t * 0.5f) * multiplier * 0.333f));
+			distance = (1 - t) * m_camDistance - t * 0.5f;
+			xPos = 0.4f * (1 - t);
 			m_drawSelf = t < 0.5f;
 		}
 		else {
-			personalCam.SetPosition(glm::vec3(0, 0, 0.5f));
+			//personalCam.SetPosition(glm::vec3(0, 0, 0.5f * multiplier * 0.333f));
+			distance = 0.5f;
+			xPos = 0;
 			m_drawSelf = false;
 		}
+
+		personalCam.SetPosition(glm::vec3(xPos, 0, distance * multiplier * 0.333f));
 	}
 
 	if (m_punched) {
