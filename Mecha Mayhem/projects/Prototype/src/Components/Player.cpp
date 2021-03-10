@@ -351,7 +351,7 @@ void Player::Update(PhysBody& body)
 
 //lol is to avoid overwriting existing function lol
 template<class T>
-T lolSmoothStep(T a, T b, float percent) {
+T fakeSmoothStep(T a, T b, float percent) {
 	percent = glm::smoothstep(0.f, 1.f, percent);
 	return (1 - percent) * a + percent * b;
 }
@@ -362,10 +362,10 @@ void Player::LateUpdate(Transform& body)
 	if (m_respawnTimer > 0) {
 		float percent = m_respawnTimer / m_respawnDelay;
 
-		body.SetPosition(lolSmoothStep(m_skyPos, m_deathPos, percent));
+		body.SetPosition(fakeSmoothStep(m_skyPos, m_deathPos, percent));
 
 		body.SetRotation(glm::angleAxis(
-			-lolSmoothStep(m_deathRot.y, m_rot.y, glm::clamp(percent * 2.f - 0.5f, 0.f, 1.f)),
+			-fakeSmoothStep(m_deathRot.y, m_rot.y, glm::clamp(percent * 2.f - 0.5f, 0.f, 1.f)),
 			BLM::GLMup));
 	}
 }
@@ -377,7 +377,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 	if (m_health == 0) {
 		float percent = m_respawnTimer / m_respawnDelay;
 
-		head.SetRotation(glm::angleAxis(lolSmoothStep(m_deathRot.x, m_rot.x, percent), glm::vec3(1, 0, 0)));
+		head.SetRotation(glm::angleAxis(fakeSmoothStep(m_deathRot.x, m_rot.x, percent), glm::vec3(1, 0, 0)));
 		personalCam.SetPosition(glm::vec3(0, 0, m_camDistance + 1.f - percent));
 		return;
 	}
@@ -403,44 +403,46 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 		btVector3 test = PhysBody::GetRaycast(rayPos, head.GetForwards() * (m_camDistance * 50.f));
 		float distance = m_camDistance;
 		float xPos = 0.4f;
+		m_drawSelf = true;
+
 		if (m_rot.x < pi * 0.25f) {
 			if (test != btVector3()) {
 				distance = glm::length(rayPos - BLM::BTtoGLM(test));
 
 				if (distance > m_camDistance) {
-					//personalCam.SetPosition(glm::vec3(0.4f, 0, m_camDistance));
 					distance = m_camDistance;
 					rayOff = -0.0075f;
+					//personalCam.SetPosition(glm::vec3(0.4f, 0, m_camDistance));
 				}
 				else {
-					//personalCam.SetPosition(glm::vec3(0.4f, 0, distance));
 					rayOff = -0.0075f * (distance / m_camDistance);
+					//personalCam.SetPosition(glm::vec3(0.4f, 0, distance));
 				}
-				m_drawSelf = (distance > 0.75f);
 			}
 			else {
-				//personalCam.SetPosition(glm::vec3(0.4f, 0, m_camDistance * multiplier * 0.333f));
 				distance = m_camDistance;
 				rayOff = -0.0075f;
-				m_drawSelf = true;
+				//personalCam.SetPosition(glm::vec3(0.4f, 0, m_camDistance * multiplier * 0.333f));
 			}
 		}
 		else if (m_rot.x < pi * 0.5f) {
 			float t = (m_rot.x / pi - 0.25f) * 4;
 			rayOff = -0.0075f * (1 - t);
-			//personalCam.SetPosition(glm::vec3(0.4f * (1 - t), 0, ((1 - t) * m_camDistance - t * 0.5f) * multiplier * 0.333f));
 			distance = (1 - t) * m_camDistance - t * 0.5f;
 			xPos = 0.4f * (1 - t);
+			//personalCam.SetPosition(glm::vec3(0.4f * (1 - t), 0, ((1 - t) * m_camDistance - t * 0.5f) * multiplier * 0.333f));
+
 			m_drawSelf = t < 0.5f;
 		}
 		else {
 			//personalCam.SetPosition(glm::vec3(0, 0, 0.5f * multiplier * 0.333f));
 			distance = 0.5f;
 			xPos = 0;
-			m_drawSelf = false;
 		}
-
-		personalCam.SetPosition(glm::vec3(xPos, 0, distance * multiplier * 0.333f));
+		if (!ControllerInput::GetButton(BUTTON::B, m_user))
+			distance *= multiplier * 0.333f;
+		if (m_drawSelf)		m_drawSelf = (distance > 0.75f);
+		personalCam.SetPosition(glm::vec3(xPos, 0, distance));
 	}
 
 	if (m_punched) {

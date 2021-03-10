@@ -77,7 +77,7 @@ void LeaderBoard::Init(int windowWidth, int windowHeight)
 
 //lol is to avoid overwriting existing function lol
 template<class T>
-T lolSmoothStep(T a, T b, float percent) {
+T fakeSmoothStep(T a, T b, float percent) {
 	percent = glm::smoothstep(0.f, 1.f, percent);
 	return (1 - percent) * a + percent * b;
 }
@@ -104,18 +104,18 @@ void LeaderBoard::Update()
 		}
 		if (m_timer < 1) {
 			//press A to continue here
-			ECS::GetComponent<Sprite>(text).SetWidth(lolSmoothStep(-4.f, 0.f, m_timer));
-			pTrans.SetPosition(lolSmoothStep(glm::vec3(1.75f, -0.1f, -3.5f), glm::vec3(3, 0, -12), m_timer));
+			ECS::GetComponent<Sprite>(text).SetWidth(fakeSmoothStep(-4.f, 0.f, m_timer));
+			pTrans.SetPosition(fakeSmoothStep(glm::vec3(1.75f, -0.1f, -3.5f), glm::vec3(3, 0, -12), m_timer));
 		}
 		for (int i(0); i < 4; ++i) {
 			//move the things
 			if (playerScores[i].finalPos != BLM::GLMzero) {
 				if (m_timer < 1) {
-					ECS::GetComponent<Sprite>(playerScores[i].bar).SetWidth(lolSmoothStep(-3.88f, 0.f, m_timer));
+					ECS::GetComponent<Sprite>(playerScores[i].bar).SetWidth(fakeSmoothStep(-3.88f, 0.f, m_timer));
 				}
 				if (m_timer < 2) {
 					//lerp
-					ECS::GetComponent<Transform>(playerScores[i].parent).SetPosition(lolSmoothStep(
+					ECS::GetComponent<Transform>(playerScores[i].parent).SetPosition(fakeSmoothStep(
 						playerScores[i].finalPos, playerScores[i].startingPos, glm::clamp(m_timer - 1, 0.f, 1.f)
 					));
 				}
