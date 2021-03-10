@@ -139,8 +139,8 @@ void LeaderBoard::Update()
 			float ly = ControllerInput::GetLY(players[playerIndexes[i]].user);
 
 			ECS::GetComponent<Transform>(playerScores[i].parent).SetRotation(
-				glm::angleAxis(glm::radians(lx * 2.f), glm::vec3(0, -1, 0))
-				* glm::angleAxis(glm::radians(ly * 2.f), glm::vec3(1, 0, 0)));
+				glm::angleAxis(glm::radians(lx * -2.f), glm::vec3(0, -1, 0))
+				* glm::angleAxis(glm::radians(ly * -2.f), glm::vec3(1, 0, 0)));
 		}
 
 
@@ -210,7 +210,8 @@ Scene* LeaderBoard::Reattach()
 		playerScores[i].finalPos = glm::vec3(-2.5f, 1.5f - i * 1.25f, i * -0.5f - 7.f);
 	}
 
-	ECS::GetComponent<Player>(playerEnt).Init(CONUSER::NONE, LeaderBoard::players[playerIndexes[0]].model);
+	ECS::GetComponent<Player>(playerEnt).Init(CONUSER::NONE,
+		LeaderBoard::players[playerIndexes[0]].model, LeaderBoard::players[playerIndexes[0]].colour);
 
 	return this;
 }

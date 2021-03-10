@@ -66,8 +66,8 @@ public:
 	static void BeginDraw(unsigned amt = 0);
 	static void BeginTempDraw();
 
-	void Draw(const glm::mat4& model);
-	void DrawTemp(const glm::mat4& model);
+	void Draw(const glm::mat4& model, const glm::vec3& colour = glm::vec3(0.f));
+	void DrawTemp(const glm::mat4& model, const glm::vec3& colour = glm::vec3(0.f));
 
 	static void PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour,
 		const std::array<glm::vec3, MAX_LIGHTS>& lightPos, const std::array<glm::vec3, MAX_LIGHTS>& lightColour, const int& lightCount,
@@ -112,6 +112,7 @@ private:
 		float t;
 		VertexArrayObject::sptr vao;
 		glm::mat4 model;
+		glm::vec3 colour;
 		size_t texture = 0;
 	};
 

@@ -388,6 +388,8 @@ void MultiTextObj::Draw(const glm::mat4& model, const glm::mat4& view, const Cam
 	ObjLoader::m_texShader->SetUniform("ambientColour", ambientColour);
 	ObjLoader::m_texShader->SetUniform("ambientStrength", ambientStrength);
 
+	ObjLoader::m_texShader->SetUniform("addColour", glm::vec3(0.f));
+
 	for (int i(0); i < m_models[m_index].vao.size(); ++i) {
 		ObjLoader::m_texShader->SetUniformMatrix("MVP", VP * model);
 		ObjLoader::m_texShader->SetUniformMatrix("transform", model);

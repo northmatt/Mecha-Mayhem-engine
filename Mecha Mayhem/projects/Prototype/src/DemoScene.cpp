@@ -61,11 +61,24 @@ void DemoScene::Update()
 				else {
 					m_paused = true;
 					//add effects or smt
-					if (m_frameEffects.size() == 0) {
+					if (m_frameEffects[0] == nullptr) {
 						m_frameEffects.AddEffect(new PixelEffect());
 						m_frameEffects[0]->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
 						((PixelEffect*)(m_frameEffects[0]))->SetPixelCount(128);
 					}
+				}
+			}
+		}
+
+		if (LeaderBoard::players[i].user != CONUSER::NONE) {
+			if (ControllerInput::ControllerDisconnected(CONUSER(i))) {
+				std::cout << "-Controller " << i + 1 << " disconnected\n";
+				m_paused = true;
+				//add effects or smt
+				if (m_frameEffects[0] == nullptr) {
+					m_frameEffects.AddEffect(new PixelEffect());
+					m_frameEffects[0]->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+					((PixelEffect*)(m_frameEffects[0]))->SetPixelCount(128);
 				}
 			}
 		}
@@ -252,11 +265,11 @@ Scene* DemoScene::Reattach()
 			ECS::AttachComponent<Camera>(cameraEnt[i]).SetFovDegrees(60.f).ResizeWindow(BackEnd::GetWidth(), BackEnd::GetHeight());
 
 		bodyEnt[i] = ECS::CreateEntity();
-		ECS::AttachComponent<PhysBody>(bodyEnt[i]).CreatePlayer(bodyEnt[i], BLM::GLMzero,
+		ECS::AttachComponent<PhysBody>(bodyEnt[i]).CreatePlayer(bodyEnt[i], BLM::GLMQuat,
 			m_colliders.SetSpawnNear(
 				ECS::AttachComponent<Player>(bodyEnt[i]).Init(
-					LeaderBoard::players[temp].user, LeaderBoard::players[temp].model, i).SetRotation(glm::radians(180.f), 0),
-				spawntests[i], 15.f
+					LeaderBoard::players[temp].user, LeaderBoard::players[temp].model, LeaderBoard::players[temp].colour, i
+				).SetRotation(glm::radians(180.f), 0), spawntests[i], 15.f
 			)
 		);
 
