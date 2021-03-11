@@ -24,13 +24,14 @@ public:
 		HEALPACK2//,
 		//SWORD
 	};
-	// Overloads: (name, ammo, damage, cooldown, Range)
+	// Overloads: (name, ammo, damage, cooldown, movementSpeed, Range)
 	struct GunProperties
 	{
 		WEAPON type;
 		short ammoCapacity;
 		short damage;
 		float cooldown;
+		float movementSpeed = 10.f;
 		float maxRange = 2000;
 	};
 	Player() { }
@@ -177,6 +178,8 @@ private:
 	void SwapWeapon();
 	void UseHeal();
 
+	const GunProperties& GetProperties(WEAPON type) const;
+
 	//digit 1 is first digit
 	/*int GetDigit(int number, int digit) {
 		if (digit < 1)	return 0;
@@ -210,6 +213,11 @@ private:
 	static Sprite m_reticle;
 	static Sprite m_scoreBack;
 	static Sprite m_digits[10];
+	static Sprite m_ammoBar;
+	static Sprite m_ammoBarBack;
+	
+	
+
 
 	static Sprite m_heal2;
 	static Sprite m_heal1;

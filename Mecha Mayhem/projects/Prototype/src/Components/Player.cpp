@@ -28,13 +28,14 @@ const glm::mat4 Player::m_modelOffset = glm::mat4(
 	0, 0, 0, 0,
 	0, -1, 0, 0
 );
-//Gun stuff												type,				ammo,	damage, cooldown,	maxRange (default 2000)
-const Player::GunProperties Player::pistol			{	WEAPON::PISTOL,		30,		35,		0.4f,		50.f};
-const Player::GunProperties Player::rifle			{	WEAPON::RIFLE,		7,		80,		3.5f };
-const Player::GunProperties Player::cannon			{	WEAPON::CANNON,		3,		50,		2.f };
-const Player::GunProperties Player::missileLauncher	{	WEAPON::MISSILE,	1,		100,	3.f };
-const Player::GunProperties Player::shotgun			{	WEAPON::SHOTGUN,	10,		30,		2.f,		25.f};
-const Player::GunProperties Player::machineGun		{	WEAPON::MACHINEGUN,	50,		7,		0.1f};
+//Gun stuff												
+														//type,				ammo,	damage, cooldown,	movementSpeed,  maxRange (default 2000)
+const Player::GunProperties Player::pistol			{ WEAPON::PISTOL,		30,		25,		0.4f,		 10.f,				50.f };
+const Player::GunProperties Player::rifle			{ WEAPON::RIFLE,		7,		80,		3.5f,		 10.f };
+const Player::GunProperties Player::cannon			{ WEAPON::CANNON,		3,		50,		2.f,		 10.f };
+const Player::GunProperties Player::missileLauncher	{ WEAPON::MISSILE,		1,		100,	3.f,		 10.f };
+const Player::GunProperties Player::shotgun			{ WEAPON::SHOTGUN,		10,		30,		2.f,		 10.f,		25.f };
+const Player::GunProperties Player::machineGun		{ WEAPON::MACHINEGUN,	50,		7,		0.1f,		 10.f };
 
 float Player::m_camDistance = 5.f;
 float Player::m_dashDistance = 7.5f;
@@ -51,6 +52,9 @@ Sprite Player::m_dashBarBack = {};
 Sprite Player::m_reticle = {};
 Sprite Player::m_scoreBack = {};
 Sprite Player::m_digits[10] = {};
+Sprite Player::m_ammoBar = {};
+Sprite Player::m_ammoBarBack = {};
+
 
 Sprite Player::m_heal2 = {};
 Sprite Player::m_heal1 = {};
@@ -109,32 +113,36 @@ void Player::Init(int width, int height)
 	m_dashBar = { glm::vec4(0.5f, 0.5f, 1, 1.f), 9.15f, 0.5f };
 	m_dashBarBack = { glm::vec4(0, 0, 0, 1.f), 9.15f, 0.5f };
 
+	m_ammoBar = { glm::vec4(1, 1, 1, 1.f), 0.2f, 2.f };
+	m_ammoBarBack = { glm::vec4(0, 0, 0, 1.f), 0.25f, 2.05f };
+	
+
 	m_reticle = { "ui/reticle.png", 1.f, 1.f };
 	m_scoreBack = { "ui/ScoreBox.png", 3.f, 3.223f };
-	for (int i(0); i < 10; ++i)	m_digits[i] = { "num/" + std::to_string(i) +".png", 1.25f, 1.6667f };
+	for (int i(0); i < 10; ++i)	m_digits[i] = { "num/" + std::to_string(i) + ".png", 1.25f, 1.6667f };
 
-	m_heal2				= { "ui/heal2.png", 2.f, 1.70f };
-	m_heal1				= { "ui/heal1.png", 2.f, 1.70f };
-	m_fistIcon			= { "ui/empty.png", 2.f, 1.48f };
-	m_pistolIcon		= { "ui/pistol.png", 2.f, 1.48f };
-	m_rifleIcon			= { "ui/rifle.png", 2.f, 1.48f };
-	m_canonIcon			= { "ui/cannon.png", 2.f, 1.48f };
-	m_machineGunIcon	= { "ui/machineGun.png", 2.f, 1.48f };
-	m_shotgunIcon		= { "ui/shotgun.png", 2.f, 1.48f };
+	m_heal2 = { "ui/heal2.png", 2.f, 1.70f };
+	m_heal1 = { "ui/heal1.png", 2.f, 1.70f };
+	m_fistIcon = { "ui/empty.png", 2.f, 1.48f };
+	m_pistolIcon = { "ui/pistol.png", 2.f, 1.48f };
+	m_rifleIcon = { "ui/rifle.png", 2.f, 1.48f };
+	m_canonIcon = { "ui/cannon.png", 2.f, 1.48f };
+	m_machineGunIcon = { "ui/machineGun.png", 2.f, 1.48f };
+	m_shotgunIcon = { "ui/shotgun.png", 2.f, 1.48f };
 
 	ObjMorphLoader("dummy/idle", true).LoadMeshs("dummy/death", true);
 	ObjMorphLoader("char/idle", true).LoadMeshs("char/walk", true)
 		.LoadMeshs("char/air", true).LoadMeshs("char/death", true)
-			.LoadMeshs("char/punch", true);
+		.LoadMeshs("char/punch", true);
 	ObjMorphLoader("char2/idle", true).LoadMeshs("char2/walk", true)
 		.LoadMeshs("char2/air", true).LoadMeshs("char2/death", true)
-			.LoadMeshs("char2/punch", true);
+		.LoadMeshs("char2/punch", true);
 	ObjMorphLoader("char3/idle", true).LoadMeshs("char3/walk", true)
 		.LoadMeshs("char3/air", true).LoadMeshs("char3/death", true)
-			.LoadMeshs("char3/punch", true);
+		.LoadMeshs("char3/punch", true);
 	ObjMorphLoader("char4/idle", true).LoadMeshs("char4/walk", true)
 		.LoadMeshs("char4/air", true).LoadMeshs("char4/death", true)
-			.LoadMeshs("char4/punch", true);
+		.LoadMeshs("char4/punch", true);
 }
 
 void Player::Unload()
@@ -186,34 +194,47 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 
 		//draw ui
 		float healthPercent = float(m_health) / m_maxHealth;
-		float dashPercent = float(m_dashTimer) / m_dashDelay,
-		x  = 15.7777f,	//1.77 * 10 - 2
-		y  = 7.5f,
-		x2 = 15.7777f,	//1.77 * 10 - 2
-		//x2 = 15.9277f,	//1.77 * 10 - 1.85
-		y2 = 4.5f,		//places weapons below score
-		x3 = 12.7777f,	//x - 3
-		y3 = 7.5f;		//places heal besides score
+		float dashPercent = m_dashTimer / m_dashDelay,
+			x = 15.7777f,	//1.77 * 10 - 2
+			y = 7.5f,
+			x2 = 15.7777f,	//1.77 * 10 - 2
+			//x2 = 15.9277f,	//1.77 * 10 - 1.85
+			y2 = 4.5f,		//places weapons below score
+			x3 = 12.7777f,	//x - 3
+			y3 = 7.5f;		//places heal besides score
+
+			//x4 x2 - 1.5
+		float x4 = 14.2777f;
+
+		float scaleMod = 1.f;
+
 		if (paused && numOfCams > 2) {
-			x  = 12.f;			y  = 5.f;
-			x2 = 15.f;			y2 = 5.f;
-			x3 = 9.f;			y3 = 5.f;
+			//x = 12.f;
+			//x2 = 15.f;
+			//x3 = 9.f;
+			//x4 = 14.f;
+			y = 5.f;
+			y2 = 2.f; // -2.5f
+			y3 = 5.f;
 		}
 		if (numOfCams == 2) {
-			x  = 6.88889f;	//0.88 * 10 - 2
+			x = 6.88889f;	//0.88 * 10 - 2
 			x2 = 6.88889f;	//0.88 * 10 - 2
 			//x2 = 7.03889f;	//0.88 * 10 - 1.85
 			x3 = 3.88889f;	//x - 3
+			x4 = 5.38889f; // x2 - 1.5
 		}
-		if (camNum % 2 == 0) { x = -x;	x2 = -x2;	x3 = -x3; }
+		if (camNum % 2 == 0) { x = -x;	x2 = -x2;	x3 = -x3;	x4 = -x4; }
 		if (camNum < 2 && numOfCams > 2) { y = -y;	y2 = -y2;	y3 = -y3; }
 
 		glm::mat4 VP = m_orthoCam.GetViewProjection();
 
 		glm::mat4 UIMat = BLM::GLMMat;
 
-		if (numOfCams > 2) {
+		if (numOfCams > 2) 
+		{
 			UIMat *= 1.25f;
+			scaleMod = 1.25f;
 		}
 
 		UIMat[3] = glm::vec4(x, y, -9.9f, 1);
@@ -226,17 +247,17 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		else if (m_killCount < 100) {
 			int digit2 = m_killCount / 10;
 
-			UIMat[3][0] = x - 0.65f;
+			UIMat[3][0] = x - 0.65f * scaleMod;
 			m_digits[m_killCount - digit2 * 10].DrawToUI(VP, UIMat, camNum);
 
-			UIMat[3][0] = x + 0.65f;
+			UIMat[3][0] = x + 0.65f * scaleMod;
 			m_digits[digit2].DrawToUI(VP, UIMat, camNum);
 		}
 		else {
-			UIMat[3][0] = x - 0.65f;
+			UIMat[3][0] = x - 0.65f * scaleMod;
 			m_digits[0].DrawToUI(VP, UIMat, camNum);
 
-			UIMat[3][0] = x + 0.65f;
+			UIMat[3][0] = x + 0.65f * scaleMod;
 			m_digits[0].DrawToUI(VP, UIMat, camNum);
 		}
 
@@ -247,12 +268,35 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		UIMat[3] = glm::vec4(x2 + 0.1f, y2 - 0.25f, -10.f, 1);
 		GetIcon(m_currWeapon).DrawToUI(VP, UIMat, camNum);
 
+		if (m_currWeapon != WEAPON::FIST)
+		{
+			float ammoPercentage = (float)m_currWeaponAmmo / GetProperties(m_currWeapon).ammoCapacity;
+
+			UIMat[3] = glm::vec4(x4, y2, -9.9f, 1);
+			m_ammoBarBack.DrawToUI(VP, UIMat, camNum);
+			
+			UIMat[3] = glm::vec4(x4, y2 - (1.f - ammoPercentage) * scaleMod, -10.f, 1);
+			m_ammoBar.SetHeight(2.f * ammoPercentage);
+			m_ammoBar.DrawToUI(VP, UIMat, camNum);
+		}
+
+		//healpack
+		if (m_offhand != OFFHAND::EMPTY) {
+			UIMat[3] = glm::vec4(x3, y3, -10.f, 1);
+			if (m_offhand == OFFHAND::HEALPACK2)	m_heal2.DrawToUI(VP, UIMat, camNum);
+			else if (m_offhand == OFFHAND::HEALPACK1)	m_heal1.DrawToUI(VP, UIMat, camNum);
+		}
+
+		UIMat = BLM::GLMMat;
+
 		UIMat[3] = glm::vec4((1 - healthPercent) * 7.475f, -8.5f, -9.9f, 1);
-		if (m_damageCounter) {
+		if (m_damageCounter) 
+		{
 			m_healthBarDamaged.SetWidth(14.95f * healthPercent);
 			m_healthBarDamaged.DrawToUI(VP, UIMat, camNum);
 		}
-		else {
+		else 
+		{
 			m_healthBar.SetWidth(14.95f * healthPercent);
 			m_healthBar.DrawToUI(VP, UIMat, camNum);
 		}
@@ -272,16 +316,9 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		UIMat[3] = glm::vec4(0, -8.5f, -10.f, 1);
 		m_healthBarOutline.DrawToUI(VP, UIMat, camNum);
 
-		UIMat[3] = glm::vec4(0, -7.25f, -10.f, 1),
+		UIMat[3] = glm::vec4(0, -7.25f, -10.f, 1);
 		m_dashBarOutline.DrawToUI(VP, UIMat, camNum);
 
-
-		//healpack
-		if (m_offhand != OFFHAND::EMPTY) {
-			UIMat[3] = glm::vec4(x3, y3, -10.f, 1);
-			if (m_offhand == OFFHAND::HEALPACK2)	m_heal2.DrawToUI(VP, UIMat, camNum);
-			else if (m_offhand == OFFHAND::HEALPACK1)	m_heal1.DrawToUI(VP, UIMat, camNum);
-		}
 
 		if (!paused && IsAlive()) {
 			UIMat[3] = glm::vec4(0, 0, -10, 1);
@@ -302,6 +339,7 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 	if (m_respawnTimer > 0) {
 		m_heliDrone.DrawTemp(model - m_modelOffset);
 	}
+
 }
 
 void Player::Update(PhysBody& body)
@@ -327,7 +365,7 @@ void Player::Update(PhysBody& body)
 
 			//store position of death
 			m_deathPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
-			m_deathRot = glm::vec2(-pi,  m_rot.y + glm::radians(rand() % 360 - 179.5f));
+			m_deathRot = glm::vec2(-pi, m_rot.y + glm::radians(rand() % 360 - 179.5f));
 
 			//stop falling
 			body.SetGravity(BLM::BTzero);
@@ -422,7 +460,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 		else if (m_rot.x < -pi)		m_rot.x = -pi;
 		body.SetRotation(glm::angleAxis(-m_rot.y, BLM::GLMup));
 		head.SetRotation(glm::angleAxis(m_rot.x, glm::vec3(1, 0, 0)));
-	
+
 
 		//camera distance checks
 
@@ -515,7 +553,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 						BlendTo(m_charModelIndex + "/walk");
 					if (m_charModel.Getp0() == 0 || m_charModel.Getp0() == 4) {
 						if (!m_stepped) {
-							
+
 							//m_walk[rand() % 5].play();
 							AudioEngine::Instance().GetEvent("step").Restart();
 
@@ -614,7 +652,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 			}
 			else m_dropTimer = 0.f;
 		}
-		if (m_secWeapon != WEAPON::FIST) if(ControllerInput::GetButtonDown(BUTTON::Y, m_user)) {
+		if (m_secWeapon != WEAPON::FIST) if (ControllerInput::GetButtonDown(BUTTON::Y, m_user)) {
 			SwapWeapon();
 		}
 		if (m_weaponCooldown == 0) if (ControllerInput::GetRTRaw(m_user)) {
@@ -660,7 +698,7 @@ bool Player::groundTest(float yVelo, PhysBody& body)
 			}
 		}
 	}
-	
+
 	//m_grounded = grounded;
 	if (grounded) {
 		if (!m_grounded) {
@@ -680,62 +718,28 @@ bool Player::groundTest(float yVelo, PhysBody& body)
 
 void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 {
-	switch (m_currWeapon) {
-	case WEAPON::FIST:
+	if (m_currWeapon == WEAPON::FIST)
+	{
 		if (m_grounded)
 			body.SetVelocity(BLM::BTtoGLM(
 				Melee(BLM::BTtoGLM(body.GetBody()->getWorldTransform().getOrigin()) - head.GetForwards())
 			));
 		return;
-	case WEAPON::PISTOL:
-	{
-		m_weaponCooldown = pistol.cooldown;
-
-		LaserGun(offset, head, pistol.damage, pistol.maxRange, pistol.type);
-		break;
-	}
-	case WEAPON::RIFLE:
-	{
-		m_weaponCooldown = rifle.cooldown;
-
-		LaserGun(offset, head, rifle.damage, rifle.maxRange, rifle.type);
-		break;
-	}
-	case WEAPON::SHOTGUN:
-	{
-		m_weaponCooldown = shotgun.cooldown;
-
-		//lots of shots lol
-		LaserGun(offset, head, shotgun.damage, shotgun.maxRange, shotgun.type);
-		LaserGun(offset, head, shotgun.damage, shotgun.maxRange, shotgun.type);
-		LaserGun(offset, head, shotgun.damage, shotgun.maxRange, shotgun.type);
-		LaserGun(offset, head, shotgun.damage, shotgun.maxRange, shotgun.type);
-		LaserGun(offset, head, shotgun.damage, shotgun.maxRange, shotgun.type);
-		break;
-	}
-	case WEAPON::MACHINEGUN:
-	{
-		m_weaponCooldown = machineGun.cooldown;
-
-		LaserGun(offset, head, machineGun.damage, machineGun.maxRange, machineGun.type);
-		break;
-	}
-	case WEAPON::CANNON:
-	{
-		m_weaponCooldown = cannon.cooldown;
-
-		LaserGun(offset, head, cannon.damage, cannon.maxRange, cannon.type);
-		break;
-	}
-	default:	
-	//case WEAPON::PISTOL:
-	{
-		m_weaponCooldown = 1.f;
-		LaserGun(offset, head, 3, 2000.f, WEAPON::PISTOL);
-		break;
 	}
 
+	GunProperties selectedGun = GetProperties(m_currWeapon);
+	m_weaponCooldown = selectedGun.cooldown;
+	LaserGun(offset, head, selectedGun.damage, selectedGun.maxRange, m_currWeapon);
+
+	//This branch *should* not be too bad since we are comparing 2 const variables.
+	if (selectedGun.type == WEAPON::SHOTGUN)
+	{
+		LaserGun(offset, head, selectedGun.damage, selectedGun.maxRange, m_currWeapon);
+		LaserGun(offset, head, selectedGun.damage, selectedGun.maxRange, m_currWeapon);
+		LaserGun(offset, head, selectedGun.damage, selectedGun.maxRange, m_currWeapon);
+		LaserGun(offset, head, selectedGun.damage, selectedGun.maxRange, m_currWeapon);
 	}
+
 	//deal with ammo here
 	if (--m_currWeaponAmmo <= 0) {
 		SwapWeapon();
@@ -758,12 +762,12 @@ void Player::LaserGun(float offset, Transform& head, short damage, float distanc
 		//shotgun spread
 		offsetQuat = glm::angleAxis(glm::radians(rand() % 15 - 7.f), glm::normalize(glm::vec3(rand() % 21 - 10.f, rand() % 21 - 10.f, 0)));
 	}
-	glm::vec3 rayPos = 
+	glm::vec3 rayPos =
 		head.GetGlobalPosition() + glm::vec3(m_gunOffset * glm::rotate(BLM::GLMMat, m_rot.y, BLM::GLMup));
 
 	RayResult p = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos),
 		BLM::GLMtoBT(glm::rotate(offsetQuat, -head.GetForwards()) * distance * 100.f));
-	
+
 	if (p.hasHit()) if (p.m_closestHitFraction <= 0.01f)
 	{
 		if (type == WEAPON::PISTOL)
@@ -797,7 +801,7 @@ void Player::SwapWeapon()
 {
 	//m_swapWeapon.play();
 	AudioEngine::Instance().GetEvent("reload").Restart();
-	
+
 	WEAPON tempWeap = m_currWeapon;
 	m_currWeapon = m_secWeapon;
 
@@ -806,6 +810,10 @@ void Player::SwapWeapon()
 
 	if (tempAmmo <= 0) { m_secWeapon = WEAPON::FIST; m_secWeaponAmmo = 0; }
 	else { m_secWeapon = tempWeap; m_secWeaponAmmo = tempAmmo; }
+
+	//Changing speed of player to gun speed
+	GunProperties selectedGun = GetProperties(m_currWeapon);
+	m_speed = selectedGun.movementSpeed;
 
 	m_weaponCooldown += 1.f;
 	if (m_weaponCooldown > 3.f)
@@ -838,6 +846,19 @@ void Player::UseHeal()
 	}
 }
 
+const Player::GunProperties& Player::GetProperties(WEAPON type) const
+{
+	switch (type) {
+	case WEAPON::PISTOL: return pistol; break;
+	case WEAPON::RIFLE: return rifle; break;
+	case WEAPON::SHOTGUN: return shotgun; break;
+	case WEAPON::MACHINEGUN: return machineGun; break;
+	case WEAPON::CANNON: return cannon; break;
+	default: return pistol; break;
+	}
+
+}
+
 btVector3 Player::Melee(const glm::vec3& pos)
 {
 	m_punched = true;
@@ -846,13 +867,13 @@ btVector3 Player::Melee(const glm::vec3& pos)
 
 	ECS::GetRegistry()->view<Player, PhysBody>().each(
 		[&](Player& p, PhysBody& body) {
-			//if (p.m_user != m_user) if (body.TestAABB(pos, 0.5f)) {
-			if (p.m_camPos != m_camPos) if (body.TestAABB(pos, 0.5f)) {
-				if (p.TakeDamage(m_meleeDmg))
-					++m_killCount;
-				hit = true;
-			}
+		//if (p.m_user != m_user) if (body.TestAABB(pos, 0.5f)) {
+		if (p.m_camPos != m_camPos) if (body.TestAABB(pos, 0.5f)) {
+			if (p.TakeDamage(m_meleeDmg))
+				++m_killCount;
+			hit = true;
 		}
+	}
 	);
 
 	//if (hit)	m_punch.play();
@@ -866,49 +887,22 @@ btVector3 Player::Melee(const glm::vec3& pos)
 
 bool Player::PickUpWeapon(WEAPON pickup)
 {
+	GunProperties selectedGun = GetProperties(pickup);
 	if (m_currWeapon == WEAPON::FIST) {
 		m_currWeapon = pickup;
-		//based on weapon, add ammo
-		switch (pickup)
-		{
-		case WEAPON::PISTOL:		m_currWeaponAmmo = pistol.ammoCapacity;		break;
-		case WEAPON::RIFLE:			m_currWeaponAmmo = rifle.ammoCapacity;		break;
-		case WEAPON::SHOTGUN:		m_currWeaponAmmo = shotgun.ammoCapacity;	break;
-		case WEAPON::MACHINEGUN:	m_currWeaponAmmo = machineGun.ammoCapacity;	break;
-		case WEAPON::CANNON:		m_currWeaponAmmo = cannon.ammoCapacity;		break;
-		default:					m_currWeaponAmmo = 20;						break;
-		}
-
+		m_currWeaponAmmo = selectedGun.ammoCapacity;
+		m_speed = selectedGun.movementSpeed;
 		//m_swapWeapon.play();
 		AudioEngine::Instance().GetEvent("pickup").Restart();
 
 		return true;
 	}
-	if (m_secWeapon == WEAPON::FIST) { 
+	if (m_secWeapon == WEAPON::FIST) {
 		if (m_currWeapon == pickup)
 			return false;
 		m_secWeapon = pickup;
-		switch (pickup)
-		{
-		case WEAPON::PISTOL:
-			m_secWeaponAmmo = pistol.ammoCapacity;
-			break;
-		case WEAPON::RIFLE:
-			m_secWeaponAmmo = rifle.ammoCapacity;
-			break;
-		case WEAPON::SHOTGUN:
-			m_secWeaponAmmo = shotgun.ammoCapacity;
-			break;
-		case WEAPON::MACHINEGUN:
-			m_secWeaponAmmo = machineGun.ammoCapacity;
-			break;
-		case WEAPON::CANNON:
-			m_secWeaponAmmo = cannon.ammoCapacity;
-			break;
-		default:
-			m_secWeaponAmmo = 20;
-			break;
-		}
+		m_secWeaponAmmo = selectedGun.ammoCapacity;
+		m_speed = selectedGun.movementSpeed;
 
 		AudioEngine::Instance().GetEvent("pickup").Restart();
 
@@ -939,8 +933,8 @@ ObjLoader& Player::GetWeaponModel(WEAPON choice)
 	case WEAPON::SHOTGUN:		return m_shotgun;
 	case WEAPON::SWORD:			return m_sword;
 
-	//case WEAPON::PISTOL:		return m_pistol;
-		//WEAPON::FIST is included
+		//case WEAPON::PISTOL:		return m_pistol;
+			//WEAPON::FIST is included
 	default:	return m_pistol;
 	}
 }
@@ -960,7 +954,7 @@ ObjMorphLoader& Player::GetOffhandModel(OFFHAND choice)
 Sprite& Player::GetIcon(WEAPON choice)
 {
 	switch (choice) {
-	//fist will be here
+		//fist will be here
 	default:					return m_fistIcon;
 	case WEAPON::PISTOL:		return m_pistolIcon;
 	case WEAPON::RIFLE:			return m_rifleIcon;
