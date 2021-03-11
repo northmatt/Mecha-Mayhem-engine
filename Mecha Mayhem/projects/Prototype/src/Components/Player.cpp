@@ -298,7 +298,7 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 	if (!m_punched && m_currWeapon != WEAPON::FIST) {
 		GetWeaponModel(m_currWeapon).DrawTemp(model * m_gunOffsetMat);
 	}
-	m_charModel.DrawTemp(tempModel + m_modelOffset, m_colour);
+	m_charModel.DrawTemp(tempModel + m_modelOffset, m_colour - glm::vec3(m_damageCounter));
 	if (m_respawnTimer > 0) {
 		m_heliDrone.DrawTemp(model - m_modelOffset);
 	}
@@ -774,15 +774,19 @@ void Player::LaserGun(float offset, Transform& head, short damage, float distanc
 		{
 			damage *= HalfCurve(p.m_closestHitFraction * 100.f);
 		}
+
+		glm::vec3 colour = BLM::GLMzero;
+
 		entt::entity playerIdTest = p.m_collisionObject->getUserIndex();
 		if (ECS::Exists(playerIdTest)) {
 			if (ECS::HasComponent<Player>(playerIdTest)) {
 				if (ECS::GetComponent<Player>(playerIdTest).TakeDamage(damage))
 					++m_killCount;
+				colour = glm::vec3(-2, -1, 1);
 			}
 		}
 		Rendering::effects->ShootLaser(head.GetGlobalRotation() * offsetQuat, rayPos,
-			glm::length(BLM::BTtoGLM(p.m_hitPointWorld) - rayPos));
+			glm::length(BLM::BTtoGLM(p.m_hitPointWorld) - rayPos), colour);
 	}
 	else {
 		Rendering::effects->ShootLaser(head.GetGlobalRotation() * offsetQuat, rayPos, distance);

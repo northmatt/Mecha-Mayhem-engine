@@ -594,20 +594,20 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 		m_shader->SetUniform("ambientColour", ambientColour);
 		m_shader->SetUniform("ambientStrength", ambientStrength);
 
-		for (int i(0); i < m_defaultQueue.size(); ++i) {
-			m_shader->SetUniformMatrix("MVP", VP * m_defaultQueue[i].model);
-			m_shader->SetUniformMatrix("transform", m_defaultQueue[i].model);
-			m_shader->SetUniform("addColour", m_defaultQueue[i].colour);
-
-			m_models[m_defaultQueue[i].modelIndex].vao->Render();
-		}
-
 		for (int i(0); i < m_defaultTempQueue.size(); ++i) {
 			m_shader->SetUniformMatrix("MVP", VP * m_defaultTempQueue[i].model);
 			m_shader->SetUniformMatrix("transform", m_defaultTempQueue[i].model);
 			m_shader->SetUniform("addColour", m_defaultTempQueue[i].colour);
 
 			m_models[m_defaultTempQueue[i].modelIndex].vao->Render();
+		}
+
+		for (int i(0); i < m_defaultQueue.size(); ++i) {
+			m_shader->SetUniformMatrix("MVP", VP * m_defaultQueue[i].model);
+			m_shader->SetUniformMatrix("transform", m_defaultQueue[i].model);
+			m_shader->SetUniform("addColour", m_defaultQueue[i].colour);
+
+			m_models[m_defaultQueue[i].modelIndex].vao->Render();
 		}
 
 		Shader::UnBind();
@@ -625,6 +625,16 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 		m_texShader->SetUniform("ambientColour", ambientColour);
 		m_texShader->SetUniform("ambientStrength", ambientStrength);
 
+		for (int i(0); i < m_texTempQueue.size(); ++i) {
+			m_texShader->SetUniformMatrix("MVP", VP * m_texTempQueue[i].model);
+			m_texShader->SetUniformMatrix("transform", m_texTempQueue[i].model);
+			m_texShader->SetUniform("addColour", m_texTempQueue[i].colour);
+
+			Sprite::m_textures[m_models[m_texTempQueue[i].modelIndex].texture].texture->Bind(0);
+
+			m_models[m_texTempQueue[i].modelIndex].vao->Render();
+		}
+
 		for (int i(0); i < m_texQueue.size(); ++i) {
 			m_texShader->SetUniformMatrix("MVP", VP * m_texQueue[i].model);
 			m_texShader->SetUniformMatrix("transform", m_texQueue[i].model);
@@ -635,15 +645,6 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 			m_models[m_texQueue[i].modelIndex].vao->Render();
 		}
 
-		for (int i(0); i < m_texTempQueue.size(); ++i) {
-			m_texShader->SetUniformMatrix("MVP", VP * m_texTempQueue[i].model);
-			m_texShader->SetUniformMatrix("transform", m_texTempQueue[i].model);
-			m_texShader->SetUniform("addColour", m_texTempQueue[i].colour);
-
-			Sprite::m_textures[m_models[m_texTempQueue[i].modelIndex].texture].texture->Bind(0);
-
-			m_models[m_texTempQueue[i].modelIndex].vao->Render();
-		}
 		Shader::UnBind();
 	}
 
@@ -660,6 +661,14 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 		m_matShader->SetUniform("ambientColour", ambientColour);
 		m_matShader->SetUniform("ambientStrength", ambientStrength);
 
+		for (int i(0); i < m_matTempQueue.size(); ++i) {
+			m_matShader->SetUniformMatrix("MVP", VP * m_matTempQueue[i].model);
+			m_matShader->SetUniformMatrix("transform", m_matTempQueue[i].model);
+			m_matShader->SetUniform("addColour", m_matTempQueue[i].colour);
+
+			m_models[m_matTempQueue[i].modelIndex].vao->Render();
+		}
+
 		for (int i(0); i < m_matQueue.size(); ++i) {
 			m_matShader->SetUniformMatrix("MVP", VP * m_matQueue[i].model);
 			m_matShader->SetUniformMatrix("transform", m_matQueue[i].model);
@@ -668,13 +677,6 @@ void ObjLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const g
 			m_models[m_matQueue[i].modelIndex].vao->Render();
 		}
 
-		for (int i(0); i < m_matTempQueue.size(); ++i) {
-			m_matShader->SetUniformMatrix("MVP", VP * m_matTempQueue[i].model);
-			m_matShader->SetUniformMatrix("transform", m_matTempQueue[i].model);
-			m_matShader->SetUniform("addColour", m_matTempQueue[i].colour);
-
-			m_models[m_matTempQueue[i].modelIndex].vao->Render();
-		}
 		Shader::UnBind();
 	}
 }
