@@ -16,6 +16,8 @@ uniform float ambientLightStrength;
 uniform vec3  ambientColour;
 uniform float ambientStrength;
 
+uniform vec3 addColour;
+
 uniform sampler2D s_texture;
 
 out vec4 frag_color;
@@ -38,5 +40,5 @@ void main() {
 	}
 
 	vec4 textureColour = texture(s_texture, inUV);
-	frag_color = vec4((ambientColour * ambientStrength + total) * inColour * textureColour.rgb, textureColour.a * inSpec.z);
+	frag_color = vec4((ambientColour * ambientStrength + total) * (inColour * textureColour.rgb + addColour), textureColour.a * inSpec.z);
 }

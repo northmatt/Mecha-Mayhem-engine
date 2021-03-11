@@ -298,7 +298,7 @@ Scene* Tutorial::Reattach() {
 		bodyEnt[i] = ECS::CreateEntity();
 		ECS::AttachComponent<PhysBody>(bodyEnt[i]).CreatePlayer(bodyEnt[i], BLM::GLMQuat, glm::vec3(0, 1.5f, 0));
 		ECS::AttachComponent<Player>(bodyEnt[i]).Init(
-			LeaderBoard::players[temp].user, LeaderBoard::players[temp].model, i
+			LeaderBoard::players[temp].user, LeaderBoard::players[temp].model, LeaderBoard::players[temp].colour, i
 		).SetRotation(glm::radians(180.f), 0).SetSpawn(glm::vec3(0, 1.5f, 0));
 
 		Head[i] = ECS::CreateEntity();

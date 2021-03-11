@@ -22,6 +22,7 @@ public:
 		CONUSER user = CONUSER::NONE;
 		int model = 0;
 		int score = 0;
+		glm::vec3 colour = BLM::GLMzero;
 	};
 
 	static PlayerChoice players[4];

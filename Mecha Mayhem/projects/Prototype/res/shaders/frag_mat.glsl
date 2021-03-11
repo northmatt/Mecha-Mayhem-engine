@@ -15,6 +15,8 @@ uniform float ambientLightStrength;
 uniform vec3  ambientColour;
 uniform float ambientStrength;
 
+uniform vec3 addColour;
+
 out vec4 frag_color;
 
 void main() {
@@ -34,5 +36,5 @@ void main() {
 		total += (ambientLightStrength + max(dot(N, lightDir), 0.0) + inSpec.x * pow(max(dot(N, normalize(camDir + lightDir)), 0.0), inSpec.y)) / lightDistSq * lightsColour[i];
 	}
 
-	frag_color = vec4((ambientColour * ambientStrength + total) * inColour, inSpec.z);
+	frag_color = vec4((ambientColour * ambientStrength + total) * (inColour + addColour), inSpec.z);
 }

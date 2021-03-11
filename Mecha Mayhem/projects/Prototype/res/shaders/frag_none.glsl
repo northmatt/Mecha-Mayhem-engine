@@ -14,6 +14,8 @@ uniform float ambientLightStrength;
 uniform vec3  ambientColour;
 uniform float ambientStrength;
 
+uniform vec3 addColour;
+
 uniform float specularStrength;
 uniform float shininess;
 
@@ -47,7 +49,7 @@ void main() {
 		total += (ambientLightStrength + max(dot(N, lightDir), 0.0) + specularStrength * pow(max(dot(N, normalize(camDir + lightDir)), 0.0), shininess)) / lightDistSq * lightsColour[i];
 	}
 
-	vec3 result = (ambientColour * ambientStrength + total) * colour;
+	vec3 result = (ambientColour * ambientStrength + total) * (colour + addColour);
 
 	frag_color = vec4(result, 1);
 }

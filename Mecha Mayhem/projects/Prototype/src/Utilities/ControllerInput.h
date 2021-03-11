@@ -55,6 +55,11 @@ public:
 	//update the stored list
 	static void ControllerUpdate();
 
+	//returns true the moment a controller is disconnected
+	static bool ControllerDisconnected(CONUSER controllerIndex);
+	//returns true the moment a controller is connected
+	static bool ControllerConnected(CONUSER controllerIndex);
+
 	static bool GetButton(BUTTON input, CONUSER controllerIndex);
 	static bool GetButtonDown(BUTTON input, CONUSER controllerIndex);
 	static bool GetButtonUp(BUTTON input, CONUSER controllerIndex);
@@ -106,6 +111,7 @@ private:
 	{
 		XINPUT_GAMEPAD gamepad;
 		bool connected = false;
+		bool lastConnected = false;
 		//fills with 0 so false
 		//a/b/x/y
 		bool faceButtons[4] = {};

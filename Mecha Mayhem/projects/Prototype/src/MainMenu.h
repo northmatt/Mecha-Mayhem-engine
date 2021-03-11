@@ -39,12 +39,14 @@ public:
 
 private:
 	void FixDigits(int number);
+	void FixColourUp(int currIndex);
+	void FixColourDown(int currIndex);
 
 	bool m_exit = false;
 	bool playerSwapped[4] = {};
 
 	int m_scenePos = 0;
-	const int maxSelect = 4;
+	static const int maxSelect = 4;
 
 	float zoomTime = 1;
 	float m_exitHoldTimer = 0;
@@ -69,6 +71,20 @@ private:
 		entt::null,
 		entt::null,
 		entt::null
+	};
+
+	int colourIndex[4] = {
+		0, 0, 0, 0
+	};
+
+	static const int mm_colourCount = 5;
+
+	glm::vec3 colourChoices[mm_colourCount] = {
+		glm::vec3(0.f, 0.f, 0.f),
+		glm::vec3(1.f, -0.1f, -0.1f),
+		glm::vec3(-0.1f, -0.1f, 0.75f),
+		glm::vec3(0.25f, 0.25f, 0.f),
+		glm::vec3(0.5f, 0.1f, 0.15f)
 	};
 };
 

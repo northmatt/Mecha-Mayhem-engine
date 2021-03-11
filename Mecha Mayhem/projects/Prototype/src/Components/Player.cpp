@@ -19,7 +19,7 @@ const glm::mat4 Player::m_swordOffsetMat = glm::mat4(
 	0, 0, 1, 0,
 	glm::sin(glm::radians(140.f)), glm::cos(glm::radians(140.f)), 0, 0,
 	-glm::cos(glm::radians(140.f)), glm::sin(glm::radians(140.f)), 0, 0,
-	-0.2f, 0.5f, 0.4f, 1
+	-0.2f, 0.4f, 0.4f, 1
 );
 
 const glm::mat4 Player::m_modelOffset = glm::mat4(
@@ -43,6 +43,7 @@ glm::vec3 Player::m_skyPos = glm::vec3(0, 50, 0);
 Camera Player::m_orthoCam = {};
 Sprite Player::m_healthBarOutline = {};
 Sprite Player::m_healthBar = {};
+Sprite Player::m_healthBarDamaged = {};
 Sprite Player::m_healthBarBack = {};
 Sprite Player::m_dashBarOutline = {};
 Sprite Player::m_dashBar = {};
@@ -100,11 +101,12 @@ void Player::Init(int width, int height)
 	m_punch = { "MetalFloor/3StepNoise.mp3", "sfx" };*/
 
 	m_healthBarOutline = { "ui/healthbar.png", 15.96f, 1.5f };
-	m_healthBar = { glm::vec4(0, 0, 1, 1.f), 14.95f, 0.9f };
+	m_healthBar = { glm::vec4(1, 0, 0, 1.f), 14.95f, 0.9f };
+	m_healthBarDamaged = { glm::vec4(1, 1, 1, 1.f), 14.95f, 0.9f };
 	m_healthBarBack = { glm::vec4(0, 0, 0, 1.f), 14.95f, 0.9f };
 
 	m_dashBarOutline = { "ui/energybar.png", 10.38f, 1.5f };
-	m_dashBar = { glm::vec4(1, 1, 1, 1.f), 9.15f, 0.5f };
+	m_dashBar = { glm::vec4(0.5f, 0.5f, 1, 1.f), 9.15f, 0.5f };
 	m_dashBarBack = { glm::vec4(0, 0, 0, 1.f), 9.15f, 0.5f };
 
 	m_reticle = { "ui/reticle.png", 1.f, 1.f };
@@ -152,10 +154,11 @@ void Player::SetUIAspect(int width, int height)
 	m_orthoCam.ResizeWindow(width, height);
 }
 
-Player& Player::Init(CONUSER user, int characterModel, short camPos)
+Player& Player::Init(CONUSER user, int characterModel, const glm::vec3& colour, short camPos)
 {
 	m_user = user;
 	m_camPos = camPos;
+	m_colour = colour;
 
 	switch (characterModel) {
 		//dummy (case 0 is also here)
@@ -175,13 +178,19 @@ Player& Player::Init(CONUSER user, int characterModel, short camPos)
 
 void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool paused)
 {
+	glm::mat4 tempModel = model;
+
 	if (m_camPos == camNum) {
+		if (m_charModelIndex == "char4")
+			tempModel = glm::scale(model, glm::vec3(0.75f, 1.f, 0.75f));
+
 		//draw ui
 		float healthPercent = float(m_health) / m_maxHealth;
 		float dashPercent = float(m_dashTimer) / m_dashDelay,
 		x  = 15.7777f,	//1.77 * 10 - 2
 		y  = 7.5f,
-		x2 = 15.9277f,	//1.77 * 10 - 1.85
+		x2 = 15.7777f,	//1.77 * 10 - 2
+		//x2 = 15.9277f,	//1.77 * 10 - 1.85
 		y2 = 4.5f,		//places weapons below score
 		x3 = 12.7777f,	//x - 3
 		y3 = 7.5f;		//places heal besides score
@@ -192,18 +201,20 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		}
 		if (numOfCams == 2) {
 			x  = 6.88889f;	//0.88 * 10 - 2
-			x2 = 7.03889f;	//0.88 * 10 - 1.85
+			x2 = 6.88889f;	//0.88 * 10 - 2
+			//x2 = 7.03889f;	//0.88 * 10 - 1.85
 			x3 = 3.88889f;	//x - 3
 		}
 		if (camNum % 2 == 0) { x = -x;	x2 = -x2;	x3 = -x3; }
 		if (camNum < 2 && numOfCams > 2) { y = -y;	y2 = -y2;	y3 = -y3; }
 
-		m_healthBar.SetWidth(14.95f * healthPercent);
-		m_dashBar.SetWidth(9.15f * (1 - dashPercent));
-
 		glm::mat4 VP = m_orthoCam.GetViewProjection();
 
 		glm::mat4 UIMat = BLM::GLMMat;
+
+		if (numOfCams > 2) {
+			UIMat *= 1.25f;
+		}
 
 		UIMat[3] = glm::vec4(x, y, -9.9f, 1);
 		m_scoreBack.DrawToUI(VP, UIMat, camNum);
@@ -230,19 +241,27 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		}
 
 
-		UIMat[3] = glm::vec4(x2 - 0.25f, y2 + 0.25f, -9.9f, 1);
+		UIMat[3] = glm::vec4(x2 - 0.4f, y2 + 0.25f, -9.9f, 1);
 		GetIcon(m_secWeapon).DrawToUI(VP, UIMat, camNum);
 
-		UIMat[3] = glm::vec4(x2 + 0.25f, y2 - 0.25f, -10.f, 1);
+		UIMat[3] = glm::vec4(x2 + 0.1f, y2 - 0.25f, -10.f, 1);
 		GetIcon(m_currWeapon).DrawToUI(VP, UIMat, camNum);
 
 		UIMat[3] = glm::vec4((1 - healthPercent) * 7.475f, -8.5f, -9.9f, 1);
-		m_healthBar.DrawToUI(VP, UIMat, camNum);
+		if (m_damageCounter) {
+			m_healthBarDamaged.SetWidth(14.95f * healthPercent);
+			m_healthBarDamaged.DrawToUI(VP, UIMat, camNum);
+		}
+		else {
+			m_healthBar.SetWidth(14.95f * healthPercent);
+			m_healthBar.DrawToUI(VP, UIMat, camNum);
+		}
 
 		UIMat[3] = glm::vec4(0, -8.5f, -9.8f, 1);
 		m_healthBarBack.DrawToUI(VP, UIMat, camNum);
 
 		UIMat[3] = glm::vec4(dashPercent * 4.575f, -7.25f, -9.9f, 1);
+		m_dashBar.SetWidth(9.15f * (1 - dashPercent));
 		m_dashBar.DrawToUI(VP, UIMat, camNum);
 
 		UIMat[3] = glm::vec4(0, -7.25f, -9.8f, 1);
@@ -276,10 +295,10 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		if (m_punched)		m_sword.DrawTemp(model * m_gunOffsetMat);
 		else		m_sword.DrawTemp(model * m_swordOffsetMat);
 	}
-	else if (m_currWeapon != WEAPON::FIST) {
+	if (!m_punched && m_currWeapon != WEAPON::FIST) {
 		GetWeaponModel(m_currWeapon).DrawTemp(model * m_gunOffsetMat);
 	}
-	m_charModel.DrawTemp(model + m_modelOffset);
+	m_charModel.DrawTemp(tempModel + m_modelOffset, m_colour - glm::vec3(m_damageCounter));
 	if (m_respawnTimer > 0) {
 		m_heliDrone.DrawTemp(model - m_modelOffset);
 	}
@@ -328,7 +347,9 @@ void Player::Update(PhysBody& body)
 			//reset stats
 			m_health = m_maxHealth;
 			m_dashTimer = 0.f;
+			m_damageCounter = 0.f;
 			m_weaponCooldown = 0.f;
+			m_punched = false;
 			body.SetPosition(m_spawnPos);
 			body.SetGravity(m_gravity);
 			body.SetAwake();
@@ -347,11 +368,17 @@ void Player::Update(PhysBody& body)
 		if (m_weaponCooldown <= 0)
 			m_weaponCooldown = 0;
 	}
+
+	if (m_damageCounter > 0) {
+		m_damageCounter -= Time::dt;
+		if (m_damageCounter <= 0)
+			m_damageCounter = 0;
+	}
 }
 
 //lol is to avoid overwriting existing function lol
 template<class T>
-T lolSmoothStep(T a, T b, float percent) {
+T fakeSmoothStep(T a, T b, float percent) {
 	percent = glm::smoothstep(0.f, 1.f, percent);
 	return (1 - percent) * a + percent * b;
 }
@@ -362,10 +389,10 @@ void Player::LateUpdate(Transform& body)
 	if (m_respawnTimer > 0) {
 		float percent = m_respawnTimer / m_respawnDelay;
 
-		body.SetPosition(lolSmoothStep(m_skyPos, m_deathPos, percent));
+		body.SetPosition(fakeSmoothStep(m_skyPos, m_deathPos, percent));
 
 		body.SetRotation(glm::angleAxis(
-			-lolSmoothStep(m_deathRot.y, m_rot.y, glm::clamp(percent * 2.f - 0.5f, 0.f, 1.f)),
+			-fakeSmoothStep(m_deathRot.y, m_rot.y, glm::clamp(percent * 2.f - 0.5f, 0.f, 1.f)),
 			BLM::GLMup));
 	}
 }
@@ -377,7 +404,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 	if (m_health == 0) {
 		float percent = m_respawnTimer / m_respawnDelay;
 
-		head.SetRotation(glm::angleAxis(lolSmoothStep(m_deathRot.x, m_rot.x, percent), glm::vec3(1, 0, 0)));
+		head.SetRotation(glm::angleAxis(fakeSmoothStep(m_deathRot.x, m_rot.x, percent), glm::vec3(1, 0, 0)));
 		personalCam.SetPosition(glm::vec3(0, 0, m_camDistance + 1.f - percent));
 		return;
 	}
@@ -387,7 +414,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 	//Camera Rotation (above punch for user experience)
 	{
 		float multiplier = 2.f * (1 - ControllerInput::GetLT(m_user)) + 1.f;
-		m_rot.x += ControllerInput::GetRY(m_user) * multiplier * Time::dt;
+		m_rot.x += ControllerInput::GetRY(m_user) * multiplier * 0.75f * Time::dt;
 		m_rot.y += ControllerInput::GetRX(m_user) * multiplier * Time::dt;
 
 		//clamping vertical axis
@@ -401,36 +428,48 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 
 		glm::vec3 rayPos = head.GetGlobalPosition();
 		btVector3 test = PhysBody::GetRaycast(rayPos, head.GetForwards() * (m_camDistance * 50.f));
+		float distance = m_camDistance;
+		float xPos = 0.4f;
+		m_drawSelf = true;
+
 		if (m_rot.x < pi * 0.25f) {
 			if (test != btVector3()) {
-				float distance = glm::length(rayPos - BLM::BTtoGLM(test));
+				distance = glm::length(rayPos - BLM::BTtoGLM(test));
 
 				if (distance > m_camDistance) {
-					personalCam.SetPosition(glm::vec3(0.4f, 0, m_camDistance));
+					distance = m_camDistance;
 					rayOff = -0.0075f;
+					//personalCam.SetPosition(glm::vec3(0.4f, 0, m_camDistance));
 				}
 				else {
-					personalCam.SetPosition(glm::vec3(0.4f, 0, distance));
 					rayOff = -0.0075f * (distance / m_camDistance);
+					//personalCam.SetPosition(glm::vec3(0.4f, 0, distance));
 				}
-				m_drawSelf = (distance > 0.75f);
 			}
 			else {
-				personalCam.SetPosition(glm::vec3(0.4f, 0, m_camDistance));
+				distance = m_camDistance;
 				rayOff = -0.0075f;
-				m_drawSelf = true;
+				//personalCam.SetPosition(glm::vec3(0.4f, 0, m_camDistance * multiplier * 0.333f));
 			}
 		}
 		else if (m_rot.x < pi * 0.5f) {
 			float t = (m_rot.x / pi - 0.25f) * 4;
 			rayOff = -0.0075f * (1 - t);
-			personalCam.SetPosition(glm::vec3(0.4f * (1 - t), 0, (1 - t) * m_camDistance - t * 0.5f));
+			distance = (1 - t) * m_camDistance - t * 0.5f;
+			xPos = 0.4f * (1 - t);
+			//personalCam.SetPosition(glm::vec3(0.4f * (1 - t), 0, ((1 - t) * m_camDistance - t * 0.5f) * multiplier * 0.333f));
+
 			m_drawSelf = t < 0.5f;
 		}
 		else {
-			personalCam.SetPosition(glm::vec3(0, 0, 0.5f));
-			m_drawSelf = false;
+			//personalCam.SetPosition(glm::vec3(0, 0, 0.5f * multiplier * 0.333f));
+			distance = 0.5f;
+			xPos = 0;
 		}
+		if (!ControllerInput::GetButton(BUTTON::B, m_user))
+			distance *= multiplier * 0.333f;
+		if (m_drawSelf)		m_drawSelf = (distance > 0.75f);
+		personalCam.SetPosition(glm::vec3(xPos, 0, distance));
 	}
 
 	if (m_punched) {
@@ -735,15 +774,19 @@ void Player::LaserGun(float offset, Transform& head, short damage, float distanc
 		{
 			damage *= HalfCurve(p.m_closestHitFraction * 100.f);
 		}
+
+		glm::vec3 colour = BLM::GLMzero;
+
 		entt::entity playerIdTest = p.m_collisionObject->getUserIndex();
 		if (ECS::Exists(playerIdTest)) {
 			if (ECS::HasComponent<Player>(playerIdTest)) {
 				if (ECS::GetComponent<Player>(playerIdTest).TakeDamage(damage))
 					++m_killCount;
+				colour = glm::vec3(-2, -1, 1);
 			}
 		}
 		Rendering::effects->ShootLaser(head.GetGlobalRotation() * offsetQuat, rayPos,
-			glm::length(BLM::BTtoGLM(p.m_hitPointWorld) - rayPos));
+			glm::length(BLM::BTtoGLM(p.m_hitPointWorld) - rayPos), colour);
 	}
 	else {
 		Rendering::effects->ShootLaser(head.GetGlobalRotation() * offsetQuat, rayPos, distance);

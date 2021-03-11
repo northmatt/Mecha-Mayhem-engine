@@ -173,8 +173,8 @@ void MainMenu::Update()
 	else if (m_scenePos == 1) {
 		//character select
 
-		int lx = 0, allHolding = 0, playerCount = 0;
 		//exit
+		int lx = 0, allHolding = 0, playerCount = 0;
 		for (int x(0); x < 4; ++x) {
 			if (ControllerInput::GetButtonDown(BUTTON::START, CONUSER(x))) {
 				if (ControllerInput::GetButton(BUTTON::RB, CONUSER(x))) {
@@ -198,11 +198,32 @@ void MainMenu::Update()
 						FixDigits(++LeaderBoard::scoreGoal);
 				}
 
+				if (ControllerInput::GetButtonDown(BUTTON::DRIGHT, CONUSER(x))) {
+					if (++(colourIndex[x]) >= mm_colourCount)
+						colourIndex[x] = 0;
+					
+					FixColourUp(x);
+
+					//p.Init(CONUSER::FOUR, LeaderBoard::players[x].model, LeaderBoard::players[x].colour);
+					p.SetColour(LeaderBoard::players[x].colour);
+				}
+				if (ControllerInput::GetButtonDown(BUTTON::DLEFT, CONUSER(x))) {
+					if (--(colourIndex[x]) < 0)
+						colourIndex[x] = mm_colourCount - 1;
+
+					FixColourDown(x);
+
+					//p.Init(CONUSER::FOUR, LeaderBoard::players[x].model, LeaderBoard::players[x].colour);
+					p.SetColour(LeaderBoard::players[x].colour);
+				}
+
 				++playerCount;
-				if (ControllerInput::GetButton(BUTTON::START, CONUSER(x))) {
-					++allHolding;
-					playerSwapped[x] = true;
-					continue;
+				if (!ControllerInput::GetButton(BUTTON::RB, CONUSER(x))) {
+					if (ControllerInput::GetButton(BUTTON::START, CONUSER(x))) {
+						++allHolding;
+						playerSwapped[x] = true;
+						continue;
+					}
 				}
 
 				if (ControllerInput::GetButtonDown(BUTTON::B, CONUSER(x))) {
@@ -224,7 +245,9 @@ void MainMenu::Update()
 						if (--(LeaderBoard::players[x].model) < 1)
 							LeaderBoard::players[x].model = maxSelect;
 
-						p.Init(CONUSER::FOUR, LeaderBoard::players[x].model);
+						FixColourUp(x);
+
+						p.Init(CONUSER::FOUR, LeaderBoard::players[x].model, LeaderBoard::players[x].colour);
 
 						playerSwapped[x] = true;
 					}
@@ -234,7 +257,9 @@ void MainMenu::Update()
 						if (++(LeaderBoard::players[x].model) > maxSelect)
 							LeaderBoard::players[x].model = 1;
 
-						p.Init(CONUSER::FOUR, LeaderBoard::players[x].model);
+						FixColourUp(x);
+
+						p.Init(CONUSER::FOUR, LeaderBoard::players[x].model, LeaderBoard::players[x].colour);
 
 						playerSwapped[x] = true;
 					}
@@ -243,20 +268,26 @@ void MainMenu::Update()
 					playerSwapped[x] = false;
 				}
 			}
-			else if (ControllerInput::GetButtonDown(BUTTON::A, CONUSER(x))) {
-				if (LeaderBoard::players[x].model == 0)
-					LeaderBoard::players[x].model = 1;
-				LeaderBoard::players[x].user = CONUSER(x);
-				p.Init(CONUSER::FOUR, LeaderBoard::players[x].model);
-				playerSwapped[x] = true;
-				m_confirmTimer = 1.f;
+			else {
+				playerSwapped[x] = false;
+				if (ControllerInput::GetButtonDown(BUTTON::A, CONUSER(x))) {
+					if (LeaderBoard::players[x].model == 0)
+						LeaderBoard::players[x].model = 1;
+					LeaderBoard::players[x].user = CONUSER(x);
+
+					FixColourUp(x);
+
+					p.Init(CONUSER::FOUR, LeaderBoard::players[x].model, LeaderBoard::players[x].colour);
+					playerSwapped[x] = true;
+					m_confirmTimer = 1.f;
+				}
 			}
 
 			if (ControllerInput::GetButton(BUTTON::SELECT, CONUSER(x))) {
 				if (!playerSwapped[x]) {
-					if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER(x))) {
+					/*if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER(x))) {
 						m_exitHoldTimer = 1.f;
-					}
+					}*/
 					m_exitHoldTimer -= Time::dt;
 					if (m_exitHoldTimer <= 0.f) {
 						m_scenePos = 0;
@@ -280,7 +311,9 @@ void MainMenu::Update()
 				}
 			}
 			else if (ControllerInput::GetButtonUp(BUTTON::SELECT, CONUSER(x))) {
-				playerSwapped[x] = false;
+				//commented because dpad is linked to select
+				//playerSwapped[x] = false;
+				m_exitHoldTimer = 1.f;
 				ECS::GetComponent<Sprite>(charSelect).SetWidth(-12.326f);
 			}
 		}
@@ -353,4 +386,38 @@ void MainMenu::FixDigits(int number)
 	ECS::GetComponent<Sprite>(digit1).Init(
 		"num/" + std::to_string(number - val * 10) + ".png", -0.75f, 1.f);
 	ECS::GetComponent<Sprite>(digit2).Init("num/" + std::to_string(val) + ".png", -0.75f, 1.f);
+}
+
+void MainMenu::FixColourUp(int currIndex)
+{
+	for (int i(0); i < 4; ++i) {
+		if (i == currIndex)	continue;
+		if (LeaderBoard::players[i].user == CONUSER::NONE)	continue;
+		if (LeaderBoard::players[i].model == LeaderBoard::players[currIndex].model) {
+			if (colourIndex[i] == colourIndex[currIndex]) {
+				if (++(colourIndex[currIndex]) >= mm_colourCount)
+					colourIndex[currIndex] = 0;
+				i = -1;
+				continue;
+			}
+		}
+	}
+	LeaderBoard::players[currIndex].colour = colourChoices[colourIndex[currIndex]];
+}
+
+void MainMenu::FixColourDown(int currIndex)
+{
+	for (int i(0); i < 4; ++i) {
+		if (i == currIndex)	continue;
+		if (LeaderBoard::players[i].user == CONUSER::NONE)	continue;
+		if (LeaderBoard::players[i].model == LeaderBoard::players[currIndex].model) {
+			if (colourIndex[i] == colourIndex[currIndex]) {
+				if (--(colourIndex[currIndex]) < 0)
+					colourIndex[currIndex] = mm_colourCount - 1;
+				i = -1;
+				continue;
+			}
+		}
+	}
+	LeaderBoard::players[currIndex].colour = colourChoices[colourIndex[currIndex]];
 }

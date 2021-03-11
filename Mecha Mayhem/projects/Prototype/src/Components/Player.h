@@ -65,12 +65,15 @@ public:
 	3 = Ryan's
 	4 = Bag
 	*/
-	Player& Init(CONUSER user, int characterModel, short camPos = -1);
+	Player& Init(CONUSER user, int characterModel, const glm::vec3& colour = BLM::GLMzero, short camPos = -1);
+
+	Player& SetColour(const glm::vec3& colour) { m_colour = colour; return *this; }
 
 	//in radians, y is horizontal, x is vertical
 	Player& SetRotation(float y, float x) { m_rot = glm::vec2(x, y); return *this; }
 
 	Player& SetSpawn(const glm::vec3& pos) { m_spawnPos = pos; return *this; }
+
 
 	Player& SetMaxHealth(short amt) { m_maxHealth = amt; if (m_health > amt) m_health = amt; return *this; }
 
@@ -127,8 +130,10 @@ public:
 
 			return true;
 		}
-
-		//m_hitSound.play();
+		else {
+			//m_hitSound.play();
+			m_damageCounter = 0.75f;
+		}
 
 		return false;
 	}
@@ -197,6 +202,7 @@ private:
 
 	static Sprite m_healthBarOutline;
 	static Sprite m_healthBar;
+	static Sprite m_healthBarDamaged;
 	static Sprite m_healthBarBack;
 	static Sprite m_dashBarOutline;
 	static Sprite m_dashBar;
@@ -261,6 +267,8 @@ private:
 	float m_respawnDelay = 5.f;
 	float m_respawnTimer = 0.f;
 
+	float m_damageCounter = 0.f;
+
 	float m_dropTimer = 0;
 	float m_jumpHeld = 0;
 	float m_speed = 10.f;
@@ -274,6 +282,8 @@ private:
 	static const GunProperties shotgun;
 	static const GunProperties machineGun;
 	//static const float shotgunDistance;
+
+	glm::vec3 m_colour = glm::vec3(0.f);
 
 	//glm::quat m_startRot = glm::quat(1, 0, 0, 0);
 	glm::vec3 m_spawnPos = glm::vec3(0.f);
