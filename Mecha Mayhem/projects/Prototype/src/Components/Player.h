@@ -67,10 +67,13 @@ public:
 	*/
 	Player& Init(CONUSER user, int characterModel, const glm::vec3& colour = BLM::GLMzero, short camPos = -1);
 
+	Player& SetColour(const glm::vec3& colour) { m_colour = colour; return *this; }
+
 	//in radians, y is horizontal, x is vertical
 	Player& SetRotation(float y, float x) { m_rot = glm::vec2(x, y); return *this; }
 
 	Player& SetSpawn(const glm::vec3& pos) { m_spawnPos = pos; return *this; }
+
 
 	Player& SetMaxHealth(short amt) { m_maxHealth = amt; if (m_health > amt) m_health = amt; return *this; }
 

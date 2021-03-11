@@ -199,20 +199,22 @@ void MainMenu::Update()
 				}
 
 				if (ControllerInput::GetButtonDown(BUTTON::DRIGHT, CONUSER(x))) {
-					if (++colourIndex[x] >= mm_colourCount)
+					if (++(colourIndex[x]) >= mm_colourCount)
 						colourIndex[x] = 0;
 					
 					FixColourUp(x);
 
-					p.Init(CONUSER::FOUR, LeaderBoard::players[x].model, LeaderBoard::players[x].colour);
+					//p.Init(CONUSER::FOUR, LeaderBoard::players[x].model, LeaderBoard::players[x].colour);
+					p.SetColour(LeaderBoard::players[x].colour);
 				}
 				if (ControllerInput::GetButtonDown(BUTTON::DLEFT, CONUSER(x))) {
-					if (--colourIndex[x] < 0)
+					if (--(colourIndex[x]) < 0)
 						colourIndex[x] = mm_colourCount - 1;
 
 					FixColourDown(x);
 
-					p.Init(CONUSER::FOUR, LeaderBoard::players[x].model, LeaderBoard::players[x].colour);
+					//p.Init(CONUSER::FOUR, LeaderBoard::players[x].model, LeaderBoard::players[x].colour);
+					p.SetColour(LeaderBoard::players[x].colour);
 				}
 
 				++playerCount;
@@ -266,23 +268,26 @@ void MainMenu::Update()
 					playerSwapped[x] = false;
 				}
 			}
-			else if (ControllerInput::GetButtonDown(BUTTON::A, CONUSER(x))) {
-				if (LeaderBoard::players[x].model == 0)
-					LeaderBoard::players[x].model = 1;
-				LeaderBoard::players[x].user = CONUSER(x);
+			else {
+				playerSwapped[x] = false;
+				if (ControllerInput::GetButtonDown(BUTTON::A, CONUSER(x))) {
+					if (LeaderBoard::players[x].model == 0)
+						LeaderBoard::players[x].model = 1;
+					LeaderBoard::players[x].user = CONUSER(x);
 
-				FixColourUp(x);
+					FixColourUp(x);
 
-				p.Init(CONUSER::FOUR, LeaderBoard::players[x].model, LeaderBoard::players[x].colour);
-				playerSwapped[x] = true;
-				m_confirmTimer = 1.f;
+					p.Init(CONUSER::FOUR, LeaderBoard::players[x].model, LeaderBoard::players[x].colour);
+					playerSwapped[x] = true;
+					m_confirmTimer = 1.f;
+				}
 			}
 
 			if (ControllerInput::GetButton(BUTTON::SELECT, CONUSER(x))) {
 				if (!playerSwapped[x]) {
-					if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER(x))) {
+					/*if (ControllerInput::GetButtonDown(BUTTON::SELECT, CONUSER(x))) {
 						m_exitHoldTimer = 1.f;
-					}
+					}*/
 					m_exitHoldTimer -= Time::dt;
 					if (m_exitHoldTimer <= 0.f) {
 						m_scenePos = 0;
@@ -306,7 +311,9 @@ void MainMenu::Update()
 				}
 			}
 			else if (ControllerInput::GetButtonUp(BUTTON::SELECT, CONUSER(x))) {
-				playerSwapped[x] = false;
+				//commented because dpad is linked to select
+				//playerSwapped[x] = false;
+				m_exitHoldTimer = 1.f;
 				ECS::GetComponent<Sprite>(charSelect).SetWidth(-12.326f);
 			}
 		}
@@ -388,7 +395,7 @@ void MainMenu::FixColourUp(int currIndex)
 		if (LeaderBoard::players[i].user == CONUSER::NONE)	continue;
 		if (LeaderBoard::players[i].model == LeaderBoard::players[currIndex].model) {
 			if (colourIndex[i] == colourIndex[currIndex]) {
-				if (++colourIndex[currIndex] >= mm_colourCount)
+				if (++(colourIndex[currIndex]) >= mm_colourCount)
 					colourIndex[currIndex] = 0;
 				i = -1;
 				continue;
@@ -405,7 +412,7 @@ void MainMenu::FixColourDown(int currIndex)
 		if (LeaderBoard::players[i].user == CONUSER::NONE)	continue;
 		if (LeaderBoard::players[i].model == LeaderBoard::players[currIndex].model) {
 			if (colourIndex[i] == colourIndex[currIndex]) {
-				if (--colourIndex[currIndex] < 0)
+				if (--(colourIndex[currIndex]) < 0)
 					colourIndex[currIndex] = mm_colourCount - 1;
 				i = -1;
 				continue;

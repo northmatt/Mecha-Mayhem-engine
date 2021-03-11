@@ -189,7 +189,8 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		float dashPercent = float(m_dashTimer) / m_dashDelay,
 		x  = 15.7777f,	//1.77 * 10 - 2
 		y  = 7.5f,
-		x2 = 15.9277f,	//1.77 * 10 - 1.85
+		x2 = 15.7777f,	//1.77 * 10 - 2
+		//x2 = 15.9277f,	//1.77 * 10 - 1.85
 		y2 = 4.5f,		//places weapons below score
 		x3 = 12.7777f,	//x - 3
 		y3 = 7.5f;		//places heal besides score
@@ -200,7 +201,8 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		}
 		if (numOfCams == 2) {
 			x  = 6.88889f;	//0.88 * 10 - 2
-			x2 = 7.03889f;	//0.88 * 10 - 1.85
+			x2 = 6.88889f;	//0.88 * 10 - 2
+			//x2 = 7.03889f;	//0.88 * 10 - 1.85
 			x3 = 3.88889f;	//x - 3
 		}
 		if (camNum % 2 == 0) { x = -x;	x2 = -x2;	x3 = -x3; }
@@ -209,6 +211,10 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		glm::mat4 VP = m_orthoCam.GetViewProjection();
 
 		glm::mat4 UIMat = BLM::GLMMat;
+
+		if (numOfCams > 2) {
+			UIMat *= 1.25f;
+		}
 
 		UIMat[3] = glm::vec4(x, y, -9.9f, 1);
 		m_scoreBack.DrawToUI(VP, UIMat, camNum);
@@ -235,10 +241,10 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		}
 
 
-		UIMat[3] = glm::vec4(x2 - 0.25f, y2 + 0.25f, -9.9f, 1);
+		UIMat[3] = glm::vec4(x2 - 0.4f, y2 + 0.25f, -9.9f, 1);
 		GetIcon(m_secWeapon).DrawToUI(VP, UIMat, camNum);
 
-		UIMat[3] = glm::vec4(x2 + 0.25f, y2 - 0.25f, -10.f, 1);
+		UIMat[3] = glm::vec4(x2 + 0.1f, y2 - 0.25f, -10.f, 1);
 		GetIcon(m_currWeapon).DrawToUI(VP, UIMat, camNum);
 
 		UIMat[3] = glm::vec4((1 - healthPercent) * 7.475f, -8.5f, -9.9f, 1);
@@ -408,7 +414,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 	//Camera Rotation (above punch for user experience)
 	{
 		float multiplier = 2.f * (1 - ControllerInput::GetLT(m_user)) + 1.f;
-		m_rot.x += ControllerInput::GetRY(m_user) * multiplier * Time::dt;
+		m_rot.x += ControllerInput::GetRY(m_user) * multiplier * 0.75f * Time::dt;
 		m_rot.y += ControllerInput::GetRX(m_user) * multiplier * Time::dt;
 
 		//clamping vertical axis
