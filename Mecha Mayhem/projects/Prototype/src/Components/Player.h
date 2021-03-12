@@ -126,6 +126,7 @@ public:
 		if ((m_health -= dmg) <= 0) {
 			m_health = 0;
 			m_respawnTimer = m_respawnDelay;
+			m_damageCounter = 0;
 			
 			//do death management in Update()
 

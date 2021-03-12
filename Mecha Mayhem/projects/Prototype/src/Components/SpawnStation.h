@@ -31,7 +31,7 @@ public:
 		upperBound = upper - lower + 1;
 	}
 
-	void Render(glm::mat4 model) {
+	void Render(const glm::mat4& model) {
 		
 		if (m_timer == 0) {
 			glm::vec3 colour = BLM::GLMzero;
@@ -39,9 +39,11 @@ public:
 				colour = glm::vec3(1.f - m_replaceTimer * m_invColourPoint);
 			}
 
+			glm::mat4 rot = glm::toMat4(glm::angleAxis((m_replaceDelay - m_replaceTimer) * 0.5f, BLM::GLMup));
+
 			if (m_currWeapon == Player::WEAPON::FIST)
-				Player::GetOffhandModel(Player::OFFHAND::HEALPACK2).Draw(model * m_gunOffset, colour);
-			else			Player::GetWeaponModel(m_currWeapon).Draw(model * m_gunOffset, colour);
+				Player::GetOffhandModel(Player::OFFHAND::HEALPACK2).Draw(model * rot * m_gunOffset, colour);
+			else			Player::GetWeaponModel(m_currWeapon).Draw(model * rot * m_gunOffset, colour);
 		}
 
 		m_spawnerModel.Draw(model);

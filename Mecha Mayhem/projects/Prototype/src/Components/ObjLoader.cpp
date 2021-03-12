@@ -13,11 +13,11 @@ Shader::sptr ObjLoader::m_matShader = nullptr;
 Shader::sptr ObjLoader::m_texShader = nullptr;
 Shader::sptr ObjLoader::m_shadowShader = nullptr;
 
-std::vector<BufferAttribute> ObjLoader::m_posAttrib = { BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) };
-std::vector<BufferAttribute> ObjLoader::m_normAttrib = { BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) };
-std::vector<BufferAttribute> ObjLoader::m_colAttrib = { BufferAttribute(2, 3, GL_FLOAT, false, 0, 0) };
-std::vector<BufferAttribute> ObjLoader::m_specAttrib = { BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) };
-std::vector<BufferAttribute> ObjLoader::m_uvAttrib = { BufferAttribute(4, 3, GL_FLOAT, false, 0, 0) };
+const std::vector<BufferAttribute> ObjLoader::m_posAttrib = { BufferAttribute(0, 3, GL_FLOAT, false, 0, 0) };
+const std::vector<BufferAttribute> ObjLoader::m_normAttrib = { BufferAttribute(1, 3, GL_FLOAT, false, 0, 0) };
+const std::vector<BufferAttribute> ObjLoader::m_colAttrib = { BufferAttribute(2, 3, GL_FLOAT, false, 0, 0) };
+const std::vector<BufferAttribute> ObjLoader::m_specAttrib = { BufferAttribute(3, 3, GL_FLOAT, false, 0, 0) };
+const std::vector<BufferAttribute> ObjLoader::m_uvAttrib = { BufferAttribute(4, 3, GL_FLOAT, false, 0, 0) };
 
 struct Materials
 {
@@ -38,6 +38,8 @@ ObjLoader::~ObjLoader()
 
 ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 {
+	m_enabled = true;
+
 	for (int count(0); count < m_models.size(); ++count) {
 		if (m_models[count].fileName == fileName && m_models[count].mat == usingMaterial) {
 			m_index = count;
@@ -46,8 +48,10 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 		}
 	}
 
-	size_t ind = m_models.size();
+	m_index = m_models.size();
 	m_models.push_back({ fileName, usingMaterial });
+
+	auto& data = m_models[m_index];
 
 	std::ifstream file;
 	file.open(fileName, std::ios::binary);
@@ -87,7 +91,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 				bool dupt = false;
 				for (int i(0); i < Sprite::m_textures.size(); ++i) {
 					if (Sprite::m_textures[i].fileName == textureName) {
-						m_models[ind].texture = i;
+						data.texture = i;
 						dupt = true;
 						break;
 					}
@@ -105,7 +109,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 
 						texture->Clear(glm::vec4(0.2f, 0.2f, 0.2f, 1.f));
 
-						m_models[ind].texture = Sprite::m_textures.size();
+						data.texture = Sprite::m_textures.size();
 						Sprite::m_textures.push_back({ textureName, texture });
 					}
 					else {
@@ -114,12 +118,12 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 						{
 							throw std::runtime_error("Failed to open texture\nError 0: " + textureName);
 						}
-						m_models[ind].texture = Sprite::m_textures.size();
+						data.texture = Sprite::m_textures.size();
 						Sprite::m_textures.push_back({ textureName, tex });
 					}
 				}
 				materials[matIndex].isText = true;
-				m_models[ind].text = true;
+				data.text = true;
 			}
 			else if (matLine.substr(0, 2) == "Ns")
 			{
@@ -164,12 +168,6 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 			}
 		}
 		materialFile.close();
-
-		m_models[ind].mat = true;
-	}
-	else
-	{
-		m_models[ind].mat = false;
 	}
 
 	std::vector<glm::vec3> vertex = { glm::vec3(0.f) };
@@ -187,7 +185,7 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	glm::size_t currentColour = 0;
 	//size_t vectorIndex = 0;
 
-	bool noDraw = false, usingTexture = m_models[ind].text, drawingText = false;
+	bool noDraw = false, usingTexture = data.text, drawingText = false;
 	while (std::getline(file, line))
 	{
 		stringTrimming::trim(line);
@@ -439,8 +437,8 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 	VertexBuffer::sptr normal_vbo = VertexBuffer::Create();
 	normal_vbo->LoadData(normal_data.data(), normal_data.size());
 
-	m_models[ind].vao->AddVertexBuffer(position_vbo, m_posAttrib, true);
-	m_models[ind].vao->AddVertexBuffer(normal_vbo, m_normAttrib, true);
+	data.vao->AddVertexBuffer(position_vbo, m_posAttrib, true);
+	data.vao->AddVertexBuffer(normal_vbo, m_normAttrib, true);
 
 	if (usingMaterial) {
 		VertexBuffer::sptr colour_vbo = VertexBuffer::Create();
@@ -448,18 +446,16 @@ ObjLoader& ObjLoader::LoadMesh(const std::string& fileName, bool usingMaterial)
 		VertexBuffer::sptr spec_vbo = VertexBuffer::Create();
 		spec_vbo->LoadData(spec_data.data(), spec_data.size());
 
-		m_models[ind].vao->AddVertexBuffer(colour_vbo, m_colAttrib, true);
-		m_models[ind].vao->AddVertexBuffer(spec_vbo, m_specAttrib, true);
+		data.vao->AddVertexBuffer(colour_vbo, m_colAttrib, true);
+		data.vao->AddVertexBuffer(spec_vbo, m_specAttrib, true);
 
 		if (usingTexture) {
 			VertexBuffer::sptr UV_vbo = VertexBuffer::Create();
 			UV_vbo->LoadData(UV_data.data(), UV_data.size());
 
-			m_models[ind].vao->AddVertexBuffer(UV_vbo, m_uvAttrib, true);
+			data.vao->AddVertexBuffer(UV_vbo, m_uvAttrib, true);
 		}
 	}
-
-	m_index = ind;
 
 	return *this;
 }

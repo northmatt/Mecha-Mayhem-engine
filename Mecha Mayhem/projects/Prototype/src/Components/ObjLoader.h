@@ -63,12 +63,12 @@ private:
 	static Shader::sptr m_texShader;
 	static Shader::sptr m_shadowShader;
 
-	static std::vector<BufferAttribute> m_posAttrib;
-	static std::vector<BufferAttribute> m_normAttrib;
-	static std::vector<BufferAttribute> m_colAttrib;
-	static std::vector<BufferAttribute> m_specAttrib;
-	static std::vector<BufferAttribute> m_uvAttrib;
+	static const std::vector<BufferAttribute> m_posAttrib;
+	static const std::vector<BufferAttribute> m_normAttrib;
+	static const std::vector<BufferAttribute> m_colAttrib;
+	static const std::vector<BufferAttribute> m_specAttrib;
+	static const std::vector<BufferAttribute> m_uvAttrib;
 
-	bool m_enabled = true;
+	bool m_enabled = false;
 	size_t m_index = INT_MAX;
 };

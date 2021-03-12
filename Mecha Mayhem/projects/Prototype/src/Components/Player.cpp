@@ -335,7 +335,7 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 	if (!m_punched && m_currWeapon != WEAPON::FIST) {
 		GetWeaponModel(m_currWeapon).DrawTemp(model * m_gunOffsetMat);
 	}
-	m_charModel.DrawTemp(tempModel + m_modelOffset, m_colour - glm::vec3(m_damageCounter));
+	m_charModel.DrawTemp(tempModel + m_modelOffset, m_colour - glm::vec3(sinf(m_damageCounter * 21.f)));
 	if (m_respawnTimer > 0) {
 		m_heliDrone.DrawTemp(model - m_modelOffset);
 	}

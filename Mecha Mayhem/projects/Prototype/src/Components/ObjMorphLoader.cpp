@@ -8,15 +8,15 @@ std::vector<ObjMorphLoader::DrawData> ObjMorphLoader::m_texTempQueue = {};
 std::vector<ObjMorphLoader::DrawData> ObjMorphLoader::m_matTempQueue = {};
 std::vector<ObjMorphLoader::DrawData> ObjMorphLoader::m_defaultTempQueue = {};
 std::vector<ObjMorphLoader::Animations> ObjMorphLoader::m_anims = {};
-std::vector<BufferAttribute> ObjMorphLoader::pos1Buff = { BufferAttribute(0, 3, GL_FLOAT, false, NULL, NULL) };
-std::vector<BufferAttribute> ObjMorphLoader::pos2Buff = { BufferAttribute(1, 3, GL_FLOAT, false, NULL, NULL) };
-std::vector<BufferAttribute> ObjMorphLoader::norm1Buff = { BufferAttribute(2, 3, GL_FLOAT, false, NULL, NULL) };
-std::vector<BufferAttribute> ObjMorphLoader::norm2Buff = { BufferAttribute(3, 3, GL_FLOAT, false, NULL, NULL) };
-std::vector<BufferAttribute> ObjMorphLoader::col1Buff = { BufferAttribute(4, 3, GL_FLOAT, false, NULL, NULL) };
-std::vector<BufferAttribute> ObjMorphLoader::col2Buff = { BufferAttribute(5, 3, GL_FLOAT, false, NULL, NULL) };
-std::vector<BufferAttribute> ObjMorphLoader::spec1Buff = { BufferAttribute(6, 3, GL_FLOAT, false, NULL, NULL) };
-std::vector<BufferAttribute> ObjMorphLoader::spec2Buff = { BufferAttribute(7, 3, GL_FLOAT, false, NULL, NULL) };
-std::vector<BufferAttribute> ObjMorphLoader::UVBuff = { BufferAttribute(8, 3, GL_FLOAT, false, NULL, NULL) };
+const std::vector<BufferAttribute> ObjMorphLoader::pos1Buff = { BufferAttribute(0, 3, GL_FLOAT, false, NULL, NULL) };
+const std::vector<BufferAttribute> ObjMorphLoader::pos2Buff = { BufferAttribute(1, 3, GL_FLOAT, false, NULL, NULL) };
+const std::vector<BufferAttribute> ObjMorphLoader::norm1Buff = { BufferAttribute(2, 3, GL_FLOAT, false, NULL, NULL) };
+const std::vector<BufferAttribute> ObjMorphLoader::norm2Buff = { BufferAttribute(3, 3, GL_FLOAT, false, NULL, NULL) };
+const std::vector<BufferAttribute> ObjMorphLoader::col1Buff = { BufferAttribute(4, 3, GL_FLOAT, false, NULL, NULL) };
+const std::vector<BufferAttribute> ObjMorphLoader::col2Buff = { BufferAttribute(5, 3, GL_FLOAT, false, NULL, NULL) };
+const std::vector<BufferAttribute> ObjMorphLoader::spec1Buff = { BufferAttribute(6, 3, GL_FLOAT, false, NULL, NULL) };
+const std::vector<BufferAttribute> ObjMorphLoader::spec2Buff = { BufferAttribute(7, 3, GL_FLOAT, false, NULL, NULL) };
+const std::vector<BufferAttribute> ObjMorphLoader::UVBuff = { BufferAttribute(8, 3, GL_FLOAT, false, NULL, NULL) };
 Shader::sptr ObjMorphLoader::m_shader = nullptr;
 Shader::sptr ObjMorphLoader::m_matShader = nullptr;
 Shader::sptr ObjMorphLoader::m_texShader = nullptr;
@@ -51,7 +51,7 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 	m_enabled = true;
 
 	for (int count(0); count < m_anims.size(); ++count) {
-		if (m_anims[count].fileName == baseFileName && m_anims[count].mat == usingMaterial) {
+		if (m_anims[count].mat == usingMaterial) if (m_anims[count].fileName == baseFileName) {
 			m_index = count;
 			auto& data = m_anims[m_index];
 			m_p0 = data.start;
@@ -257,12 +257,6 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 			}
 		}
 		materialFile.close();
-
-		data.mat = true;
-	}
-	else
-	{
-		data.mat = false;
 	}
 
 	bool getUVs = true;

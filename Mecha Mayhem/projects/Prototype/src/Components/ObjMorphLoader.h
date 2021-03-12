@@ -128,15 +128,15 @@ private:
 	static Shader::sptr m_texShader;
 	static Shader::sptr m_shadowShader;
 
-	static std::vector<BufferAttribute> pos1Buff;
-	static std::vector<BufferAttribute> pos2Buff;
-	static std::vector<BufferAttribute> norm1Buff;
-	static std::vector<BufferAttribute> norm2Buff;
-	static std::vector<BufferAttribute> col1Buff;
-	static std::vector<BufferAttribute> col2Buff;
-	static std::vector<BufferAttribute> spec1Buff;
-	static std::vector<BufferAttribute> spec2Buff;
-	static std::vector<BufferAttribute> UVBuff;
+	static const std::vector<BufferAttribute> pos1Buff;
+	static const std::vector<BufferAttribute> pos2Buff;
+	static const std::vector<BufferAttribute> norm1Buff;
+	static const std::vector<BufferAttribute> norm2Buff;
+	static const std::vector<BufferAttribute> col1Buff;
+	static const std::vector<BufferAttribute> col2Buff;
+	static const std::vector<BufferAttribute> spec1Buff;
+	static const std::vector<BufferAttribute> spec2Buff;
+	static const std::vector<BufferAttribute> UVBuff;
 
 	VertexArrayObject::sptr m_vao = nullptr;
 
@@ -155,5 +155,5 @@ private:
 	bool m_bounce = false;
 	bool m_loop = false;
 	bool m_blend = false;
-	bool m_enabled = true;
+	bool m_enabled = false;
 };
