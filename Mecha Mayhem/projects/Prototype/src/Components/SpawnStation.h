@@ -6,6 +6,15 @@ class Spawner {
 public:
 	Spawner() {}
 
+	static void SetReplaceDelay(float delay, float colourPoint) {
+		if (delay < 0)	return;
+		if (colourPoint > delay)	return;
+
+		m_replaceDelay = delay;
+		m_colourPoint = colourPoint;
+		m_invColourPoint = 1.f / colourPoint;
+	}
+
 	Spawner& Init(float radius, float delay) {
 		m_spawnerModel.LoadMeshs("spawner/spawner", true);
 		m_radius = radius;
@@ -54,12 +63,14 @@ public:
 			return;
 		}
 
-		m_replaceTimer -= Time::dt;
-		if (m_replaceTimer <= 0) {
-			m_replaceTimer = m_replaceDelay;
+		if (m_replaceDelay) {
+			m_replaceTimer -= Time::dt;
+			if (m_replaceTimer <= 0) {
+				m_replaceTimer = m_replaceDelay;
 
-			//decide on what spawns
-			m_currWeapon = Player::WEAPON(lowerBound + rand() % upperBound);
+				//decide on what spawns
+				m_currWeapon = Player::WEAPON(lowerBound + rand() % upperBound);
+			}
 		}
 
 		Player* touched = nullptr;
@@ -98,9 +109,9 @@ public:
 
 private:
 	static const glm::mat4 m_gunOffset;
-	static const float m_replaceDelay;
-	static const float m_colourPoint;
-	static const float m_invColourPoint;
+	static float m_replaceDelay;
+	static float m_colourPoint;
+	static float m_invColourPoint;
 
 	ObjMorphLoader m_spawnerModel = {};
 
@@ -116,10 +127,10 @@ private:
 	float m_replaceTimer = 0.f;
 };
 
-inline const float Spawner::m_replaceDelay = 30.f;
-inline const float Spawner::m_colourPoint = 5.f;
+inline float Spawner::m_replaceDelay = 30.f;
+inline float Spawner::m_colourPoint = 5.f;
+inline float Spawner::m_invColourPoint = 1.f / m_colourPoint;
 
-inline const float Spawner::m_invColourPoint = 1.f / m_colourPoint;
 inline const glm::mat4 Spawner::m_gunOffset = glm::mat4(
 	1, 0, 0, 0,
 	0, 1, 0, 0,

@@ -745,6 +745,7 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 		SwapWeapon();
 	}
 }
+
 //Not forward declared
 float HalfCurve(float input) {
 	return ((input - 1) * (input - 1) * (input - 1) * (input - 1) * 0.5f + 0.5f);
