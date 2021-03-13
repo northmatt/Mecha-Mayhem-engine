@@ -66,8 +66,6 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 				m_p1 = (m_p0 + 1) % data.frameIndices.size();
 
 			m_vao = VertexArrayObject::Create();
-			if (data.text)
-				m_vao->AddVertexBuffer(data.UVs, UVBuff);
 
 			m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].pos, pos1Buff);
 			m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].pos, pos2Buff);
@@ -79,6 +77,8 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 				m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].spec, spec1Buff);
 				m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].spec, spec2Buff);
 			}
+			if (data.text)
+				m_vao->AddVertexBuffer(data.UVs, UVBuff);
 
 
 			return *this;
@@ -505,8 +505,6 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 	}
 	
 	m_vao = VertexArrayObject::Create();
-	if (data.text)
-		m_vao->AddVertexBuffer(data.UVs, UVBuff);
 
 	m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].pos, pos1Buff);
 	m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].pos, pos2Buff);
@@ -518,6 +516,8 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 		m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p0]].spec, spec1Buff);
 		m_vao->AddVertexBuffer(data.frames[data.frameIndices[m_p1]].spec, spec2Buff);
 	}
+	if (data.text)
+		m_vao->AddVertexBuffer(data.UVs, UVBuff);
 
 	return *this;
 }

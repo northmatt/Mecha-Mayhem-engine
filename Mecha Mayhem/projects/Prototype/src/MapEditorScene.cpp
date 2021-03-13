@@ -6,7 +6,9 @@ void MapEditor::Init(int windowWidth, int windowHeight)
 	PhysBody::Init(m_world);
 	ECS::AttachWorld(m_world);
 	std::string input = "playtestmap";
-	m_colliders.Init(m_world, input, false, false);
+										//if true and false, will append a number to a copy of an existing file
+										//new file	ovewrite
+	m_colliders.Init(m_world, input,	false,		false);
 	/*std::cout << "filename: " + input + "\n";
 	if (!m_colliders.Init(m_world, input, false, false))
 		std::cout << input + " failed to load, no collision boxes loaded\n";*/

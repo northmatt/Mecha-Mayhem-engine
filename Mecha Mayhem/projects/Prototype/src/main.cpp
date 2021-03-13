@@ -27,6 +27,13 @@ int main() {
 		Scene::m_scenes[2]->Init(width, height);
 		Scene::m_scenes[3]->Init(width, height);
 
+		/*							//controller	model	score	colour
+		LeaderBoard::players[0] = { CONUSER::ONE,	1,		0,		glm::vec3(0,0,0) };
+		LeaderBoard::players[1] = { CONUSER::TWO,	1,		0,		glm::vec3(0,0,0) };
+		LeaderBoard::players[2] = { CONUSER::THREE,	1,		0,		glm::vec3(0,0,0) };
+		LeaderBoard::players[3] = { CONUSER::FOUR,	1,		0,		glm::vec3(0,0,0) };
+		LeaderBoard::playerCount = 4;*/
+
 		Scene::m_activeScene = Scene::m_scenes[0]->Reattach();
 		/*Scene::m_scenes.push_back(new MapEditor("uh, not for playing"));
 		Scene::m_scenes[4]->Init(width, height);
