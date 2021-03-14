@@ -8,7 +8,7 @@ void IlluminationBuffer::Init(unsigned width, unsigned height)
 	_buffers[index]->AddColorTarget(GL_RGBA8);
 	_buffers[index]->AddDepthTarget();
 	_buffers[index]->Init(width, height);
-
+			
 	//illuum buffer
 	index = int((_buffers.size()));
 	_buffers.push_back(new Framebuffer());
@@ -19,13 +19,13 @@ void IlluminationBuffer::Init(unsigned width, unsigned height)
 	//directional gBuffer shader
 	index = int(_shaders.size());
 	_shaders.push_back(Shader::Create());	
-	_shaders[index]->LoadShaderPartFromFile("shaders/passthrough_vert.glsl", GL_VERTEX_SHADER);
+	_shaders[index]->LoadShaderPartFromFile("shaders/Post/passthrough_vert.glsl", GL_VERTEX_SHADER);
 	_shaders[index]->LoadShaderPartFromFile("shaders/gBuffer_directional_frag.glsl", GL_FRAGMENT_SHADER);
 	_shaders[index]->Link();
 
 	index = int(_shaders.size());
 	_shaders.push_back(Shader::Create());
-	_shaders[index]->LoadShaderPartFromFile("shaders/passthrough_vert.glsl", GL_VERTEX_SHADER);
+	_shaders[index]->LoadShaderPartFromFile("shaders/Post/passthrough_vert.glsl", GL_VERTEX_SHADER);
 	_shaders[index]->LoadShaderPartFromFile("shaders/gBuffer_ambient_frag.glsl", GL_FRAGMENT_SHADER);
 	_shaders[index]->Link();
 

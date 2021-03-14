@@ -51,5 +51,6 @@ public:
 private:
 	GBuffer baseEffect;
 	//BufferCombiner pauseEffect;
-	std::vector<GBuffer*> layersOfEffects = {};
+	IlluminationBuffer lighting;
+	std::vector<PostEffect*> layersOfEffects = {};
 };

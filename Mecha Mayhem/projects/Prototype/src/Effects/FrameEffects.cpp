@@ -33,6 +33,7 @@ void FrameEffects::Init(unsigned width, unsigned height)
 	RemoveAllEffects();
 
 	baseEffect.Init(width, height);
+	lighting.Init(width, height);
 }
 
 void FrameEffects::Resize(unsigned width, unsigned height)
@@ -42,6 +43,7 @@ void FrameEffects::Resize(unsigned width, unsigned height)
 	}
 
 	baseEffect.Reshape(width, height);
+	lighting.Reshape(width, height);
 }
 
 void FrameEffects::AddEffect(PostEffect* effect)
@@ -68,6 +70,7 @@ void FrameEffects::Clear()
 	for (int i(0); i < layersOfEffects.size(); ++i) {
 		layersOfEffects[i]->Clear();
 	}
+	lighting.Clear();
 	//pauseEffect.Clear();
 }
 
@@ -83,7 +86,9 @@ void FrameEffects::UnBind()
 
 void FrameEffects::Draw(/*bool paused*/)
 {
-	GBuffer* prev = &baseEffect;
+	lighting.ApplyEffect(&baseEffect);
+
+	PostEffect* prev = &lighting;
 	for (int i(0); i < layersOfEffects.size(); ++i) {
 		layersOfEffects[i]->ApplyEffect(prev);
 		prev = layersOfEffects[i];
