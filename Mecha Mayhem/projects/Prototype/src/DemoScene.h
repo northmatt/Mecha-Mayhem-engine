@@ -23,6 +23,9 @@ private:
 
 	size_t killGoal = 10;
 
+	//GBuffer
+	GBuffer* gBuffer;
+
 	float camDistance = 2.5f;
 	float m_timer = 0.f;
 

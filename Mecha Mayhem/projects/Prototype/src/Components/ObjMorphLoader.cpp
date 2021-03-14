@@ -569,21 +569,22 @@ void ObjMorphLoader::Init()
 {
 	m_matShader = Shader::Create();
 	m_matShader->LoadShaderPartFromFile("shaders/vert_mat_morph.glsl", GL_VERTEX_SHADER);
-	m_matShader->LoadShaderPartFromFile("shaders/frag_mat.glsl", GL_FRAGMENT_SHADER);
+	m_matShader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER);
 	m_matShader->Link();
 
 	m_texShader = Shader::Create();
 	m_texShader->LoadShaderPartFromFile("shaders/vert_tex_morph.glsl", GL_VERTEX_SHADER);
-	m_texShader->LoadShaderPartFromFile("shaders/frag_tex.glsl", GL_FRAGMENT_SHADER);
+	m_texShader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER);
 	m_texShader->Link();
 
 	m_texShader->SetUniform("s_texture", 0);
 
 	m_shader = Shader::Create();
 	m_shader->LoadShaderPartFromFile("shaders/vert_none_morph.glsl", GL_VERTEX_SHADER);
-	m_shader->LoadShaderPartFromFile("shaders/frag_none.glsl", GL_FRAGMENT_SHADER);
+	m_shader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER);
 	m_shader->Link();
 
+	//shadows
 	m_shadowShader = Shader::Create();
 	m_shadowShader->LoadShaderPartFromFile("shaders/vert_depth_morph.glsl", GL_VERTEX_SHADER);
 	m_shadowShader->LoadShaderPartFromFile("shaders/frag_depth.glsl", GL_FRAGMENT_SHADER);

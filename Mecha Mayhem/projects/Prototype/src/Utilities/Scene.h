@@ -10,6 +10,7 @@
 #include "Effects/Post/PixelEffect.h"
 #include "Effects/Post/SepiaEffect.h"
 #include "Effects/Post/GreyscaleEffect.h"
+#include "Effects/GBuffer.h"
 
 class Scene
 {

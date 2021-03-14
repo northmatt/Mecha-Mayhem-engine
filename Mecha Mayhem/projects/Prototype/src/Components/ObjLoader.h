@@ -60,6 +60,7 @@ private:
 	static std::vector<Models> m_models;
 	static Shader::sptr m_shader;
 	static Shader::sptr m_matShader;
+	static Shader::sptr gBufferShader;
 	static Shader::sptr m_texShader;
 	static Shader::sptr m_shadowShader;
 

@@ -1,5 +1,6 @@
 #pragma once
-#include "Post/PostEffect.h"
+#include "Effects/GBuffer.h"
+#include "Effects/IlluminationBuffer.h"
 
 //aka the PP wrapper
 class FrameEffects
@@ -48,7 +49,7 @@ public:
 	}
 
 private:
-	PostEffect baseEffect;
+	GBuffer baseEffect;
 	//BufferCombiner pauseEffect;
 	std::vector<PostEffect*> layersOfEffects = {};
 };

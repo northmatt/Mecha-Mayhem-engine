@@ -14,6 +14,8 @@ void DemoScene::Init(int width, int height)
 
 	m_camCount = 4;
 
+
+
 	//map
 	{
 		auto entity = ECS::CreateEntity();
