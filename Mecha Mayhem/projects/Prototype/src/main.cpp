@@ -18,8 +18,10 @@ int main() {
 
 		// Creating demo scenes
 		Scene::m_scenes.push_back(new MainMenu("Mecha Mayhem"));
-		Scene::m_scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0)));
+
+		//changed order, so we don't load into demo scene anymore
 		Scene::m_scenes.push_back(new DemoScene("MM Demo", glm::vec3(0, -100, 0)));
+		Scene::m_scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0)));
 		Scene::m_scenes.push_back(new LeaderBoard("The Winner is..."));
 
 		Scene::m_scenes[0]->Init(width, height);

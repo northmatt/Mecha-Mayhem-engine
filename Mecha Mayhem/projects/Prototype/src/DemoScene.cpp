@@ -188,6 +188,10 @@ void DemoScene::Update()
 		}
 		m_timer = 5.f;
 	}
+	if (Input::GetKeyDown(KEY::F1))
+	{
+
+	}
 }
 
 void DemoScene::LateUpdate()
