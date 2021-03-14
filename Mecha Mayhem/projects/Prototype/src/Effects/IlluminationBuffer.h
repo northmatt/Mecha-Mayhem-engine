@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Post/PostEffect.h"
-//#include "UniformBuffer.h"
+#include "UniformBuffer.h"
 #include "GBuffer.h"
-//#include "PointLight.h"
-//#include "DirectionalLight.h"
+#include "PointLight.h"
+#include "Effects/DirectionalLight.h"
 
 enum Lights
 {

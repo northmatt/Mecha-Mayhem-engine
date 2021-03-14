@@ -73,17 +73,17 @@ void FrameEffects::Clear()
 
 void FrameEffects::Bind()
 {
-	baseEffect.BindBuffer(0);
+	baseEffect.Bind();
 }
 
 void FrameEffects::UnBind()
 {
-	baseEffect.UnbindBuffer();
+	baseEffect.Unbind();
 }
 
 void FrameEffects::Draw(/*bool paused*/)
 {
-	PostEffect* prev = &baseEffect;
+	GBuffer* prev = &baseEffect;
 	for (int i(0); i < layersOfEffects.size(); ++i) {
 		layersOfEffects[i]->ApplyEffect(prev);
 		prev = layersOfEffects[i];

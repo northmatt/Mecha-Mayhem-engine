@@ -51,5 +51,5 @@ public:
 private:
 	GBuffer baseEffect;
 	//BufferCombiner pauseEffect;
-	std::vector<PostEffect*> layersOfEffects = {};
+	std::vector<GBuffer*> layersOfEffects = {};
 };
