@@ -22,7 +22,7 @@ layout(binding = 2) uniform sampler2D s_specularTex;
 layout(binding = 3) uniform sampler2D s_positionTex;
 layout(binding = 4) uniform sampler2D s_lightAccumTex;
 
-uniform mat4 u_LightSpaceMatrix;
+//uniform mat4 u_LightSpaceMatrix;
 uniform vec3 u_CamPos;
 uniform vec3 u_ambientLightPow;
 uniform vec3 u_ambientCol;
@@ -54,7 +54,7 @@ void main() {
     if(textureColor.a < 0.31) {
         result = vec3(1.0, 1.0, 1.0);
     } else {
-		result = u_ambientCol * u_ambientPow + total;
+		result = u_ambientCol * u_ambientPow + total + vec3(.5, .5, .5);
 	}
 
 	frag_color = vec4(result, 1.0);

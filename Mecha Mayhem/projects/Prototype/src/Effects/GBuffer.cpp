@@ -19,10 +19,7 @@ void GBuffer::Init(unsigned width, unsigned height)
 
 	_gBuffer.Init(width, height);
 
-	
 	_passThrough = PostEffect::GetShader("shaders/Post/passthrough_frag.glsl");
-
-
 }
 
 void GBuffer::Bind()
