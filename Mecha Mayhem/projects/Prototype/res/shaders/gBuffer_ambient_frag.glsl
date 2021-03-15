@@ -42,7 +42,7 @@ void main()
     //vec4 skybox = texture(s_skyBox, inUV);
 
     //Ambient calculation
-    vec3 ambient = ambience._lightAmbientPow * ambience._ambientCol.rgb; 
+    vec3 ambient = ambience._ambientPow * ambience._ambientCol.rgb;
 
     //result
     vec3 result = (ambient + lightAccum.rgb) * textureColor.rgb;

@@ -4,11 +4,11 @@
 #include "MainMenu.h"
 #include "LeaderBoard.h"
 //#include "MapEditorScene.h"
-     
+        
 int main() {
 	int width = 1280, height = 720;
 	const bool usingImGui = false;
-	Logger::outputLogger = true; 
+	Logger::outputLogger = true;
 
 	GLFWwindow* window = Gameloop::Start("Mecha Mayhem", width, height, usingImGui);
 	if (!window)	return 1;

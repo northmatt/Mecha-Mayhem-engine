@@ -12,7 +12,7 @@ void IlluminationBuffer::Init(unsigned width, unsigned height)
 	//illuum buffer
 	index = int((_buffers.size()));
 	_buffers.push_back(new Framebuffer());
-	_buffers[index]->AddColorTarget(GL_RGBA8);
+	_buffers[index]->AddColorTarget(GL_RGBA16F);
 	_buffers[index]->AddDepthTarget();
 	_buffers[index]->Init(width, height);
 
@@ -27,7 +27,7 @@ void IlluminationBuffer::Init(unsigned width, unsigned height)
 	index = int(_shaders.size());
 	_shaders.push_back(Shader::Create());
 	_shaders[index]->LoadShaderPartFromFile("shaders/Post/passthrough_vert.glsl", GL_VERTEX_SHADER);
-	_shaders[index]->LoadShaderPartFromFile("shaders/gBuffer_point_frag.glsl", GL_FRAGMENT_SHADER);
+	_shaders[index]->LoadShaderPartFromFile("shaders/gBuffer_directional_frag.glsl", GL_FRAGMENT_SHADER);
 	_shaders[index]->Link();
 
 	//ambient gBuffer shader
@@ -38,9 +38,7 @@ void IlluminationBuffer::Init(unsigned width, unsigned height)
 	_shaders[index]->Link();
 
 	_sunBuffer.AllocateMemory(sizeof(DirectionalLight));
-
-	if (_sunEnabled)
-	{
+	if (_sunEnabled) {
 		_sunBuffer.SendData(reinterpret_cast<void*>(&_sun), sizeof(DirectionalLight));
 	}
 
@@ -65,9 +63,8 @@ void IlluminationBuffer::ApplyEffect(GBuffer* gBuffer)
 
 		_sunBuffer.Unbind(0);
 
-		_shaders[Lights::DIRECTIONAL]->UnBind();	
+		_shaders[Lights::DIRECTIONAL]->UnBind();
 	}
-
 
 	//bind ambiet shader
 	_shaders[Lights::AMBIENT]->Bind();
@@ -87,8 +84,6 @@ void IlluminationBuffer::ApplyEffect(GBuffer* gBuffer)
 	_sunBuffer.Unbind(0);
 
 	_shaders[Lights::AMBIENT]->UnBind();
-
-
 }
 
 void IlluminationBuffer::DrawIllumBuffer()

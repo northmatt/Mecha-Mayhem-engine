@@ -188,7 +188,7 @@ namespace Rendering {
 		));
 	}*/
 
-	glm::vec4 BackColour = { 0.2f, 0.2f, 0.2f, 1.f };
+	glm::vec4 BackColour = { 0.2f, 0.2f, 0.2f, 3.f };
 	std::array<glm::vec3, MAX_LIGHTS> LightsColour = {
 	   glm::vec3(200.f),
 	   glm::vec3(15.f, 15.f, 0.f),

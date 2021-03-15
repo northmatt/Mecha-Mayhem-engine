@@ -3,13 +3,12 @@
 #include "Post/PostEffect.h"
 #include "UniformBuffer.h"
 #include "GBuffer.h"
-#include "PointLight.h"
+#include "Effects/PointLight.h"
 #include "Effects/DirectionalLight.h"
 
-enum Lights
-{
-	POINTLIGHT,
-	DIRECTIONAL,
+enum Lights {
+	POINTLLL,
+	DIRECTIONAL, 
 	AMBIENT
 };
 
@@ -44,8 +43,11 @@ private:
 	glm::vec3 _camPos;
 
 	UniformBuffer _sunBuffer;
+	UniformBuffer _pointBuffer;
 
 	bool _sunEnabled = true;
+	bool _pointEnabled = false;
 	
 	DirectionalLight _sun;
+	PointLight _light1;
 };
