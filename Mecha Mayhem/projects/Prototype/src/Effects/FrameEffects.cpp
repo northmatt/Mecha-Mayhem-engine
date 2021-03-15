@@ -21,11 +21,39 @@ void FrameEffects::Init()
 	PostEffect::Init("shaders/gBuffer_directional_frag.glsl");
 	PostEffect::Init("shaders/gBuffer_point_frag.glsl");
 	PostEffect::Init("shaders/gBuffer_ambient_frag.glsl");
+	
+	PostEffect::Init("shaders/Post/nightvision_frag.glsl");
+
 }
 
 void FrameEffects::Unload()
 {
 	PostEffect::UnloadShaders();
+}
+
+void FrameEffects::FlipDrawScreens()
+{
+	drawGBuffersIndividually = !drawGBuffersIndividually;
+}
+
+void FrameEffects::SetAlbedoBool(bool set)
+{
+	albedoBuffer = set;
+}
+
+void FrameEffects::SetNormalBool(bool set)
+{
+	normalBuffer = set;
+}
+
+void FrameEffects::SetPosDepBool(bool set)
+{
+	depthBuffer = set;
+}
+
+void FrameEffects::SetAccumBool(bool set)
+{
+	lightAccumBuffer = set;
 }
 
 void FrameEffects::Init(unsigned width, unsigned height)
@@ -86,6 +114,34 @@ void FrameEffects::UnBind()
 
 void FrameEffects::Draw(/*bool paused*/)
 {
+	//if buffers are working
+	//The code I am about to write is jank and not particularly efficient, 
+	//but it should work for the sake of the project
+	if (drawGBuffersIndividually)
+	{
+		baseEffect.DrawBuffersToScreen();
+		return;
+	}
+	if (depthBuffer)
+	{
+		baseEffect.PosDraw();
+		return;
+	}
+	else if (normalBuffer) 
+	{
+		baseEffect.NormalDraw();
+		return;
+	}
+	else if (albedoBuffer) 
+	{
+		baseEffect.AlbedoDraw();
+		return;
+	}
+	else if (lightAccumBuffer) 
+	{
+		return;
+	}
+
 	lighting.ApplyEffect(&baseEffect);
 
 	PostEffect* prev = &lighting;

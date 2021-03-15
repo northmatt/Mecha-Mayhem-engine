@@ -38,6 +38,7 @@ void DemoScene::Init(int width, int height)
 
 	m_frameEffects.Init(width, height);
 
+
 	Player::SetUIAspect(width, height);
 	Player::SetCamDistance(camDistance);
 
@@ -191,22 +192,64 @@ void DemoScene::Update()
 	if (Input::GetKeyDown(KEY::ONE))
 	{
 		std::cout << "Test one" << std::endl;
+		m_frameEffects.RemoveAllEffects();
+		//m_frameEffects.FlipDrawScreens();
+		m_frameEffects.SetAccumBool(false);
+		m_frameEffects.SetAlbedoBool(false);
+		m_frameEffects.SetNormalBool(false);
+		m_frameEffects.SetPosDepBool(false);
 	}
 	if (Input::GetKeyDown(KEY::TWO))
 	{
 		std::cout << "Test two" << std::endl;
+		m_frameEffects.SetAccumBool(false);
+		m_frameEffects.SetAlbedoBool(false);
+		m_frameEffects.SetNormalBool(false);
+		m_frameEffects.SetPosDepBool(true);
 	}
 	if (Input::GetKeyDown(KEY::THREE))
 	{
 		std::cout << "Test three" << std::endl;
+		m_frameEffects.SetAccumBool(false);
+		m_frameEffects.SetAlbedoBool(false);
+		m_frameEffects.SetNormalBool(true);
+		m_frameEffects.SetPosDepBool(false); 
 	}
 	if (Input::GetKeyDown(KEY::FOUR))
 	{
 		std::cout << "Test four" << std::endl;
+		m_frameEffects.SetAccumBool(false);
+		m_frameEffects.SetAlbedoBool(true);
+		m_frameEffects.SetNormalBool(false);
+		m_frameEffects.SetPosDepBool(false);
 	}
 	if (Input::GetKeyDown(KEY::FIVE))
 	{
 		std::cout << "Test five" << std::endl;
+	}
+	if (Input::GetKeyDown(KEY::SIX))
+	{
+		m_frameEffects.RemoveAllEffects();
+		Nightvision* _nightVision = new Nightvision;
+		_nightVision->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+		_nightVision->SetIntensity(0.5f);
+		m_frameEffects.AddEffect(_nightVision);  
+	}
+	if (Input::GetKeyDown(KEY::SEVEN))
+	{
+		m_frameEffects.RemoveAllEffects();
+		GreyscaleEffect* _nightVision = new GreyscaleEffect;
+		_nightVision->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+		_nightVision->SetIntensity(0.5f);
+		m_frameEffects.AddEffect(_nightVision);
+	}
+	if (Input::GetKeyDown(KEY::EIGHT))
+	{
+		m_frameEffects.RemoveAllEffects();
+		ToonEffect* _nightVision = new ToonEffect;
+		_nightVision->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+		//_nightVision->SetIntensity(0.5f);
+		m_frameEffects.AddEffect(_nightVision);
 	}
 }
 

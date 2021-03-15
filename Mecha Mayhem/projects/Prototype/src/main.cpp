@@ -11,15 +11,17 @@ int main() {
 	Logger::outputLogger = true;
 
 	GLFWwindow* window = Gameloop::Start("Mecha Mayhem", width, height, usingImGui);
-	if (!window)	return 1;
+	if (!window)	return 1;   
 
 	{
 		AudioEngine::Instance().GetBus("Music").SetVolume(0.25f);
 
-		// Creating demo scenes
+		// Creating demo scenes   
 		Scene::m_scenes.push_back(new MainMenu("Mecha Mayhem"));
-		Scene::m_scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0)));
+
 		Scene::m_scenes.push_back(new DemoScene("MM Demo", glm::vec3(0, -100, 0)));
+
+		Scene::m_scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0)));
 		Scene::m_scenes.push_back(new LeaderBoard("The Winner is..."));
 
 		Scene::m_scenes[0]->Init(width, height);
@@ -54,7 +56,7 @@ int main() {
 
 			if (Scene::GetExit()) {
 				break;
-			}
+			}   
 
 			if (!BackEnd::HasFocus()) {
 				if (!paused) {

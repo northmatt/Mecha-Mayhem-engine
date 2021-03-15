@@ -12,7 +12,7 @@ struct DirectionalLight
 	
 	//FLOATS
 	float _ambientPow = 1.f;
-	float _lightAmbientPow = 1000.05f;
+	float _lightAmbientPow = 0.05f;
 	float _lightSpecularPow = 1.0f;
 
 	float _shadowBias = 0.005;

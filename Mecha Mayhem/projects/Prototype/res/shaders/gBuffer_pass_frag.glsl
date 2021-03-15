@@ -17,7 +17,7 @@ layout(location = 2) out vec3 outSpecs;
 layout(location = 3) out vec3 outPositions;
 
 void main() {
-    outColors = texture(s_texture, inUV);
+    outColors = vec4(inColour, 1.0) * texture(s_texture, inUV);
 
     outNormals = (normalize(inNormal) * 0.5) + 0.5;
 

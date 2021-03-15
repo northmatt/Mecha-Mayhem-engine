@@ -7,6 +7,9 @@ out vec4 frag_color;
 
 void main() {
 	vec4 result = texture(s_texture, inUV);
-
+	if(result.a < 0.3)
+	{
+		discard;
+	}
 	frag_color = result;
 }
