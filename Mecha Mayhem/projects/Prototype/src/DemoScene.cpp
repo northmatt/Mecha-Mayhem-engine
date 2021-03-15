@@ -188,9 +188,25 @@ void DemoScene::Update()
 		}
 		m_timer = 5.f;
 	}
-	if (Input::GetKeyDown(KEY::F1))
+	if (Input::GetKeyDown(KEY::ONE))
 	{
-
+		std::cout << "Test one" << std::endl;
+	}
+	if (Input::GetKeyDown(KEY::TWO))
+	{
+		std::cout << "Test two" << std::endl;
+	}
+	if (Input::GetKeyDown(KEY::THREE))
+	{
+		std::cout << "Test three" << std::endl;
+	}
+	if (Input::GetKeyDown(KEY::FOUR))
+	{
+		std::cout << "Test four" << std::endl;
+	}
+	if (Input::GetKeyDown(KEY::FIVE))
+	{
+		std::cout << "Test five" << std::endl;
 	}
 }
 

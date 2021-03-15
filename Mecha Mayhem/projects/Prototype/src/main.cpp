@@ -4,7 +4,7 @@
 #include "MainMenu.h"
 #include "LeaderBoard.h"
 //#include "MapEditorScene.h"
-
+     
 int main() {
 	int width = 1280, height = 720;
 	const bool usingImGui = false;
@@ -18,10 +18,8 @@ int main() {
 
 		// Creating demo scenes
 		Scene::m_scenes.push_back(new MainMenu("Mecha Mayhem"));
-
-		//changed order, so we don't load into demo scene anymore
-		Scene::m_scenes.push_back(new DemoScene("MM Demo", glm::vec3(0, -100, 0)));
 		Scene::m_scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0)));
+		Scene::m_scenes.push_back(new DemoScene("MM Demo", glm::vec3(0, -100, 0)));
 		Scene::m_scenes.push_back(new LeaderBoard("The Winner is..."));
 
 		Scene::m_scenes[0]->Init(width, height);

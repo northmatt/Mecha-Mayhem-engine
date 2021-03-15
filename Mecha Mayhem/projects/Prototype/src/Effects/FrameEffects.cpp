@@ -19,8 +19,8 @@ void FrameEffects::Init()
 	PostEffect::Init("shaders/Post/toon_frag.glsl");
 
 	PostEffect::Init("shaders/gBuffer_directional_frag.glsl");
+	PostEffect::Init("shaders/gBuffer_point_frag.glsl");
 	PostEffect::Init("shaders/gBuffer_ambient_frag.glsl");
-
 }
 
 void FrameEffects::Unload()
