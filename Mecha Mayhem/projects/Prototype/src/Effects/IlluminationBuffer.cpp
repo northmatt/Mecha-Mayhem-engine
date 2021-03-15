@@ -27,7 +27,7 @@ void IlluminationBuffer::Init(unsigned width, unsigned height)
 	index = int(_shaders.size());
 	_shaders.push_back(Shader::Create());
 	_shaders[index]->LoadShaderPartFromFile("shaders/Post/passthrough_vert.glsl", GL_VERTEX_SHADER);
-	_shaders[index]->LoadShaderPartFromFile("shaders/gBuffer_point_frag.glsl", GL_FRAGMENT_SHADER);
+	_shaders[index]->LoadShaderPartFromFile("shaders/gBuffer_directional_frag.glsl", GL_FRAGMENT_SHADER);
 	_shaders[index]->Link();
 
 	//ambient gBuffer shader
@@ -39,8 +39,7 @@ void IlluminationBuffer::Init(unsigned width, unsigned height)
 
 	_sunBuffer.AllocateMemory(sizeof(DirectionalLight));
 
-	if (_sunEnabled)
-	{
+	if (_sunEnabled) {
 		_sunBuffer.SendData(reinterpret_cast<void*>(&_sun), sizeof(DirectionalLight));
 	}
 
@@ -51,11 +50,10 @@ void IlluminationBuffer::Init(unsigned width, unsigned height)
 void IlluminationBuffer::ApplyEffect(GBuffer* gBuffer)
 {
 	_sunBuffer.SendData(reinterpret_cast<void*>(&_sun), sizeof(DirectionalLight));
-	if (_sunEnabled)
-	{
-		_shaders[Lights::POINT]->Bind();
-		_shaders[Lights::POINT]->SetUniformMatrix("u_LightSpaceMatrix", _lightSpaceViewProj);
-		_shaders[Lights::POINT]->SetUniform("u_CamPos", _camPos);
+	if (_sunEnabled) {
+		_shaders[Lights::DIRECTIONAL]->Bind();
+		_shaders[Lights::DIRECTIONAL]->SetUniformMatrix("u_LightSpaceMatrix", _lightSpaceViewProj);
+		_shaders[Lights::DIRECTIONAL]->SetUniform("u_CamPos", _camPos);
 
 		_sunBuffer.Bind(0);
 
@@ -65,9 +63,8 @@ void IlluminationBuffer::ApplyEffect(GBuffer* gBuffer)
 
 		_sunBuffer.Unbind(0);
 
-		_shaders[Lights::DIRECTIONAL]->UnBind();	
+		_shaders[Lights::DIRECTIONAL]->UnBind();
 	}
-
 
 	//bind ambiet shader
 	_shaders[Lights::AMBIENT]->Bind();
@@ -87,8 +84,6 @@ void IlluminationBuffer::ApplyEffect(GBuffer* gBuffer)
 	_sunBuffer.Unbind(0);
 
 	_shaders[Lights::AMBIENT]->UnBind();
-
-
 }
 
 void IlluminationBuffer::DrawIllumBuffer()

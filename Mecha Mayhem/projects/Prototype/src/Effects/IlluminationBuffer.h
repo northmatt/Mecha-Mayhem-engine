@@ -3,13 +3,12 @@
 #include "Post/PostEffect.h"
 #include "UniformBuffer.h"
 #include "GBuffer.h"
-#include "PointLight.h"
+#include "Effects/PointLight.h"
 #include "Effects/DirectionalLight.h"
 
-enum Lights
-{
-	POINT,
-	DIRECTIONAL,
+enum Lights {
+	POINTLLL,
+	DIRECTIONAL, 
 	AMBIENT
 };
 
@@ -45,7 +44,8 @@ private:
 
 	UniformBuffer _sunBuffer;
 
-	bool _sunEnabled = true;
+	bool _sunEnabled = false;
 	
 	DirectionalLight _sun;
+	PointLight _light1;
 };
