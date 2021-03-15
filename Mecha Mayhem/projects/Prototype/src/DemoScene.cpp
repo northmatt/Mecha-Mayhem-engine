@@ -197,14 +197,26 @@ void DemoScene::Update()
 	if (Input::GetKeyDown(KEY::TWO))
 	{
 		std::cout << "Test two" << std::endl;
+		m_frameEffects.SetAccumBool(false);
+		m_frameEffects.SetAlbedoBool(false);
+		m_frameEffects.SetNormalBool(false);
+		m_frameEffects.SetPosDepBool(true);
 	}
 	if (Input::GetKeyDown(KEY::THREE))
 	{
 		std::cout << "Test three" << std::endl;
+		m_frameEffects.SetAccumBool(false);
+		m_frameEffects.SetAlbedoBool(false);
+		m_frameEffects.SetNormalBool(true);
+		m_frameEffects.SetPosDepBool(false); 
 	}
 	if (Input::GetKeyDown(KEY::FOUR))
 	{
 		std::cout << "Test four" << std::endl;
+		m_frameEffects.SetAccumBool(false);
+		m_frameEffects.SetAlbedoBool(true);
+		m_frameEffects.SetNormalBool(false);
+		m_frameEffects.SetPosDepBool(false);
 	}
 	if (Input::GetKeyDown(KEY::FIVE))
 	{
