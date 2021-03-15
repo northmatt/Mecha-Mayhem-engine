@@ -53,9 +53,9 @@ void IlluminationBuffer::ApplyEffect(GBuffer* gBuffer)
 	_sunBuffer.SendData(reinterpret_cast<void*>(&_sun), sizeof(DirectionalLight));
 	if (_sunEnabled)
 	{
-		_shaders[Lights::POINT]->Bind();
-		_shaders[Lights::POINT]->SetUniformMatrix("u_LightSpaceMatrix", _lightSpaceViewProj);
-		_shaders[Lights::POINT]->SetUniform("u_CamPos", _camPos);
+		_shaders[Lights::POINTLIGHT]->Bind();
+		_shaders[Lights::POINTLIGHT]->SetUniformMatrix("u_LightSpaceMatrix", _lightSpaceViewProj);
+		_shaders[Lights::POINTLIGHT]->SetUniform("u_CamPos", _camPos);
 
 		_sunBuffer.Bind(0);
 

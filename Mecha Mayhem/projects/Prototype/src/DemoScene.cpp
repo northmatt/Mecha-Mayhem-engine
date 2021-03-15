@@ -38,6 +38,7 @@ void DemoScene::Init(int width, int height)
 
 	m_frameEffects.Init(width, height);
 
+
 	Player::SetUIAspect(width, height);
 	Player::SetCamDistance(camDistance);
 
@@ -191,6 +192,7 @@ void DemoScene::Update()
 	if (Input::GetKeyDown(KEY::ONE))
 	{
 		std::cout << "Test one" << std::endl;
+		m_frameEffects.FlipDrawScreens();
 	}
 	if (Input::GetKeyDown(KEY::TWO))
 	{
@@ -207,6 +209,14 @@ void DemoScene::Update()
 	if (Input::GetKeyDown(KEY::FIVE))
 	{
 		std::cout << "Test five" << std::endl;
+	}
+	if (Input::GetKeyDown(KEY::SIX))
+	{
+		m_frameEffects.RemoveAllEffects();
+		Nightvision* _nightVision = new Nightvision;
+		_nightVision->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+		_nightVision->SetIntensity(0.5f);
+		m_frameEffects.AddEffect(_nightVision);  
 	}
 }
 

@@ -20,6 +20,13 @@ public:
 	//same as the init, but for unloading
 	static void Unload();
 
+	//Changing how the Gbuffer is being shown (1 screen vs 4 screens)
+	void FlipDrawScreens();
+	void SetAlbedoBool(bool set);
+	void SetNormalBool(bool set);
+	void SetPosDepBool(bool set);
+	void SetAccumBool(bool set);
+
 	//change the buffers
 	void Init(unsigned width, unsigned height);
 	void Resize(unsigned width, unsigned height);
@@ -50,6 +57,11 @@ public:
 
 private:
 	GBuffer baseEffect;
+	bool drawGBuffersIndividually = false;
+	bool depthBuffer = false;
+	bool normalBuffer = false;
+	bool albedoBuffer = false;
+	bool lightAccumBuffer = false;
 	//BufferCombiner pauseEffect;
 	IlluminationBuffer lighting;
 	std::vector<PostEffect*> layersOfEffects = {};

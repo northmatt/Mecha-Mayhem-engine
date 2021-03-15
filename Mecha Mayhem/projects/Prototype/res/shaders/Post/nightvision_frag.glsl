@@ -17,10 +17,10 @@ void main()
 	float luminence = 0.2989 * source.r + 0.587 * source.g + 0.114 * source.b;
 	//source https://tobiasbu.wordpress.com/2016/01/16/opengl-night-vision-shader/
 
-	vec3 grey = mix(source.rgb, luminence, u_Intensity);
+	vec3 grey = mix(source.rgb, vec3(luminence), u_Intensity);
 	vec3 green = vec3(0.1, 0.95, 0.2);
 
-	frag_color.rgb = grey * green
+	frag_color.rgb = grey * green;
 
 	//frag_color.rgb = source.rgb;
     frag_color.a = source.a;

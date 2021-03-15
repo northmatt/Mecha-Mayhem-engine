@@ -58,27 +58,47 @@ void GBuffer::DrawBuffersToScreen()
 	_passThrough->Bind();
 
 	glViewport(0, _windowHeight / 2.f, _windowWidth / 2.f, _windowHeight / 2.f);
-	_gBuffer.BindColorAsTexture(Target::ALBEDO, 0);
-	_gBuffer.DrawFullscreenQuad();
-	_gBuffer.UnbindTexture(0);
+	AlbedoDraw();
 
 	glViewport(_windowWidth / 2.f, _windowHeight / 2.f, _windowWidth / 2.f, _windowHeight / 2.f);
-	_gBuffer.BindColorAsTexture(Target::NORMAL, 0);
-	_gBuffer.DrawFullscreenQuad();
-	_gBuffer.UnbindTexture(0);
+	NormalDraw();
 
 	glViewport(0, 0, _windowWidth / 2.f, _windowHeight / 2.f);
-	_gBuffer.BindColorAsTexture(Target::SPECULAR, 0);
-	_gBuffer.DrawFullscreenQuad();
-	_gBuffer.UnbindTexture(0);
+	SpecDraw();
 
 	glViewport(_windowWidth / 2.f, 0, _windowWidth / 2.f, _windowHeight / 2.f);
-	_gBuffer.BindColorAsTexture(Target::POSITION, 0);
-	_gBuffer.DrawFullscreenQuad();
-	_gBuffer.UnbindTexture(0);
+	PosDraw();
 
 	//unbind passthrough
 	_passThrough->UnBind();
+}
+
+void GBuffer::PosDraw()
+{
+	_gBuffer.BindColorAsTexture(Target::POSITION, 0);
+	_gBuffer.DrawFullscreenQuad();
+	_gBuffer.UnbindTexture(0);
+}
+
+void GBuffer::SpecDraw()
+{
+	_gBuffer.BindColorAsTexture(Target::SPECULAR, 0);
+	_gBuffer.DrawFullscreenQuad();
+	_gBuffer.UnbindTexture(0);
+}
+
+void GBuffer::NormalDraw()
+{
+	_gBuffer.BindColorAsTexture(Target::NORMAL, 0);
+	_gBuffer.DrawFullscreenQuad();
+	_gBuffer.UnbindTexture(0);
+}
+
+void GBuffer::AlbedoDraw()
+{
+	_gBuffer.BindColorAsTexture(Target::ALBEDO, 0);
+	_gBuffer.DrawFullscreenQuad();
+	_gBuffer.UnbindTexture(0);
 }
 
 void GBuffer::Reshape(unsigned width, unsigned height)

@@ -26,6 +26,9 @@ private:
 	//GBuffer
 	GBuffer* gBuffer;
 
+	//Nightvision
+
+
 	float camDistance = 2.5f;
 	float m_timer = 0.f;
 

@@ -8,7 +8,7 @@
 
 enum Lights
 {
-	POINT,
+	POINTLIGHT,
 	DIRECTIONAL,
 	AMBIENT
 };
