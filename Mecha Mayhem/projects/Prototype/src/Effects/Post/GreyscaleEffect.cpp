@@ -21,6 +21,7 @@ void GreyscaleEffect::ApplyEffect(PostEffect* buffer)
 {
 	BindShader(1);
 	_shaders[1]->SetUniform("u_Intensity", _intensity);
+	_shaders[1]->SetUniform("time", rand());
 
 	buffer->BindColorAsTexture(0, 0, 0);
 

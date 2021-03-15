@@ -84,8 +84,8 @@ void main() {
 	float spec = pow(max(dot(N, h), 0.0), 4.0); // Shininess coefficient (can be a uniform)
 	vec3 specular = sun._lightSpecularPow * texSpec * spec * sun._lightCol.xyz; // Can also use a specular color
 
-    vec4 fragPosLightSpace = u_LightSpaceMatrix * vec4(fragPos, 1.0);
-	float shadow = ShadowCalculation(fragPosLightSpace, sun._shadowBias);
+    //vec4 fragPosLightSpace = u_LightSpaceMatrix * vec4(fragPos, 1.0);
+	float shadow = 0;//ShadowCalculation(fragPosLightSpace, sun._shadowBias);
 
 	vec3 result = (
 		(sun._ambientPow * sun._ambientCol.xyz) + // global ambient light

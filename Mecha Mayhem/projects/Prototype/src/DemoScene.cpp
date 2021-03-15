@@ -192,7 +192,12 @@ void DemoScene::Update()
 	if (Input::GetKeyDown(KEY::ONE))
 	{
 		std::cout << "Test one" << std::endl;
-		m_frameEffects.FlipDrawScreens();
+		m_frameEffects.RemoveAllEffects();
+		//m_frameEffects.FlipDrawScreens();
+		m_frameEffects.SetAccumBool(false);
+		m_frameEffects.SetAlbedoBool(false);
+		m_frameEffects.SetNormalBool(false);
+		m_frameEffects.SetPosDepBool(false);
 	}
 	if (Input::GetKeyDown(KEY::TWO))
 	{
@@ -229,6 +234,22 @@ void DemoScene::Update()
 		_nightVision->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
 		_nightVision->SetIntensity(0.5f);
 		m_frameEffects.AddEffect(_nightVision);  
+	}
+	if (Input::GetKeyDown(KEY::SEVEN))
+	{
+		m_frameEffects.RemoveAllEffects();
+		GreyscaleEffect* _nightVision = new GreyscaleEffect;
+		_nightVision->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+		_nightVision->SetIntensity(0.5f);
+		m_frameEffects.AddEffect(_nightVision);
+	}
+	if (Input::GetKeyDown(KEY::EIGHT))
+	{
+		m_frameEffects.RemoveAllEffects();
+		ToonEffect* _nightVision = new ToonEffect;
+		_nightVision->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+		//_nightVision->SetIntensity(0.5f);
+		m_frameEffects.AddEffect(_nightVision);
 	}
 }
 
