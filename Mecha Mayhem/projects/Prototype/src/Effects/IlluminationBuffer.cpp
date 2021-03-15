@@ -12,7 +12,7 @@ void IlluminationBuffer::Init(unsigned width, unsigned height)
 	//illuum buffer
 	index = int((_buffers.size()));
 	_buffers.push_back(new Framebuffer());
-	_buffers[index]->AddColorTarget(GL_RGBA8);
+	_buffers[index]->AddColorTarget(GL_RGBA16F);
 	_buffers[index]->AddDepthTarget();
 	_buffers[index]->Init(width, height);
 
@@ -38,7 +38,6 @@ void IlluminationBuffer::Init(unsigned width, unsigned height)
 	_shaders[index]->Link();
 
 	_sunBuffer.AllocateMemory(sizeof(DirectionalLight));
-
 	if (_sunEnabled) {
 		_sunBuffer.SendData(reinterpret_cast<void*>(&_sun), sizeof(DirectionalLight));
 	}

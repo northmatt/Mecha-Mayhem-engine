@@ -28,7 +28,6 @@ layout (std140, binding = 0) uniform u_Lights
 
 layout (binding = 0) uniform sampler2D s_albedoTex;
 layout (binding = 4) uniform sampler2D s_lightAccumTex;
-layout(binding = 5) uniform sampler2D s_skyBox;
 
 out vec4 frag_color;
 
@@ -39,15 +38,11 @@ void main()
     //light
     vec4 lightAccum = texture(s_lightAccumTex, inUV);
 
-    vec4 skybox = texture(s_skyBox, inUV);
-
     //Ambient calculation
-    vec3 ambient = ambience._lightAmbientPow * ambience._ambientCol.rgb; 
+    vec3 ambient = ambience._ambientPow * ambience._ambientCol.rgb;
 
     //result
     vec3 result = (ambient + lightAccum.rgb) * textureColor.rgb;
-    //add skybox
-    result = result * skybox.rgb;
 
     //light accum
     frag_color = vec4(result, 1.0);

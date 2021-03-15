@@ -17,6 +17,7 @@ layout(location = 0) out vec3 outPosition;
 layout(location = 1) out vec3 outNormal;
 layout(location = 2) out vec3 outColour;
 layout(location = 3) out vec3 outSpec;
+layout(location = 4) out vec2 outUV;
 
 void main() {
 	// vertex position in clip space
@@ -29,6 +30,8 @@ void main() {
 	outColour = mix(inCol1, inCol2, t);
 
 	outSpec = mix(inSpec1, inSpec2, t);
+
+	outUV = vec2(0,0);
 
 	gl_Position = MVP * vec4(pos, 1);
 }

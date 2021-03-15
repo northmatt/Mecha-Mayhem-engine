@@ -11,8 +11,8 @@ struct DirectionalLight
 	glm::vec4 _ambientCol = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
 	
 	//FLOATS
-	float _ambientPow = 0.02f;
-	float _lightAmbientPow = 0.05f;
+	float _ambientPow = 1.f;
+	float _lightAmbientPow = 1000.05f;
 	float _lightSpecularPow = 1.0f;
 
 	float _shadowBias = 0.005;
