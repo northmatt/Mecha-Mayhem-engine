@@ -9,15 +9,16 @@ namespace Rendering {
 		orthoVP.SetOrthoHeight(10.f).SetNear(-100.f).Setfar(100.f)
 			.SetIsOrtho(true).ResizeWindow(width, height).SetPosition(BLM::GLMzero);
 	}
-
+	
 	void Update(entt::registry* reg, int numOfCams, bool paused)
 	{
-		frameEffects->Clear();
+		//sending clear colour first because of illum buffer
+		glClearColor(BackColour.x, BackColour.y, BackColour.z, 0.3f);
+		frameEffects->Clear(paused);
 
-		glClearColor(BackColour.x, BackColour.y, BackColour.z, BackColour.w);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		frameEffects->Bind();
+		//frameEffects->Bind();
 
 		auto objView = reg->view<ObjLoader, Transform>();
 		auto textObjView = reg->view<MultiTextObj, Transform>();
@@ -29,7 +30,7 @@ namespace Rendering {
 
 		//reserve some queue size
 		ObjLoader::BeginDraw(objView.size());
-		ObjMorphLoader::BeginDraw(morphView.size() + spawnerView.size());
+		ObjMorphLoader::BeginDraw(morphView.size() + spawnerView.size(), effects->size());
 
 		//send all objs to the vectors
 		objView.each(
@@ -62,8 +63,10 @@ namespace Rendering {
 		short count = 0;
 		for (auto cam : cameraView)
 		{
-			//glViewport((count % 2 == 0 ? width : 0), ((count < 3) && (numOfCams > 2) ? height : 0),
-			//    width * (numOfCams == 1 ? 2 : 1), height * (numOfCams > 2 ? 1 : 2));
+			FrameEffects::Bind();
+
+			//glViewport((count % 2) * width, ((count < 2) && (numOfCams > 2)) * height,
+			//    width * ((numOfCams == 1) + 1), height * (2 - (numOfCams > 2)));
 
 			if (numOfCams > 2)
 				glViewport(((count % 2) * width), ((count < 2) * height), width, height);
@@ -79,6 +82,8 @@ namespace Rendering {
 
 			camCam.SetPosition(camTrans.GetGlobalPosition()).
 				SetForward(camTrans.GetForwards());
+
+			frameEffects->SetCamPos(camTrans.GetGlobalPosition(), count);
 
 			ObjLoader::BeginTempDraw();
 			ObjMorphLoader::BeginTempDraw();
@@ -102,33 +107,39 @@ namespace Rendering {
 			//map drawn first for transparency
 			textObjView.each(
 				[&](MultiTextObj& obj, Transform& trans) {
-					obj.Draw(trans.GetModel(), view, camCam,
-						DefaultColour, LightsPos, LightsColour, LightCount,
-						1, 4, 0.0f, AmbientColour, AmbientStrength);
+					obj.Draw(trans.GetModel(), view, camCam, glm::vec3(0));
 				}
 			);
 
 			//do all the draws
-			ObjLoader::PerformDraw(view, camCam,
-				DefaultColour, LightsPos, LightsColour, LightCount,
-				1, 4, 0.0f, AmbientColour, AmbientStrength);
-			ObjMorphLoader::PerformDraw(view, camCam,
-				DefaultColour, LightsPos, LightsColour, LightCount,
-				1, 4, 0.0f, AmbientColour, AmbientStrength);
+			ObjLoader::PerformDraw(view, camCam, DefaultColour);
+			ObjMorphLoader::PerformDraw(view, camCam, DefaultColour);
 			Sprite::PerformDraw();
 
+			FrameEffects::BindTransparency();
+
+			ObjMorphLoader::PerformDrawTrans(view, camCam);
+
+			FrameEffects::UnBindTransparency();
+			
+			//frameEffects->Bind();
 
 			//exit even if some cams haven't been checked, because only the amount specified should render
 			if (++count >= numOfCams)
 				break;
 		}
-		glViewport(0, 0, BackEnd::GetWidth(), BackEnd::GetHeight());
 
-		frameEffects->UnBind();
+		//frameEffects->UnBind();
+
+		FrameEffects::SetCamCount(numOfCams);
 	}
 
-	void RenderForShading(entt::registry* reg, const glm::mat4& lightVPMatrix)
+	void RenderForShading(entt::registry* reg)
 	{
+		glViewport(0, 0, FrameEffects::shadowWidth, FrameEffects::shadowHeight);
+
+		glm::mat4 lightVPMatrix = frameEffects->GetShadowVP();
+
 		auto objView = reg->view<ObjLoader, Transform>();
 		auto textObjView = reg->view<MultiTextObj, Transform>();
 		auto morphView = reg->view<ObjMorphLoader, Transform>();
@@ -136,46 +147,58 @@ namespace Rendering {
 		auto playerView = reg->view<Player, Transform>();
 		auto spawnerView = reg->view<Spawner, Transform>();
 
-		//reserve some queue size
-		ObjLoader::BeginDraw(objView.size());
-		ObjMorphLoader::BeginDraw(morphView.size() + spawnerView.size() + playerView.size());
-		Sprite::BeginDraw(spriteView.size());
+		//for (int i(0); i < 2; ++i) {
+			//frameEffects->BindShadowMap(i);
 
-		objView.each([](ObjLoader& obj, Transform& trans) {
-			obj.Draw(trans.GetModel());
-		});
+			FrameEffects::BindShadowMap();
 
-		morphView.each([](ObjMorphLoader& obj, Transform& trans) {
-			obj.Draw(trans.GetModel());
-		});
+			//reserve some queue size
+			ObjLoader::BeginDraw(objView.size());
+			ObjMorphLoader::BeginDraw(morphView.size());
+			Sprite::BeginDraw(spriteView.size());
+			ObjLoader::BeginTempDraw();
+			ObjMorphLoader::BeginTempDraw();
 
-		spriteView.each([](Sprite& spr, Transform& trans) {
-			spr.Draw(BLM::GLMMat, trans.GetModel());
-		});
+			objView.each([](ObjLoader& obj, Transform& trans) {
+				if (obj.GetCastShadows())
+					obj.Draw(trans.GetModel());
+				});
 
-		spawnerView.each([](Spawner& spawn, Transform& trans) {
-			spawn.Render(trans.GetModel());
-		});
+			morphView.each([](ObjMorphLoader& obj, Transform& trans) {
+				if (obj.GetCastShadows())
+					obj.Draw(trans.GetModel());
+				});
 
-		//draw all players, cams are limited from 0-3, so this ignores all cams
-		playerView.each([](Player& p, Transform& trans) {
-			p.Draw(trans.GetModel(), 4, 0, false);
-		});
+			spriteView.each([](Sprite& spr, Transform& trans) {
+				if (spr.GetCastShadows())
+					spr.Draw(BLM::GLMMat, trans.GetModel());
+				});
 
-		//draw scene specific stuff (might want to remove this, if you don't want lasers to cast shadows)
-		if (effects != nullptr) effects->Render();
+			spawnerView.each([](Spawner& spawn, Transform& trans) {
+				spawn.Render(trans.GetModel(), false);
+				});
 
-		//do all the draws
-		ObjLoader::PerformDrawShadow(lightVPMatrix);
-		ObjMorphLoader::PerformDrawShadow(lightVPMatrix);
+			//draw all players, cams are limited from 0-3, so this ignores all cams
+			playerView.each([](Player& p, Transform& trans) {
+				p.Draw(trans.GetModel(), 4, 0, false);
+				});
 
-		//make sure this runs after ObjDraw
-		Sprite::PerformDrawShadow(/*lightVPMatrix*/);
+			//draw scene specific stuff (might want to remove this, if you don't want lasers to cast shadows)
+			if (effects != nullptr) effects->Render();
 
-		//map drawn last becuase shader reuse lol
-		textObjView.each([](MultiTextObj& obj, Transform& trans) {
-				obj.DrawShadow(trans.GetModel());
-			});
+			//do all the draws
+			ObjLoader::PerformDrawShadow(lightVPMatrix);
+			ObjMorphLoader::PerformDrawShadow(lightVPMatrix);
+
+			//make sure this runs after ObjDraw
+			Sprite::PerformDrawShadow(lightVPMatrix);
+
+			//map drawn last becuase shader reuse lol
+			textObjView.each([&](MultiTextObj& obj, Transform& trans) {
+				obj.DrawShadow(lightVPMatrix * trans.GetModel());
+				});
+		//}
+		FrameEffects::UnBindShadowMap();
 	}
 
 	/*void DrawPauseScreen(Sprite image)
@@ -188,22 +211,19 @@ namespace Rendering {
 		));
 	}*/
 
-	glm::vec4 BackColour = { 0.2f, 0.2f, 0.2f, 3.f };
 	std::array<glm::vec3, MAX_LIGHTS> LightsColour = {
-	   glm::vec3(200.f),
-	   glm::vec3(15.f, 15.f, 0.f),
-	   glm::vec3(.5f), glm::vec3(.5f), glm::vec3(.5f), glm::vec3(.5f),
-	   glm::vec3(.5f), glm::vec3(.5f), glm::vec3(.5f), glm::vec3(.5f)
+	   glm::vec3(20.f),
+	   glm::vec3(1.5f, 1.5f, 0.f),
+	   glm::vec3(.25f), glm::vec3(.25f), glm::vec3(.25f), glm::vec3(.25f),
+	   glm::vec3(.25f), glm::vec3(.25f), glm::vec3(.25f), glm::vec3(.25f)
 	};
 	std::array<glm::vec3, MAX_LIGHTS> LightsPos = {
-		glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f),
-		glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f),
-		glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f)
+		glm::vec3(0.f), glm::vec3(0.f),	glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f),
+		glm::vec3(0.f),	glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f), glm::vec3(0.f)
 	};
 	size_t LightCount = 0;
+	glm::vec3 BackColour = { 0.2f, 0.2f, 0.2f };
 	glm::vec3 DefaultColour = glm::vec3(1.f);
-	glm::vec3 AmbientColour = glm::vec3(1.f);
-	glm::float32 AmbientStrength = 1.f;
 
 	HitboxGen* hitboxes = nullptr;
 	Effects* effects = nullptr;

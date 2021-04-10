@@ -1,55 +1,38 @@
-#version 410
-#define MAX_LIGHTS 10
+#version 420
 layout(location = 0) in vec3 inPos;
 layout(location = 1) in vec3 inNormal;
 
 uniform vec3 colour;
-uniform vec3 camPos;
-
-uniform vec3  lightsPos[MAX_LIGHTS];
-uniform vec3  lightsColour[MAX_LIGHTS];
-uniform int lightCount;
-
-uniform float ambientLightStrength;
-uniform vec3  ambientColour;
-uniform float ambientStrength;
-
 uniform vec3 addColour;
 
-uniform float specularStrength;
+uniform float emissiveness;
 uniform float shininess;
+uniform int receiveShadows;
+uniform int rimLighting;
 
-out vec4 frag_color;
+//multi render target
+//we can render colour to all of these
+layout(location = 0) out vec4 outColours;
+layout(location = 1) out vec3 outNormals;
+layout(location = 2) out vec4 outSpecs;
+layout(location = 3) out vec3 outPositions;
+layout(location = 4) out vec4 outEmissive;
 
 void main() {
-	//optimized for less garbage collection and memory mangement
+	//other classes store in material
+	outSpecs.x = float(!bool(emissiveness));
+	outSpecs.y = shininess;
+	outSpecs.z = receiveShadows;
+	outSpecs.w = rimLighting;
 
-	//spec = floor(spec * 5) * 0.2;
-	//	if (spec < 0.25)
-	//		spec = 0;
-	//	else if (spec < 0.5)
-	//		spec = 0.25;
-	//	else if (spec < 0.75)
-	//		spec = 0.5;
-	//	else if (spec < 1)
-	//		spec = 0.75;
-
-	vec3 N = normalize(inNormal);
-	vec3 camDir = normalize(camPos - inPos);
-	vec3 lightDir = vec3(0.0, 0.0, 0.0);
-	float lightDistSq = 0.0;
-	vec3 total = vec3(0.0, 0.0, 0.0);
+	//colours
+	outColours.rgb = vec3(colour + addColour) * outSpecs.x;
+	outColours.a = 1.0;
+	outEmissive = vec4(colour + addColour, 1.0) * emissiveness;
 	
-	for(int i = 0; i < lightCount; ++i) {
-		lightDir = lightsPos[i] - inPos;
-		lightDistSq = dot(lightDir, lightDir);
-		lightDir = normalize(lightDir);
+	//outputs normals as colour
+	outNormals = (normalize(inNormal) * 0.5) + 0.5;
 
-		//								 diffuse					  SpecStrength													 ShininessCoefficient
-		total += (ambientLightStrength + max(dot(N, lightDir), 0.0) + specularStrength * pow(max(dot(N, normalize(camDir + lightDir)), 0.0), shininess)) / lightDistSq * lightsColour[i];
-	}
-
-	vec3 result = (ambientColour * ambientStrength + total) * (colour + addColour);
-
-	frag_color = vec4(result, 1);
+	//positions 
+	outPositions = inPos;
 }

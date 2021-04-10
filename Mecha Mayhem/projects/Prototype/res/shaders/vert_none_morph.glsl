@@ -4,19 +4,13 @@ layout(location = 1) in vec3 inPos2;
 layout(location = 2) in vec3 inNorm1;
 layout(location = 3) in vec3 inNorm2;
 
-uniform float t;
-
 uniform mat4 MVP;
 uniform mat4 transform;
-uniform vec3 colour;
-uniform float specularStrength;
-uniform float shininess;
+
+uniform float t;
 
 layout(location = 0) out vec3 outPosition;
 layout(location = 1) out vec3 outNormal;
-layout(location = 2) out vec3 outColour;
-layout(location = 3) out vec3 outSpecStrength;
-layout(location = 4) out vec2 outUV;
 
 void main() {
 	// vertex position in clip space

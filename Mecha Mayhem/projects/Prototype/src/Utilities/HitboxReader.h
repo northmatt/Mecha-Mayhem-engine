@@ -7,7 +7,7 @@ class HitboxGen
 {
 public:
 	HitboxGen() {}
-	~HitboxGen() { m_world = nullptr; }
+	~HitboxGen() { Clear(); }
 
 	bool ToggleDraw() {
 		return m_draw = !m_draw;
@@ -65,24 +65,24 @@ public:
 	glm::vec3 SetSpawnNear(Player& p, glm::vec3 testPos, float range) {
 		if (m_spawnLocations.size() == 0)	return BLM::GLMzero;
 
-		//for loop in case it never hits anything
-		int index = rand() % m_spawnLocations.size();
-		glm::vec3 pos = m_spawnLocations[index].pos;
-		//limit how many tries it does (in case all attempts fail)
-		for (int i(0); i < 25; ++i) {
-			if (glm::length(testPos - pos) < range) {
-				//success
-				break;
+		std::vector<int> tempIndex = {};
+
+		//try every location
+		for (int i(0); i < m_spawnLocations.size(); ++i) {
+			if (glm::length(testPos - m_spawnLocations[i].pos) < range) {
+				//success, add it
+				tempIndex.push_back(i);
 			}
-			//re-get one
-			index = rand() % m_spawnLocations.size();
-			pos = m_spawnLocations[index].pos;
 		}
 
-		p.SetSpawn(pos);
+		int index = rand() % m_spawnLocations.size();
+		if (tempIndex.size()) {
+			index = tempIndex[rand() % tempIndex.size()];
+		}
+		p.SetSpawn(m_spawnLocations[index].pos);
 		p.SetRotation(m_spawnLocations[index].roty, m_spawnLocations[index].rotx);
 
-		return pos;
+		return m_spawnLocations[index].pos;
 	}
 
 	void SetSpawnAvoid(Player& p, std::vector<glm::vec3> tests, float range) {
@@ -113,6 +113,7 @@ public:
 		p.SetRotation(m_spawnLocations[index].roty, m_spawnLocations[index].rotx);
 	}
 
+	//reset everything
 	void Clear() {
 		m_draw = false;
 		m_current = 0;

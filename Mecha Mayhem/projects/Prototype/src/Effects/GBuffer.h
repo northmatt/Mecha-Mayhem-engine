@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Effects/Post/PostEffect.h"
+#include "Post/PostEffect.h"
 
 enum Target
 {
@@ -8,12 +8,18 @@ enum Target
 	NORMAL,
 	SPECULAR,
 	POSITION,
+	EMISSIVE
 };
 
 
 class GBuffer
 {
 public:
+	GBuffer();
+	~GBuffer();
+
+	void Unload();
+
 	//Initialize this effects (will be overriden in each derived class)
 	void Init(unsigned width, unsigned height);
 
@@ -33,13 +39,17 @@ public:
 	void UnbindLighting();
 
 	//Draws out the buffers to the screen
-	void DrawBuffersToScreen();
+	void DrawBuffersToScreen(int test);
 
 	//Reshape the framebuffer
 	void Reshape(unsigned width, unsigned height);
+
+	Framebuffer& GetGBuffer() {
+		return _gBuffer;
+	}
 private:
 	Framebuffer _gBuffer;
-	Shader::sptr _passThrough;
+	Shader::sptr _passThrough = nullptr;
 
 	int _windowWidth;
 	int _windowHeight;

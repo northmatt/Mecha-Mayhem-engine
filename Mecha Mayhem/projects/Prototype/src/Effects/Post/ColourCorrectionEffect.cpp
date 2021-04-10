@@ -15,6 +15,8 @@ void ColourCorrection::Init(unsigned width, unsigned height)
 		_shaders.push_back(GetShader("shaders/Post/passthrough_frag.glsl"));
 		_shaders.push_back(GetShader("shaders/Post/color_correction_frag.glsl"));
 	}
+
+	_shaders[1]->SetUniform("u_Intensity", _intensity);
 }
 
 void ColourCorrection::ApplyEffect(PostEffect* buffer)
@@ -38,9 +40,21 @@ void ColourCorrection::Unload()
 	PostEffect::Unload();
 }
 
+void ColourCorrection::SetIntensity(float intensity)
+{
+	_intensity = intensity;
+
+	_shaders[1]->SetUniform("u_Intensity", _intensity);
+}
+
 void ColourCorrection::SetCube(LUT3D &cube)
 {
 	_cube = &cube;
+}
+
+float ColourCorrection::GetIntensity() const
+{
+	return _intensity;
 }
 
 LUT3D ColourCorrection::GetCube() const

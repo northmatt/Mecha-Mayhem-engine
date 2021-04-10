@@ -1,14 +1,12 @@
 #pragma once
-
-#include "Post/PostEffect.h"
-#include "UniformBuffer.h"
 #include "GBuffer.h"
-#include "Effects/PointLight.h"
-#include "Effects/DirectionalLight.h"
+#include "Utilities/Lighting/UniformBuffer.h"
+#include "Utilities/Lighting/PointLight.h"
+#include "Utilities/Lighting/DirectionalLight.h"
 
-enum Lights {
-	POINTLLL,
-	DIRECTIONAL, 
+enum Lights
+{
+	DIRECTIONAL = 1,
 	AMBIENT
 };
 
@@ -25,10 +23,18 @@ public:
 	//Can only apply effect using GBuffer object
 	void ApplyEffect(GBuffer* gBuffer);
 
-	void DrawIllumBuffer();
+	//basically useless in our version
+	//void DrawIllumBuffer();
 
 	void SetLightSpaceViewProj(glm::mat4 lightSpaceViewProj);
-	void SetCamPos(glm::vec3 camPos);
+	void SetCamPos(glm::vec3 camPos, int camNum);
+	void SetCamCount(int camNum);
+	void SendLights(std::array<glm::vec3, MAX_LIGHTS>& lightsPos,
+					std::array<glm::vec3, MAX_LIGHTS>& lightsColour, int LightCount) {
+		_shaders[Lights::DIRECTIONAL]->SetUniform("lightsPos", *lightsPos.data(), LightCount);
+		_shaders[Lights::DIRECTIONAL]->SetUniform("lightsColour", *lightsColour.data(), LightCount);
+		_shaders[Lights::DIRECTIONAL]->SetUniform("lightCount", LightCount);
+	}
 
 	DirectionalLight& GetSunRef();
 	
@@ -37,17 +43,19 @@ public:
 	void SetSun(glm::vec4 lightDir, glm::vec4 lightCol);
 
 	void EnableSun(bool enabled);
+	bool GetSunEnabled() const;
 
 private:
 	glm::mat4 _lightSpaceViewProj;
-	glm::vec3 _camPos;
+	std::array<glm::vec3, 4> _camPos = {
+		glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec3(0)
+	};
 
-	UniformBuffer _sunBuffer;
-	UniformBuffer _pointBuffer;
+	int _camCount = 1;
 
 	bool _sunEnabled = true;
-	bool _pointEnabled = false;
+
+	UniformBuffer _sunBuffer;
 	
 	DirectionalLight _sun;
-	PointLight _light1;
 };

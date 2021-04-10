@@ -13,10 +13,10 @@ public:
 	}
 
 private:
-	static float m_lastClock;
-	static const float tooLong;
+	static double m_lastClock;
+	static const double tooLong;
 };
 //Delta Time
 inline float Time::dt = 0;
-inline float Time::m_lastClock = 0;
-inline const float Time::tooLong = 0.5f;
+inline double Time::m_lastClock = 0;
+inline const double Time::tooLong = 0.5f;

@@ -1,5 +1,6 @@
 start 0 time 0
-anim 0 0.2
+anim 0 0
 anim 1 0.05
-anim 2 0.075
-anim 3 0.075
+anim 2 0.11
+anim 3 0.12
+anim 4 0.12

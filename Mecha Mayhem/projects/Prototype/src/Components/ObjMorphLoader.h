@@ -61,20 +61,35 @@ public:
 	ObjMorphLoader& SetSpeed(float speed) { m_speed = speed; return *this; }
 	float GetSpeed() { return m_speed; }
 
+	ObjMorphLoader& SetReceiveShadows(bool choice) { m_receiveShadows = choice; return *this; }
+	bool GetReceiveShadows() { return m_receiveShadows; }
+	ObjMorphLoader& SetCastShadows(bool choice) { m_castShadows = choice; return *this; }
+	bool GetCastShadows() { return m_castShadows; }
+	ObjMorphLoader& SetRimLighting(bool choice) { m_rimLighting = choice; return *this; }
+	bool GetRimLighting() { return m_rimLighting; }
+
 	void Update(float dt);
 
-	static void BeginDraw(unsigned amt = 0);
+	static void BeginDraw(unsigned amt = 0, unsigned transAmt = 0);
 	static void BeginTempDraw();
 
-	void Draw(const glm::mat4& model, const glm::vec3& colour = glm::vec3(0.f));
-	void DrawTemp(const glm::mat4& model, const glm::vec3& colour = glm::vec3(0.f));
+	void DrawTrans(const glm::mat4& model, const glm::vec3& colour = BLM::GLMzero);
+	void Draw(const glm::mat4& model, const glm::vec3& colour = BLM::GLMzero);
+	void DrawTemp(const glm::mat4& model, const glm::vec3& colour = BLM::GLMzero);
 
-	static void PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour,
+	/*static void PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour,
 		const std::array<glm::vec3, MAX_LIGHTS>& lightPos, const std::array<glm::vec3, MAX_LIGHTS>& lightColour, const int& lightCount,
 		float specularStrength = 1.f, float shininess = 4,
 		float ambientLightStrength = 0.05f, const glm::vec3& ambientColour = glm::vec3(0.f), float ambientStrength = 0.f
-	);
+	);*/
+
+	static void PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour, float emissiveness = 0, float shininess = 4);
+	static void PerformDrawTrans(const glm::mat4& view, const Camera& camera);
+
 	static void PerformDrawShadow(const glm::mat4& lightVPMatrix);
+
+	glm::vec3 GetAdditiveColour() { return m_colour; }
+	void SetAdditiveColour(const glm::vec3& colour) { m_colour = colour; }
 
 	void Enable() { m_enabled = true; }
 	void Disable() { m_enabled = false; }
@@ -104,7 +119,7 @@ private:
 		std::vector<Frames> frames = {};
 		size_t start = 0;
 		size_t t = 0;
-		size_t texture = INT_MAX;
+		int texture = -1;
 		VertexBuffer::sptr UVs = nullptr;
 	};
 
@@ -113,9 +128,12 @@ private:
 		VertexArrayObject::sptr vao;
 		glm::mat4 model;
 		glm::vec3 colour;
-		size_t texture = 0;
+		int shaded;
+		int rimLit;
+		int texture = -1;
 	};
 
+	static std::vector<DrawData> m_transQueue;
 	static std::vector<DrawData> m_texQueue;
 	static std::vector<DrawData> m_matQueue;
 	static std::vector<DrawData> m_defaultQueue;
@@ -147,13 +165,18 @@ private:
 
 	size_t m_p0 = 0;
 	size_t m_p1 = 0;
-	size_t m_index = INT_MAX;
-	size_t m_indexHold = INT_MAX;
 	size_t m_p0Hold = 0;
+	int m_index = -1;
+	int m_indexHold = -1;
 
+	bool m_castShadows = true;
+	bool m_receiveShadows = true;
+	bool m_rimLighting = false;
 	bool m_reversing = false;
 	bool m_bounce = false;
 	bool m_loop = false;
 	bool m_blend = false;
 	bool m_enabled = false;
+
+	glm::vec3 m_colour = BLM::GLMzero;
 };

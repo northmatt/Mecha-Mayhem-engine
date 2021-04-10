@@ -8,6 +8,7 @@ const glm::vec4 Player::m_gunOffset = glm::vec4(
 	0.3f, -0.3f, -0.4f, 1
 );
 
+const glm::mat4 Player::m_rotation90 = glm::rotate(BLM::GLMMat, glm::radians(90.f), glm::vec3(0.f, 0.f, 1.f));
 const glm::mat4 Player::m_gunOffsetMat = glm::mat4(
 	1, 0, 0, 0,
 	0, 1, 0, 0,
@@ -22,20 +23,16 @@ const glm::mat4 Player::m_swordOffsetMat = glm::mat4(
 	-0.2f, 0.4f, 0.4f, 1
 );
 
-const glm::mat4 Player::m_modelOffset = glm::mat4(
-	0, 0, 0, 0,
-	0, 0, 0, 0,
-	0, 0, 0, 0,
-	0, -1, 0, 0
-);
 //Gun stuff												
 														//type,				ammo,	damage, cooldown,	movementSpeed,  maxRange (default 2000)
 const Player::GunProperties Player::pistol			{ WEAPON::PISTOL,		30,		25,		0.4f,		 10.f,				50.f };
 const Player::GunProperties Player::rifle			{ WEAPON::RIFLE,		7,		80,		3.5f,		 10.f };
-const Player::GunProperties Player::cannon			{ WEAPON::CANNON,		3,		50,		2.f,		 10.f };
-const Player::GunProperties Player::missileLauncher	{ WEAPON::MISSILE,		1,		100,	3.f,		 10.f };
-const Player::GunProperties Player::shotgun			{ WEAPON::SHOTGUN,		10,		30,		2.f,		 10.f,		25.f };
+const Player::GunProperties Player::cannon			{ WEAPON::CANNON,		3,		50,		2.5f,		 10.f,				75.f };
+const Player::GunProperties Player::shotgun			{ WEAPON::SHOTGUN,		10,		30,		2.f,		 10.f,				25.f };
 const Player::GunProperties Player::machineGun		{ WEAPON::MACHINEGUN,	50,		7,		0.1f,		 10.f };
+
+const float Player::m_maxSensitivity = 7.5f;
+const float Player::m_minSensitivity = 0.75f;
 
 float Player::m_camDistance = 5.f;
 float Player::m_dashDistance = 7.5f;
@@ -44,7 +41,6 @@ glm::vec3 Player::m_skyPos = glm::vec3(0, 50, 0);
 Camera Player::m_orthoCam = {};
 Sprite Player::m_healthBarOutline = {};
 Sprite Player::m_healthBar = {};
-Sprite Player::m_healthBarDamaged = {};
 Sprite Player::m_healthBarBack = {};
 Sprite Player::m_dashBarOutline = {};
 Sprite Player::m_dashBar = {};
@@ -106,7 +102,6 @@ void Player::Init(int width, int height)
 
 	m_healthBarOutline = { "ui/healthbar.png", 15.96f, 1.5f };
 	m_healthBar = { glm::vec4(1, 0, 0, 1.f), 14.95f, 0.9f };
-	m_healthBarDamaged = { glm::vec4(1, 1, 1, 1.f), 14.95f, 0.9f };
 	m_healthBarBack = { glm::vec4(0, 0, 0, 1.f), 14.95f, 0.9f };
 
 	m_dashBarOutline = { "ui/energybar.png", 10.38f, 1.5f };
@@ -118,7 +113,7 @@ void Player::Init(int width, int height)
 	
 
 	m_reticle = { "ui/reticle.png", 1.f, 1.f };
-	m_scoreBack = { "ui/ScoreBox.png", 3.f, 3.223f };
+	m_scoreBack = { "ui/ScoreBox.png", 3.760f, 3.5f };
 	for (int i(0); i < 10; ++i)	m_digits[i] = { "num/" + std::to_string(i) + ".png", 1.25f, 1.6667f };
 
 	m_heal2 = { "ui/heal2.png", 2.f, 1.70f };
@@ -131,18 +126,14 @@ void Player::Init(int width, int height)
 	m_shotgunIcon = { "ui/shotgun.png", 2.f, 1.48f };
 
 	ObjMorphLoader("dummy/idle", true).LoadMeshs("dummy/death", true);
-	ObjMorphLoader("char/idle", true).LoadMeshs("char/walk", true)
-		.LoadMeshs("char/air", true).LoadMeshs("char/death", true)
-		.LoadMeshs("char/punch", true);
-	ObjMorphLoader("char2/idle", true).LoadMeshs("char2/walk", true)
-		.LoadMeshs("char2/air", true).LoadMeshs("char2/death", true)
-		.LoadMeshs("char2/punch", true);
-	ObjMorphLoader("char3/idle", true).LoadMeshs("char3/walk", true)
-		.LoadMeshs("char3/air", true).LoadMeshs("char3/death", true)
-		.LoadMeshs("char3/punch", true);
-	ObjMorphLoader("char4/idle", true).LoadMeshs("char4/walk", true)
-		.LoadMeshs("char4/air", true).LoadMeshs("char4/death", true)
-		.LoadMeshs("char4/punch", true);
+	
+	//init all player morphs
+	for (int i(1); i <= 6; ++i) {
+		std::string name = "char" + std::to_string(i);
+		ObjMorphLoader(name + "/idle", true).LoadMeshs(name + "/walk", true)
+			.LoadMeshs(name + "/air", true).LoadMeshs(name + "/death", true)
+			.LoadMeshs(name + "/punch", true);
+	}
 }
 
 void Player::Unload()
@@ -168,19 +159,32 @@ Player& Player::Init(CONUSER user, int characterModel, const glm::vec3& colour, 
 	m_camPos = camPos;
 	m_colour = colour;
 
+	/*
 	switch (characterModel) {
 		//dummy (case 0 is also here)
 	default:	m_charModelIndex = "dummy";	m_charModel.LoadMeshs("dummy/idle", true);	m_user = CONUSER::NONE;	break;
 		//JJ's
-	case 1:		m_charModelIndex = "char";	m_charModel.LoadMeshs("char/idle", true);	break;
+	case 1:		m_charModelIndex = "char1";	m_charModel.LoadMeshs("char1/idle", true);	break;
 		//JL's
 	case 2:		m_charModelIndex = "char2";	m_charModel.LoadMeshs("char2/idle", true);	break;
 		//Ryan's
 	case 3:		m_charModelIndex = "char3";	m_charModel.LoadMeshs("char3/idle", true);	break;
-		//Bag
+		//Ryan's 2
 	case 4:		m_charModelIndex = "char4";	m_charModel.LoadMeshs("char4/idle", true);	break;
+		//bag
+	case 5:		m_charModelIndex = "char5";	m_charModel.LoadMeshs("char5/idle", true);	break;
 	}
+	*/
+	if (characterModel == 0) {
+		m_charModelIndex = "dummy";
+		m_user = CONUSER::NONE;
+	}
+	else {
+		m_charModelIndex = "char" + std::to_string(characterModel);
+	}
+	m_charModel.LoadMeshs(m_charModelIndex + "/idle", true);
 
+	m_charModel.SetRimLighting(true);
 	return *this;
 }
 
@@ -189,18 +193,22 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 	glm::mat4 tempModel = model;
 
 	if (m_camPos == camNum) {
-		if (m_charModelIndex == "char4")
+		//bag man
+		if (m_charModelIndex == "char6")
 			tempModel = glm::scale(model, glm::vec3(0.75f, 1.f, 0.75f));
 
 		//draw ui
 		float healthPercent = float(m_health) / m_maxHealth;
 		float dashPercent = m_dashTimer / m_dashDelay,
-			x = 15.7777f,	//1.77 * 10 - 2
+			//scorebox
+			x = 15.2777f,	//1.77 * 10 - 2
 			y = 7.5f,
+			//gun icons
 			x2 = 15.7777f,	//1.77 * 10 - 2
 			//x2 = 15.9277f,	//1.77 * 10 - 1.85
-			y2 = 4.5f,		//places weapons below score
-			x3 = 12.7777f,	//x - 3
+			y2 = 4.25f,		//places weapons below score
+			//heal icon
+			x3 = 11.7777f,	//x - 3.5
 			y3 = 7.5f;		//places heal besides score
 
 			//x4 x2 - 1.5
@@ -214,7 +222,7 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 			//x3 = 9.f;
 			//x4 = 14.f;
 			y = 5.f;
-			y2 = 2.f; // -2.5f
+			y2 = 1.75f; // -2.5f
 			y3 = 5.f;
 		}
 		if (numOfCams == 2) {
@@ -233,8 +241,8 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 
 		if (numOfCams > 2) 
 		{
-			UIMat *= 1.25f;
 			scaleMod = 1.25f;
+			UIMat *= scaleMod;
 		}
 
 		UIMat[3] = glm::vec4(x, y, -9.9f, 1);
@@ -255,10 +263,10 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		}
 		else {
 			UIMat[3][0] = x - 0.65f * scaleMod;
-			m_digits[0].DrawToUI(VP, UIMat, camNum);
+			m_digits[9].DrawToUI(VP, UIMat, camNum);
 
 			UIMat[3][0] = x + 0.65f * scaleMod;
-			m_digits[0].DrawToUI(VP, UIMat, camNum);
+			m_digits[9].DrawToUI(VP, UIMat, camNum);
 		}
 
 
@@ -290,23 +298,15 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		UIMat = BLM::GLMMat;
 
 		UIMat[3] = glm::vec4((1 - healthPercent) * 7.475f, -8.5f, -9.9f, 1);
-		if (m_damageCounter) 
-		{
-			m_healthBarDamaged.SetWidth(14.95f * healthPercent);
-			m_healthBarDamaged.DrawToUI(VP, UIMat, camNum);
-		}
-		else 
-		{
-			m_healthBar.SetWidth(14.95f * healthPercent);
-			m_healthBar.DrawToUI(VP, UIMat, camNum);
-		}
+		m_healthBar.SetWidth(14.95f * healthPercent);
+		m_healthBar.DrawToUI(VP, UIMat, camNum, glm::vec3(m_damageCounter * 2.f));
 
 		UIMat[3] = glm::vec4(0, -8.5f, -9.8f, 1);
 		m_healthBarBack.DrawToUI(VP, UIMat, camNum);
 
 		UIMat[3] = glm::vec4(dashPercent * 4.575f, -7.25f, -9.9f, 1);
 		m_dashBar.SetWidth(9.15f * (1 - dashPercent));
-		m_dashBar.DrawToUI(VP, UIMat, camNum);
+		m_dashBar.DrawToUI(VP, UIMat, camNum, glm::vec3((dashPercent != 0) * -0.25f));
 
 		UIMat[3] = glm::vec4(0, -7.25f, -9.8f, 1);
 		m_dashBarBack.DrawToUI(VP, UIMat, camNum);
@@ -319,9 +319,29 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 		UIMat[3] = glm::vec4(0, -7.25f, -10.f, 1);
 		m_dashBarOutline.DrawToUI(VP, UIMat, camNum);
 
+		//draw sensitivity ui when paused
+		if (paused) {
+			float xPercent = m_sensitivity.x / m_maxSensitivity;
+			float yPercent = m_sensitivity.y / m_maxSensitivity;
+			float tempY = (numOfCams == 1) * -3.f;
 
-		if (!paused && IsAlive()) {
-			UIMat[3] = glm::vec4(0, 0, -10, 1);
+			UIMat *= scaleMod;
+
+			UIMat[3] = glm::vec4(0.f, tempY, -9.7f, 1);
+			m_ammoBarBack.DrawToUI(VP, UIMat, camNum);
+			UIMat[3] = glm::vec4(0.f, tempY + (yPercent - 1.f) * scaleMod, -9.9f, 1);
+			m_ammoBar.SetHeight(2.f * yPercent);
+			m_ammoBar.DrawToUI(VP, UIMat, camNum);
+
+			UIMat = m_rotation90 * scaleMod;
+			UIMat[3] = glm::vec4(0.f, tempY, -9.8f, 1);
+			m_ammoBarBack.DrawToUI(VP, UIMat, camNum);
+			UIMat[3] = glm::vec4((1.f - xPercent) * scaleMod, tempY, -10.f, 1);
+			m_ammoBar.SetHeight(2.f * xPercent);
+			m_ammoBar.DrawToUI(VP, UIMat, camNum);
+		}
+		else if (IsAlive()) {
+			UIMat[3] = glm::vec4(0, 0, -10.f, 1);
 			m_reticle.DrawToUI(VP, UIMat, camNum);
 		}
 
@@ -335,9 +355,17 @@ void Player::Draw(const glm::mat4& model, short camNum, short numOfCams, bool pa
 	if (!m_punched && m_currWeapon != WEAPON::FIST) {
 		GetWeaponModel(m_currWeapon).DrawTemp(model * m_gunOffsetMat);
 	}
-	m_charModel.DrawTemp(tempModel + m_modelOffset, m_colour - glm::vec3(sinf(m_damageCounter * 21.f)));
+
+	//temporary Fix for misaligned players
+	tempModel = glm::translate(tempModel, glm::vec3(0, -1, 0));
+
+	//have rim lighting on all other players
+	//m_charModel.SetRimLighting(m_camPos != camNum);
+
+	m_charModel.DrawTemp(tempModel, m_colour - glm::vec3(sinf(m_damageCounter * 21.f)));
 	if (m_respawnTimer > 0) {
-		m_heliDrone.DrawTemp(model - m_modelOffset);
+		tempModel = glm::translate(tempModel, glm::vec3(0, 1, 0));
+		m_heliDrone.DrawTemp(tempModel);
 	}
 
 }
@@ -373,7 +401,6 @@ void Player::Update(PhysBody& body)
 			//put somewhere inaccessible
 			body.SetPosition(btVector3(0, 1000, 0));
 
-			ClearWeapons();
 			//m_deathSound.play();
 		}
 
@@ -451,9 +478,9 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 
 	//Camera Rotation (above punch for user experience)
 	{
-		float multiplier = 2.f * (1 - ControllerInput::GetLT(m_user)) + 1.f;
-		m_rot.x += ControllerInput::GetRY(m_user) * multiplier * 0.75f * Time::dt;
-		m_rot.y += ControllerInput::GetRX(m_user) * multiplier * Time::dt;
+		float multiplier = 1.f - (ControllerInput::GetLT(m_user) * 0.666f);
+		m_rot.x += ControllerInput::GetRY(m_user) * multiplier * m_sensitivity.y * Time::dt;
+		m_rot.y += ControllerInput::GetRX(m_user) * multiplier * m_sensitivity.x * Time::dt;
 
 		//clamping vertical axis
 		if (m_rot.x > pi)			m_rot.x = pi;
@@ -505,7 +532,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 			xPos = 0;
 		}
 		if (!ControllerInput::GetButton(BUTTON::B, m_user))
-			distance *= multiplier * 0.333f;
+			distance *= multiplier;
 		if (m_drawSelf)		m_drawSelf = (distance > 0.75f);
 		personalCam.SetPosition(glm::vec3(xPos, 0, distance));
 	}
@@ -520,6 +547,7 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 		else	return;
 	}
 
+	m_bodPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
 	//controls
 	{
 		glm::vec3 vel = glm::vec3(0.f);
@@ -541,21 +569,21 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 
 			if (m_punched = ControllerInput::GetButtonDown(BUTTON::X, m_user)) {
 				//punch only when on ground
-				body.SetVelocity(BLM::BTtoGLM(
-					Melee(BLM::BTtoGLM(body.GetTransform().getOrigin()) - head.GetForwards())
-				));
+				body.SetVelocity(BLM::BTtoGLM(Melee(m_bodPos - head.GetForwards())));
 				return;
 			}
 			else {
 				//ground anims
 				if (vel.x != 0 || vel.z != 0) {
 					m_charModel.SetSpeed(std::max(fabsf(vel.x), fabsf(vel.z))).
-						BlendTo(m_charModelIndex + "/walk");
-					if (m_charModel.Getp0() == 0 || m_charModel.Getp0() == 4) {
+						BlendTo(m_charModelIndex + "/walk", 0.1f, m_walkFrame);
+					m_walkFrame = m_charModel.Getp0();
+					if (m_walkFrame == 0 || m_walkFrame == 4) {
 						if (!m_stepped) {
 
 							//m_walk[rand() % 5].play();
-							AudioEngine::Instance().GetEvent("step").Restart();
+							//AudioEngine::Instance().GetEvent("step").Restart();
+							SoundEventManager::Play(SoundEventManager::SOUND::STEP, m_bodPos);
 
 							m_stepped = true;
 						}
@@ -600,14 +628,13 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 					//if (ControllerInput::GetButtonDown(BUTTON::RB, m_user)) {
 					if (ControllerInput::GetButton(BUTTON::LB, m_user)) {
 						m_dashTimer = m_dashDelay;
-						glm::vec3 ogPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
-						btVector3 pos = PhysBody::GetRaycastWithDistanceLimit(ogPos,
+						btVector3 pos = PhysBody::GetRaycastWithDistanceLimit(m_bodPos,
 							glm::vec3(vel.x, 0, vel.z) * m_dashDistance * 10.f, m_dashDistance);
 
 						glm::vec3 newPos = BLM::BTtoGLM(pos);
 						Rendering::effects->ShootDash(glm::rotation(
 							glm::normalize(glm::vec3(vel.x, 0, -vel.z)), glm::vec3(0, 0, 1)),
-							newPos, glm::length(newPos - ogPos));
+							newPos, glm::length(newPos - m_bodPos));
 						body.SetPosition(pos);
 					}
 				}
@@ -617,14 +644,13 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 				//if (ControllerInput::GetButtonDown(BUTTON::RB, m_user)) {
 				if (ControllerInput::GetButton(BUTTON::LB, m_user)) {
 					m_dashTimer = m_dashDelay;
-					glm::vec3 ogPos = BLM::BTtoGLM(body.GetTransform().getOrigin());
-					btVector3 pos = PhysBody::GetRaycastWithDistanceLimit(ogPos,
+					btVector3 pos = PhysBody::GetRaycastWithDistanceLimit(m_bodPos,
 						glm::vec4(0, 0, m_dashDistance * -50.f, 1)
 						* glm::rotate(BLM::GLMMat, m_rot.y, BLM::GLMup), m_dashDistance);
 
 					glm::vec3 newPos = BLM::BTtoGLM(pos);
 					Rendering::effects->ShootDash(BLM::BTtoGLM(body.GetTransform().getRotation()),
-						newPos, glm::length(newPos - ogPos));
+						newPos, glm::length(newPos - m_bodPos));
 					body.SetPosition(pos);
 				}
 			}
@@ -661,6 +687,35 @@ void Player::GetInput(PhysBody& body, Transform& head, Transform& personalCam)
 	}
 
 	return;
+}
+
+glm::vec2 Player::EditSensitivity()
+{
+	if (ControllerInput::GetButton(BUTTON::DLEFT, m_user)) {
+		m_sensitivity.x -= Time::dt * 1.f;
+		if (m_sensitivity.x <= m_minSensitivity)
+			m_sensitivity.x = m_minSensitivity;
+	}
+	if (ControllerInput::GetButton(BUTTON::DRIGHT, m_user)) {
+		m_sensitivity.x += Time::dt * 1.f;
+		if (m_sensitivity.x >= m_maxSensitivity)
+			m_sensitivity.x = m_maxSensitivity;
+	}
+	if (ControllerInput::GetButton(BUTTON::DDOWN, m_user)) {
+		m_sensitivity.y -= Time::dt * 1.f;
+		if (m_sensitivity.y <= m_minSensitivity)
+			m_sensitivity.y = m_minSensitivity;
+	}
+	if (ControllerInput::GetButton(BUTTON::DUP, m_user)) {
+		m_sensitivity.y += Time::dt * 1.f;
+		if (m_sensitivity.y >= m_maxSensitivity)
+			m_sensitivity.y = m_maxSensitivity;
+	}
+
+	if (ControllerInput::GetButtonDown(BUTTON::Y, m_user))
+		m_sensitivity = glm::vec2(2.f, 1.5f);
+
+	return m_sensitivity;
 }
 
 //used this: https://gamedev.stackexchange.com/questions/58012/detect-when-a-bullet-rigidbody-is-on-ground
@@ -721,24 +776,51 @@ void Player::UseWeapon(PhysBody& body, Transform& head, float offset)
 	if (m_currWeapon == WEAPON::FIST)
 	{
 		if (m_grounded)
-			body.SetVelocity(BLM::BTtoGLM(
-				Melee(BLM::BTtoGLM(body.GetBody()->getWorldTransform().getOrigin()) - head.GetForwards())
-			));
+			body.SetVelocity(BLM::BTtoGLM(Melee(m_bodPos - head.GetForwards())));
 		return;
 	}
 
 	GunProperties selectedGun = GetProperties(m_currWeapon);
 	m_weaponCooldown = selectedGun.cooldown;
-	LaserGun(offset, head, selectedGun.damage, selectedGun.maxRange, m_currWeapon);
+
+	//calculate offset
+	glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
+	//shotgun range < 30.f therefore we can do spread
+
+	//AudioEngine::Instance().GetEvent("shoot").Restart();
+	SoundEventManager::Play(SoundEventManager::SOUND::SHOOT, m_bodPos);
 
 	//This branch *should* not be too bad since we are comparing 2 const variables.
-	if (selectedGun.type == WEAPON::SHOTGUN)
-	{
-		LaserGun(offset, head, selectedGun.damage, selectedGun.maxRange, m_currWeapon);
-		LaserGun(offset, head, selectedGun.damage, selectedGun.maxRange, m_currWeapon);
-		LaserGun(offset, head, selectedGun.damage, selectedGun.maxRange, m_currWeapon);
-		LaserGun(offset, head, selectedGun.damage, selectedGun.maxRange, m_currWeapon);
+	if (selectedGun.type != WEAPON::CANNON) {
+		if (selectedGun.type == WEAPON::SHOTGUN)
+		{
+			//																						left
+			offsetQuat = glm::angleAxis(glm::radians(rand() % 15 - 7.f), glm::normalize(glm::vec3(rand() % 11 - 20.f, rand() % 21 - 10.f, 0)));
+			LaserGun(offsetQuat, head, selectedGun.damage, selectedGun.maxRange, m_currWeapon);
+			//																						right
+			offsetQuat = glm::angleAxis(glm::radians(rand() % 15 - 7.f), glm::normalize(glm::vec3(rand() % 11 + 10.f, rand() % 21 - 10.f, 0)));
+			LaserGun(offsetQuat, head, selectedGun.damage, selectedGun.maxRange, m_currWeapon);
+			//																						down
+			offsetQuat = glm::angleAxis(glm::radians(rand() % 15 - 7.f), glm::normalize(glm::vec3(rand() % 21 - 10.f, rand() % 11 - 20.f, 0)));
+			LaserGun(offsetQuat, head, selectedGun.damage, selectedGun.maxRange, m_currWeapon);
+			//																						up
+			offsetQuat = glm::angleAxis(glm::radians(rand() % 15 - 7.f), glm::normalize(glm::vec3(rand() % 21 - 10.f, rand() % 11 + 10.f, 0)));
+			LaserGun(offsetQuat, head, selectedGun.damage, selectedGun.maxRange, m_currWeapon);
+
+			//center is random on all axis
+			offsetQuat = glm::angleAxis(glm::radians(rand() % 15 - 7.f), glm::normalize(glm::vec3(rand() % 11 - 5.f, rand() % 11 - 5.f, 0)));
+		}
+		LaserGun(offsetQuat, head, selectedGun.damage, selectedGun.maxRange, m_currWeapon);
 	}
+	else {
+		//center
+		LaserGun(offsetQuat, head, selectedGun.damage * 0.2f, selectedGun.maxRange, m_currWeapon);
+		static const int loops = 9;
+		for (int i(0); i < loops; ++i)
+			LaserGun(offsetQuat, head, selectedGun.damage * 0.15f, selectedGun.maxRange, m_currWeapon,
+				glm::rotate(glm::angleAxis(glm::radians((360.f * i) / loops), glm::vec3(0, 0, -1)), BLM::GLMup * 0.25f));
+	}
+
 
 	//deal with ammo here
 	if (--m_currWeaponAmmo <= 0) {
@@ -752,24 +834,16 @@ float HalfCurve(float input) {
 }
 
 //does direction math for the shooting, ShootLazer does the actual projectile
-void Player::LaserGun(float offset, Transform& head, short damage, float distance, WEAPON type)
+void Player::LaserGun(glm::quat offsetQuat, Transform& head, short damage, float distance, WEAPON type, glm::vec3 poffset)
 {
-	AudioEngine::Instance().GetEvent("shoot").Restart();
 
-	glm::quat offsetQuat = glm::angleAxis(offset, glm::vec3(0.24253f, 0.97014f, 0.f));
-	//shotgun range < 30.f therefore we can do spread
-	if (type == WEAPON::SHOTGUN)
-	{
-		//shotgun spread
-		offsetQuat = glm::angleAxis(glm::radians(rand() % 15 - 7.f), glm::normalize(glm::vec3(rand() % 21 - 10.f, rand() % 21 - 10.f, 0)));
-	}
 	glm::vec3 rayPos =
-		head.GetGlobalPosition() + glm::vec3(m_gunOffset * glm::rotate(BLM::GLMMat, m_rot.y, BLM::GLMup));
+		head.GetGlobalPosition() + glm::vec3((m_gunOffset + glm::vec4(poffset, 1.f)) * glm::rotate(BLM::GLMMat, m_rot.y, BLM::GLMup));
 
 	RayResult p = PhysBody::GetRaycastResult(BLM::GLMtoBT(rayPos),
 		BLM::GLMtoBT(glm::rotate(offsetQuat, -head.GetForwards()) * distance * 100.f));
 
-	if (p.hasHit()) if (p.m_closestHitFraction <= 0.01f)
+	if (p.hasHit() && p.m_closestHitFraction <= 0.01f)
 	{
 		if (type == WEAPON::PISTOL)
 		{
@@ -780,6 +854,7 @@ void Player::LaserGun(float offset, Transform& head, short damage, float distanc
 			damage *= HalfCurve(p.m_closestHitFraction * 100.f);
 		}
 
+		glm::vec3 hitPos = BLM::BTtoGLM(p.m_hitPointWorld);
 		glm::vec3 colour = BLM::GLMzero;
 
 		entt::entity playerIdTest = p.m_collisionObject->getUserIndex();
@@ -788,10 +863,11 @@ void Player::LaserGun(float offset, Transform& head, short damage, float distanc
 				if (ECS::GetComponent<Player>(playerIdTest).TakeDamage(damage))
 					++m_killCount;
 				colour = glm::vec3(-2, -1, 1);
+				SoundEventManager::Play(SoundEventManager::SOUND::HIT, hitPos);
 			}
 		}
 		Rendering::effects->ShootLaser(head.GetGlobalRotation() * offsetQuat, rayPos,
-			glm::length(BLM::BTtoGLM(p.m_hitPointWorld) - rayPos), colour);
+			glm::length(hitPos - rayPos), colour);
 	}
 	else {
 		Rendering::effects->ShootLaser(head.GetGlobalRotation() * offsetQuat, rayPos, distance);
@@ -801,7 +877,8 @@ void Player::LaserGun(float offset, Transform& head, short damage, float distanc
 void Player::SwapWeapon()
 {
 	//m_swapWeapon.play();
-	AudioEngine::Instance().GetEvent("reload").Restart();
+	//AudioEngine::Instance().GetEvent("reload").Restart();
+	SoundEventManager::Play(SoundEventManager::SOUND::SWAP, m_bodPos);
 
 	WEAPON tempWeap = m_currWeapon;
 	m_currWeapon = m_secWeapon;
@@ -829,7 +906,8 @@ void Player::UseHeal()
 		m_health += 15;
 
 		//m_swapWeapon.play();
-		AudioEngine::Instance().GetEvent("reload").Restart();
+		//AudioEngine::Instance().GetEvent("reload").Restart();
+		SoundEventManager::Play(SoundEventManager::SOUND::RELOAD, m_bodPos);
 
 		if (m_health > m_maxHealth)
 			m_health = m_maxHealth;
@@ -839,7 +917,8 @@ void Player::UseHeal()
 		m_health += 15;
 
 		//m_swapWeapon.play();
-		AudioEngine::Instance().GetEvent("reload").Restart();
+		//AudioEngine::Instance().GetEvent("reload").Restart();
+		SoundEventManager::Play(SoundEventManager::SOUND::RELOAD, m_bodPos);
 
 		if (m_health > m_maxHealth)
 			m_health = m_maxHealth;
@@ -879,46 +958,62 @@ btVector3 Player::Melee(const glm::vec3& pos)
 
 	//if (hit)	m_punch.play();
 	//else		m_wiff.play();
-	AudioEvent& evnt = AudioEngine::Instance().GetEvent("hit");
+	AudioEvent& evnt = SoundEventManager::Create(SoundEventManager::SOUND::PUNCH);
 	evnt.SetParameter("punchHit", hit);
+	evnt.SetPosition(m_bodPos);
 	evnt.Restart();
 
 	return BLM::BTzero;
 }
 
-bool Player::PickUpWeapon(WEAPON pickup)
+int Player::PickUpWeapon(WEAPON pickup)
 {
-	GunProperties selectedGun = GetProperties(pickup);
 	if (m_currWeapon == WEAPON::FIST) {
+		const GunProperties& selectedGun = GetProperties(pickup);
 		m_currWeapon = pickup;
 		m_currWeaponAmmo = selectedGun.ammoCapacity;
 		m_speed = selectedGun.movementSpeed;
-		//m_swapWeapon.play();
-		AudioEngine::Instance().GetEvent("pickup").Restart();
 
-		return true;
+		return 1;
 	}
+	//if gun matches current weapon, then replenish ammo
+	if (m_currWeapon == pickup) {
+		short tempAmmo = GetProperties(pickup).ammoCapacity;
+		if (m_currWeaponAmmo != tempAmmo) {
+			m_currWeaponAmmo = tempAmmo;
+
+			return 2;
+		}
+		return 0;
+
+	}
+
 	if (m_secWeapon == WEAPON::FIST) {
-		if (m_currWeapon == pickup)
-			return false;
+		const GunProperties& selectedGun = GetProperties(pickup);
 		m_secWeapon = pickup;
 		m_secWeaponAmmo = selectedGun.ammoCapacity;
 		m_speed = selectedGun.movementSpeed;
 
-		AudioEngine::Instance().GetEvent("pickup").Restart();
-
-		return true;
+		return 1;
 	}
-	return false;
+	//if gun matches secondary weapon, then replenish ammo
+	if (m_secWeapon == pickup) {
+		short tempAmmo = GetProperties(pickup).ammoCapacity;
+		if (m_secWeaponAmmo != tempAmmo) {
+			m_secWeaponAmmo = tempAmmo;
+
+			return 2;
+		}
+		return 0;
+	}
+
+	return 0;
 }
 
 bool Player::PickUpOffhand(OFFHAND pickup)
 {
 	if (m_offhand == OFFHAND::EMPTY || m_offhand == OFFHAND::HEALPACK1) {
 		m_offhand = pickup;
-
-		AudioEngine::Instance().GetEvent("pickup").Restart();
-
 		return true;
 	}
 	return false;

@@ -2,15 +2,15 @@
 #include "Rendering.h"
 #include "Time.h"
 #include "Input.h"
-#include <AudioEngine.h>
+#include "SoundEventManager.h"
 
 //post effect stuff
 #include "Effects/Post/BloomEffect.h"
-#include "Effects/Post/ToonEffect.h"
 #include "Effects/Post/PixelEffect.h"
 #include "Effects/Post/SepiaEffect.h"
 #include "Effects/Post/GreyscaleEffect.h"
-#include "Effects/GBuffer.h"
+#include "Effects/Post/DepthOfField.h"
+#include "Effects/Post/ColourCorrectionEffect.h"
 
 class Scene
 {
@@ -31,16 +31,20 @@ public:
 	//after physics update, mainly for lights and stuff
 	virtual void LateUpdate() {}
 
+	//drawing pauseScrenes and stuff
+	virtual void DrawOverlay() {
+		//Gbuffer fixes this
+		//glViewport(0, 0, BackEnd::GetWidth(), BackEnd::GetHeight());
+	}
+
 	//called on scene change
 	virtual void Exit() {
-		AudioEngine::Instance().StopAllSounds();
+		//reset sound stuff
+		SoundEventManager::ResetEvents();
 	}
 
 	//put ImGui stuff here
-	virtual void ImGuiFunc() {
-		ImGui::SetWindowSize(ImVec2(150, 50));
-		ImGui::Text("Empty");
-	};
+	virtual void ImGuiFunc();
 
 	//can't override
 	virtual void BackEndUpdate() final;
@@ -58,9 +62,9 @@ public:
 
 protected:
 	std::string m_name;
+	bool m_paused = false;
 	short m_camCount = 1;
 	int maxEffectCount = 1;
-	bool m_paused = false;
 
 	static size_t m_nextScene;
 	static bool m_doSceneChange;
@@ -70,7 +74,6 @@ protected:
 	btDiscreteDynamicsWorld *m_world = nullptr;
 	HitboxGen m_colliders;
 	Effects m_effects;
-	Sprite m_pauseSprite;
 	FrameEffects m_frameEffects;
 
 	btDbvtBroadphase *_broadphase = nullptr;
@@ -78,4 +81,3 @@ protected:
 	btCollisionDispatcher* _dispatcher = nullptr;
 	btSequentialImpulseConstraintSolver* _solver = nullptr;
 };
-

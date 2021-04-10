@@ -31,6 +31,9 @@ void BloomEffect::Init(unsigned width, unsigned height)
 		_shaders.push_back(GetShader("shaders/Post/bloom_vertical_blur.glsl"));
 		_shaders.push_back(GetShader("shaders/Post/bloom_combine_pass.glsl"));
 	}
+
+	_shaders[2]->SetUniform("u_TexelSize", 1.f / width);
+	_shaders[3]->SetUniform("u_TexelSize", 1.f / height);
 }
 
 void BloomEffect::ApplyEffect(PostEffect* buffer)

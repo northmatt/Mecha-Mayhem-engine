@@ -8,8 +8,8 @@ public:
 	Effects() {}
 
 	static void Init() {
-		laser = ObjMorphLoader("effects/laser", true);
-		dash = ObjMorphLoader("effects/dash", true);
+		laser.SetReceiveShadows(false).LoadMeshs("effects/laser", true);
+		dash.SetReceiveShadows(false).LoadMeshs("effects/dash", true);
 	}
 
 	static void Unload() {
@@ -19,7 +19,7 @@ public:
 
 	void ShootLaser(const glm::quat& rotation, const glm::vec3& position, float length, const glm::vec3& colour = BLM::GLMzero) {
 		glm::mat4 model = glm::translate(BLM::GLMMat, position);
-		model = model * glm::toMat4(rotation);
+		model *= glm::toMat4(rotation);
 		model = glm::scale(model, glm::vec3(1, 1, length));
 
 		m_effects.push_back({ laser, model, colour });
@@ -27,7 +27,7 @@ public:
 
 	void ShootDash(const glm::quat& rotation, const glm::vec3& position, float length) {
 		glm::mat4 model = glm::translate(BLM::GLMMat, position);
-		model = model * glm::toMat4(rotation);
+		model *= glm::toMat4(rotation);
 		model = glm::scale(model, glm::vec3(1, 1, length));
 
 		m_effects.push_back({ dash, model, BLM::GLMzero });
@@ -47,9 +47,11 @@ public:
 
 	void Render() {
 		for (int i(0); i < m_effects.size(); ++i) {
-			m_effects[i].effect.Draw(m_effects[i].model,  m_effects[i].colour);
+			m_effects[i].effect.DrawTrans(m_effects[i].model,  m_effects[i].colour);
 		}
 	}
+
+	size_t size() { return m_effects.size(); }
 
 private:
 	static ObjMorphLoader laser;

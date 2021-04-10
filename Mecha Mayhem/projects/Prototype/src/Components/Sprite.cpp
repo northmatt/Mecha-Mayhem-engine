@@ -18,6 +18,7 @@ Sprite::Sprite(const glm::vec4& colour, float width, float height)
 
 Sprite& Sprite::Init(const std::string& textureName, float width, float height)
 {
+	m_enabled = true;
 	m_width = width;
 	m_height = height;
 
@@ -46,6 +47,7 @@ Sprite& Sprite::Init(const std::string& textureName, float width, float height)
 
 Sprite& Sprite::Init(const glm::vec4& colour, float width, float height)
 {
+	m_enabled = true;
 	m_width = width;
 	m_height = height;
 
@@ -88,20 +90,27 @@ void Sprite::BeginUIDraw(unsigned UIamt, unsigned camCount)
 	}
 }
 
-void Sprite::Draw(const glm::mat4& VP, const glm::mat4& model)
+void Sprite::Draw(const glm::mat4& VP, const glm::mat4& model, const glm::vec3& addColour)
 {
-	glm::mat4 MVP = VP * glm::scale(model, glm::vec3(m_width * m_scale, m_height * m_scale, 1));
+	if (!m_enabled)	return;
+	//glm::mat4 MVP = VP * glm::scale(model, glm::vec3(m_width * m_scale, m_height * m_scale, 1));
+
+	glm::mat4 scaledModel = glm::scale(model, glm::vec3(m_width * m_scale, m_height * m_scale, 1));
 	
-	m_Queue.push_back({ m_index, MVP });
+	m_Queue.push_back({ m_index, scaledModel, VP * scaledModel, addColour, m_receiveShadows });
 }
 
-void Sprite::DrawSingle(const glm::mat4& VP, const glm::mat4& model)
+void Sprite::DrawSingle(const glm::mat4& VP, const glm::mat4& model, const glm::vec3& addColour)
 {
+	if (!m_enabled)	return;
 	m_shader->Bind();
 
-	m_shader->SetUniformMatrix("MVP",
-		VP * glm::scale(model, glm::vec3(m_width * m_scale, m_height * m_scale, 1))
-	);
+	glm::mat4 scaledModel = glm::scale(model, glm::vec3(m_width * m_scale, m_height * m_scale, 1));
+
+	m_shader->SetUniformMatrix("MVP", VP * scaledModel);
+	m_shader->SetUniformMatrix("model", scaledModel);
+	m_shader->SetUniform("receiveShadows", m_receiveShadows);
+	m_shader->SetUniform("addColour", addColour);
 	m_textures[m_index].texture->Bind(0);
 
 	m_square->Render();
@@ -109,32 +118,46 @@ void Sprite::DrawSingle(const glm::mat4& VP, const glm::mat4& model)
 	Shader::UnBind();
 }
 
-void Sprite::DrawToUI(const glm::mat4& VP, const glm::mat4& model, short camNum)
+void Sprite::DrawToUI(const glm::mat4& VP, const glm::mat4& model, short camNum, const glm::vec3& addColour)
 {
-	glm::mat4 MVP = VP * glm::scale(model, glm::vec3(m_width * m_scale, m_height * m_scale, 1));
+	if (!m_enabled)	return;
+	//glm::mat4 MVP = VP * glm::scale(model, glm::vec3(m_width * m_scale, m_height * m_scale, 1));
 
-	m_UIQueue[camNum].push_back({ m_index, MVP });
+	glm::mat4 scaledModel = glm::scale(model, glm::vec3(m_width * m_scale, m_height * m_scale, 1));
+
+	m_UIQueue[camNum].push_back({ m_index, scaledModel, VP * scaledModel, addColour, 0 });
 }
 
 void Sprite::PerformDraw()
 {
-	if (m_Queue.size() != 0) {
+	if (m_Queue.size()) {
+
+		//fixes weird specular stuff
+		m_shader->SetUniform("divide", 0.75f);
+
 		m_shader->Bind();
 
 		for (int i(0); i < m_Queue.size(); ++i) {
 			m_shader->SetUniformMatrix("MVP", m_Queue[i].MVP);
+			m_shader->SetUniformMatrix("model", m_Queue[i].model);
+			m_shader->SetUniform("receiveShadows", m_Queue[i].receiveShadows);
+			m_shader->SetUniform("addColour", m_Queue[i].additiveColour);
 			m_textures[m_Queue[i].index].texture->Bind(0);
 
 			m_square->Render();
 		}
 
 		Shader::UnBind();
+
+		//fixes weird specular stuff
+		m_shader->SetUniform("divide", 1.f);
 	}
 }
 
 void Sprite::PerformUIDraw(int numOfCams)
 {
-	if (m_UIQueue[0].size() != 0) {
+	if (m_UIQueue[0].size()) {
+
 		int height = BackEnd::GetHalfHeight();
 		int width = BackEnd::GetHalfWidth();
 
@@ -150,6 +173,9 @@ void Sprite::PerformUIDraw(int numOfCams)
 
 			for (int i(0); i < m_UIQueue[cam].size(); ++i) {
 				m_shader->SetUniformMatrix("MVP", m_UIQueue[cam][i].MVP);
+				m_shader->SetUniformMatrix("model", m_UIQueue[cam][i].model);
+				m_shader->SetUniform("receiveShadows", 0);
+				m_shader->SetUniform("addColour", m_UIQueue[cam][i].additiveColour);
 				m_textures[m_UIQueue[cam][i].index].texture->Bind(0);
 
 				m_square->Render();
@@ -160,14 +186,13 @@ void Sprite::PerformUIDraw(int numOfCams)
 	}
 }
 
-void Sprite::PerformDrawShadow(/*const glm::mat4& lightVPMatrix*/)
+void Sprite::PerformDrawShadow(const glm::mat4& lightVPMatrix)
 {
-	if (m_Queue.size() != 0) {
+	if (m_Queue.size()) {
 		ObjLoader::m_shadowShader->Bind();
-		//ObjLoader::m_shadowShader->SetUniform("lightVPMatrix", lightVPMatrix);
 
 		for (int i(0); i < m_Queue.size(); ++i) {
-			ObjLoader::m_shadowShader->SetUniformMatrix("model", m_Queue[i].MVP);
+			ObjLoader::m_shadowShader->SetUniformMatrix("MVP", lightVPMatrix * m_Queue[i].model);
 
 			m_square->Render();
 		}
@@ -185,7 +210,33 @@ void Sprite::Init()
 
 	m_shader->SetUniform("s_texture", 0);
 
-	std::vector<float> interleaved = {
+	std::vector<float> pos = {
+		-0.5f, -0.5f, 0.f,
+		-0.5f, 0.5f, 0.f,
+		0.5f, -0.5f, 0.f,
+		-0.5f, 0.5f, 0.f,
+		0.5f, 0.5f, 0.f,
+		0.5f, -0.5f, 0.f
+	};
+	std::vector<float> UV = {
+		1, 0, 0,
+		1, 1, 0,
+		0, 0, 0,
+		1, 1, 0,
+		0, 1, 0,
+		0, 0, 0
+	};
+
+	VertexBuffer::sptr posVBO = VertexBuffer::Create();
+	posVBO->LoadData(pos.data(), pos.size());
+	VertexBuffer::sptr UVVBO = VertexBuffer::Create();
+	UVVBO->LoadData(UV.data(), UV.size());
+
+	m_square = VertexArrayObject::Create();
+	m_square->AddVertexBuffer(posVBO, { BufferAttribute(0, 3, GL_FLOAT, NULL, NULL, 0) }, true);
+	m_square->AddVertexBuffer(UVVBO, { BufferAttribute(1, 3, GL_FLOAT, NULL, NULL, 0) }, true);
+
+	/*std::vector<float> interleaved = {
 		-0.5f, -0.5f, 0.f, 1, 0,
 		-0.5f, 0.5f, 0.f, 1, 1,
 		0.5f, -0.5f, 0.f, 0, 0,
@@ -200,7 +251,22 @@ void Sprite::Init()
 	m_square->AddVertexBuffer(buff, {
 		BufferAttribute(0, 3, GL_FLOAT, false, sizeof(float) * 5, 0),
 		BufferAttribute(1, 2, GL_FLOAT, false, sizeof(float) * 5, sizeof(float) * 3)
-		});
+		});*/
+
+	{	//add a white texture at index 0
+		std::string tempName = std::to_string(1.f) + " " + std::to_string(1.f)
+			+ " " + std::to_string(1.f) + " " + std::to_string(1.f);
+
+		Texture2DDescription desc = Texture2DDescription();
+		desc.Width = 1;
+		desc.Height = 1;
+		desc.GenerateMipMaps = false;
+		desc.MinificationFilter = MinFilter::Nearest;
+		desc.MagnificationFilter = MagFilter::Nearest;
+		desc.Format = InternalFormat::RGBA8;
+		Texture2D::sptr texture = Texture2D::Create(desc);
+		texture->Clear(glm::vec4(1.f));
+		m_textures.push_back({ tempName, texture }); }
 }
 
 void Sprite::Unload()

@@ -73,7 +73,7 @@ MultiTextObj& MultiTextObj::LoadMesh(const std::string& fileName)
 
 		std::string matLine;
 		size_t matIndex = 0;
-		float tempExponent = 1.f, tempTrans = 1;
+		float tempExponent = 1.f, tempTrans = 1.f, emissive = 0.f;
 		while (std::getline(materialFile, matLine))
 		{
 			stringTrimming::ltrim(matLine);
@@ -84,6 +84,7 @@ MultiTextObj& MultiTextObj::LoadMesh(const std::string& fileName)
 				matIndex = materials.size();
 				materials.push_back({ matLine.substr(7), glm::vec3(1.f), glm::vec3(1.f) });
 				tempExponent = tempTrans = 1;
+				emissive = 0.f;
 			}
 			else if (matLine.substr(0, 6) == "map_Kd")
 			{
@@ -107,7 +108,7 @@ MultiTextObj& MultiTextObj::LoadMesh(const std::string& fileName)
 						desc.Format = InternalFormat::RGBA8;
 						Texture2D::sptr texture = Texture2D::Create(desc);
 
-						texture->Clear(glm::vec4(0.1f, 0.1f, 0.1f, 1.f));
+						texture->Clear(glm::vec4(0.3f, 0.3f, 0.3f, 1.f));
 						//texture->Clear(glm::vec4(0.1f, 0.1f, 0.1f, 0.5f));
 
 						m_models[ind].texture.push_back(Sprite::m_textures.size());
@@ -135,19 +136,20 @@ MultiTextObj& MultiTextObj::LoadMesh(const std::string& fileName)
 				std::istringstream ss = std::istringstream(matLine.substr(5));
 				ss >> tempTrans;
 			}
-			else if (matLine.size() > 1 && matLine[0] == 'K')
+			//else if (matLine.size() > 1 && matLine[0] == 'K')
+			else if (matLine.substr(0, 2) == "Kd")
 			{
 				//only colour data is taken for now, textures later
-				if (matLine[1] == 'd')
-				{
+				//if (matLine[1] == 'd')
+				//{
 					//diffuse Colour, aka object colour
-					std::istringstream ss = std::istringstream(matLine.substr(2));
-					glm::vec3 colour;
-					ss >> colour.x >> colour.y >> colour.z;
+				std::istringstream ss = std::istringstream(matLine.substr(2));
+				glm::vec3 colour;
+				ss >> colour.x >> colour.y >> colour.z;
 
-					materials[matIndex].colours = colour;
-				}
-				else if (matLine[1] == 's')
+				materials[matIndex].colours = colour;
+				//}
+				/*else if (matLine[1] == 's')
 				{
 					//specular Colour
 					//diffuse Colour, aka object colour
@@ -160,7 +162,15 @@ MultiTextObj& MultiTextObj::LoadMesh(const std::string& fileName)
 				else if (matLine[1] == 'a')
 				{
 					//ambient Colour, ignored
-				}
+				}*/
+			}
+			else if (matLine.substr(0, 4) == "emis") {
+				std::istringstream ss = std::istringstream(matLine.substr(4));
+				ss >> emissive;
+			}
+			//send the data at the end
+			else if (matLine.substr(0, 5) == "illum") {
+				materials[matIndex].specStrength = glm::vec3(emissive, tempExponent, tempTrans);
 			}
 			else if (matLine[0] == '#')
 			{
@@ -370,15 +380,15 @@ MultiTextObj& MultiTextObj::LoadMesh(const std::string& fileName)
 	return *this;
 }
 
-void MultiTextObj::Draw(const glm::mat4& model, const glm::mat4& view, const Camera& camera,
+/*void MultiTextObj::Draw(const glm::mat4& model, const glm::mat4& view, const Camera& camera,
 	const glm::vec3& colour, const std::array<glm::vec3, MAX_LIGHTS>& lightPos, const std::array<glm::vec3, MAX_LIGHTS>& lightColour, const int& lightCount,
-	float specularStrength, float shininess,
-	float ambientLightStrength, const glm::vec3& ambientColour, float ambientStrength)
+	float ambientLightStrength, const glm::vec3& ambientColour, float ambientStrength)*/
+void MultiTextObj::Draw(const glm::mat4& model, const glm::mat4& view, const Camera& camera, const glm::vec3& colour)
 {
 	glm::mat4 VP = camera.GetProjection() * view;
 
 	ObjLoader::m_texShader->Bind();
-	ObjLoader::m_texShader->SetUniform("camPos", camera.GetPosition());
+	/*ObjLoader::m_texShader->SetUniform("camPos", camera.GetPosition());
 
 	ObjLoader::m_texShader->SetUniform("lightsPos", *lightPos.data(), MAX_LIGHTS);
 	ObjLoader::m_texShader->SetUniform("lightsColour", *lightColour.data(), MAX_LIGHTS);
@@ -386,9 +396,11 @@ void MultiTextObj::Draw(const glm::mat4& model, const glm::mat4& view, const Cam
 
 	ObjLoader::m_texShader->SetUniform("ambientLightStrength", ambientLightStrength);
 	ObjLoader::m_texShader->SetUniform("ambientColour", ambientColour);
-	ObjLoader::m_texShader->SetUniform("ambientStrength", ambientStrength);
+	ObjLoader::m_texShader->SetUniform("ambientStrength", ambientStrength);*/
 
-	ObjLoader::m_texShader->SetUniform("addColour", glm::vec3(0.f));
+	ObjLoader::m_texShader->SetUniform("addColour", colour);
+	ObjLoader::m_texShader->SetUniform("receiveShadows", 1);
+	ObjLoader::m_texShader->SetUniform("rimLighting", 0);
 
 	for (int i(0); i < m_models[m_index].vao.size(); ++i) {
 		ObjLoader::m_texShader->SetUniformMatrix("MVP", VP * model);
@@ -402,13 +414,12 @@ void MultiTextObj::Draw(const glm::mat4& model, const glm::mat4& view, const Cam
 
 }
 
-void MultiTextObj::DrawShadow(const glm::mat4& model)
+void MultiTextObj::DrawShadow(const glm::mat4& MVP)
 {
 	ObjLoader::m_shadowShader->Bind();
-	//the light matrix has already been sent
 
 	for (int i(0); i < m_models[m_index].vao.size(); ++i) {
-		ObjLoader::m_shadowShader->SetUniformMatrix("model", model);
+		ObjLoader::m_shadowShader->SetUniformMatrix("MVP", MVP);
 
 		m_models[m_index].vao[i]->Render();
 	}

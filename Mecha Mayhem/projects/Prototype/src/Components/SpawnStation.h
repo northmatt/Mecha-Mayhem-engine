@@ -1,6 +1,5 @@
 #pragma once
 #include "Player.h"
-#include "Utilities/Time.h"
 
 class Spawner {
 public:
@@ -16,7 +15,7 @@ public:
 	}
 
 	Spawner& Init(float radius, float delay) {
-		m_spawnerModel.LoadMeshs("spawner/spawner", true);
+		m_spawnerModel.LoadMeshs("spawner/spawner", true).SetCastShadows(false);
 		m_radius = radius;
 		m_timer = m_delay = delay;
 		m_spawnerModel.SetDirection(false);
@@ -31,7 +30,7 @@ public:
 		upperBound = upper - lower + 1;
 	}
 
-	void Render(const glm::mat4& model) {
+	void Render(const glm::mat4& model, bool notShadow = true) {
 		
 		if (m_timer == 0) {
 			glm::vec3 colour = BLM::GLMzero;
@@ -46,7 +45,8 @@ public:
 			else			Player::GetWeaponModel(m_currWeapon).Draw(model * rot * m_gunOffset, colour);
 		}
 
-		m_spawnerModel.Draw(model);
+		if (notShadow)
+			m_spawnerModel.Draw(model);
 	}
 
 	//return true if colelcted
@@ -90,21 +90,29 @@ public:
 		});
 
 		if (touched != nullptr) {
+			int temp = 0;
 			if (m_currWeapon == Player::WEAPON::FIST) {
 				if (touched->PickUpOffhand(Player::OFFHAND::HEALPACK2)) {
 					m_timer = m_delay;
 					m_spawnerModel.SetDirection(false);
+
+					SoundEventManager::Play(SoundEventManager::SOUND::PICKUP, pos);
 				}
 			}
 			else if (m_currWeapon == Player::WEAPON::SWORD) {
 				if (touched->PickUpSword()) {
 					m_timer = m_delay;
 					m_spawnerModel.SetDirection(false);
+
+					SoundEventManager::Play(SoundEventManager::SOUND::PICKUP, pos);
 				}
 			}
-			else if (touched->PickUpWeapon(m_currWeapon)) {
+			else if (temp = touched->PickUpWeapon(m_currWeapon)) {
 				m_timer = m_delay;
 				m_spawnerModel.SetDirection(false);
+
+				//temp is 1 aka pickup, or 2 aka reload
+				SoundEventManager::Play(SoundEventManager::SOUND(temp), pos);
 			}
 		}
 	}

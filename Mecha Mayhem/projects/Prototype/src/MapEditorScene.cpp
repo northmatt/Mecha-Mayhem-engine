@@ -34,14 +34,16 @@ void MapEditor::Init(int windowWidth, int windowHeight)
 
 	/// End of creating entities
 	Rendering::DefaultColour = glm::vec4(1.f, 0.5f, 0.5f, 0.5f);
-	Rendering::hitboxes = &m_colliders;
-	Rendering::effects = &m_effects;
-	Rendering::frameEffects = &m_frameEffects;
 	Rendering::LightCount = 2;
 	Rendering::LightsPos[0] = BLM::GLMzero;
 	Rendering::LightsColour[0] = glm::vec3(20.f);
 
-	m_frameEffects.Init(width, height);
+	Rendering::hitboxes = &m_colliders;
+	Rendering::effects = &m_effects;
+	Rendering::frameEffects = &m_frameEffects;
+
+	m_frameEffects.Init();
+	m_frameEffects.SetShadowVP(-70, 70, 40, -60, glm::vec3(20.5f - 0.f, 0, 21.8f + 5.f));
 }
 
 void MapEditor::Update()
@@ -55,11 +57,6 @@ void MapEditor::Update()
 	if (Input::GetKeyDown(KEY::ESC)) {
 		QueueSceneChange(0);
 		return;
-	}
-
-	if (Input::GetKeyDown(KEY::F)) {
-		if (BackEnd::GetFullscreen())	BackEnd::SetTabbed();
-		else							BackEnd::SetFullscreen();
 	}
 
 	//camera movement here
@@ -116,17 +113,18 @@ void MapEditor::Exit()
 		else
 			std::cout << (debugText = "file save failed\n");
 	}
+
+	Scene::Exit();
 }
 
 Scene* MapEditor::Reattach()
 {
 	Rendering::DefaultColour = glm::vec4(1.f, 0.5f, 0.5f, 0.5f);
-	Rendering::hitboxes = &m_colliders;
-	Rendering::effects = &m_effects;
-	Rendering::frameEffects = &m_frameEffects;
 	Rendering::LightCount = 2;
 	Rendering::LightsPos[0] = BLM::GLMzero;
 	Rendering::LightsColour[0] = glm::vec3(20.f);
+	//fix lights
+	FrameEffects::SetLights(Rendering::LightsPos, Rendering::LightsColour, Rendering::LightCount);
 
 	return Scene::Reattach();
 }

@@ -3,7 +3,7 @@
 #include "PhysBody.h"
 #include "ObjMorphLoader.h"
 #include "Utilities/Time.h"
-#include <AudioEngine.h>
+#include "Utilities/SoundEventManager.h"
 
 class Player
 {
@@ -15,8 +15,7 @@ public:
 		RIFLE,
 		CANNON,
 		MACHINEGUN,
-		SHOTGUN,
-		MISSILE
+		SHOTGUN
 	};
 	enum class OFFHAND {
 		EMPTY = 0,	//continues from WEAPON to allow for rand() choice
@@ -117,7 +116,10 @@ public:
 			m_health = m_maxHealth;
 	}
 
-	//void GivePoints(int amt) { m_killCount += amt; }
+	void GivePoints(int amt) { m_killCount += amt; }
+
+	//returns health
+	short GetHealth() { return m_health; }
 
 	//returns true if kill shot
 	bool TakeDamage(short dmg) {
@@ -129,11 +131,11 @@ public:
 			m_damageCounter = 0;
 			
 			//do death management in Update()
+			ClearWeapons();
 
 			return true;
 		}
 		else {
-			//m_hitSound.play();
 			m_damageCounter = 0.75f;
 		}
 
@@ -147,8 +149,8 @@ public:
 	//returns true if <= than timer
 	bool RespawnDelayTest(float timer) { return m_respawnTimer <= timer; }
 
-	//returns true if successful
-	bool PickUpWeapon(WEAPON pickup);
+	//returns 1 if successful, 2 if picked up ammo, 0 if failed
+	int PickUpWeapon(WEAPON pickup);
 
 	//returns true if successful
 	bool PickUpOffhand(OFFHAND pickup);
@@ -157,23 +159,28 @@ public:
 		if (m_meleeDmg == m_punchDmg) {
 			m_meleeDmg = m_swordDmg;
 
-			AudioEngine::Instance().GetEvent("pickup").Restart();
-
 			return true;
 		}
 		return false;
 	}
 
+	//returns true if score matches scoreGoal
 	bool HasWon(size_t scoreGoal) { return m_killCount >= scoreGoal; }
+
+	//return score
 	short GetScore() { return m_killCount; }
 
+	Player& SetSensitivity(glm::vec2 sensitivity) { m_sensitivity = sensitivity; return *this; }
+	glm::vec2 EditSensitivity();
+
+	static Sprite m_digits[10];
 private:
 	bool groundTest(float yVelo, PhysBody& bodyPos);
 
 	//attacking
 	btVector3 Melee(const glm::vec3& pos);
 	void UseWeapon(PhysBody& body, Transform& head, float offset);
-	void LaserGun(float offset, Transform& head, short damage, float distance, WEAPON type);
+	void LaserGun(glm::quat offsetQuat, Transform& head, short damage, float distance, WEAPON type, glm::vec3 poffset = BLM::GLMzero);
 
 	//other things
 	void SwapWeapon();
@@ -192,11 +199,13 @@ private:
 		return num - (num / 10) * 10;
 	}*/
 
-	static const glm::mat4 m_modelOffset;
 	static const glm::mat4 m_gunOffsetMat;
 	static const glm::mat4 m_swordOffsetMat;
+	static const glm::mat4 m_rotation90;
 	static constexpr float pi = glm::half_pi<float>() - 0.01f;
 
+	static const float m_maxSensitivity;
+	static const float m_minSensitivity;
 	static const glm::vec4 m_gunOffset;
 	static const btVector3 m_gravity;
 	static glm::vec3 m_skyPos;
@@ -206,14 +215,12 @@ private:
 
 	static Sprite m_healthBarOutline;
 	static Sprite m_healthBar;
-	static Sprite m_healthBarDamaged;
 	static Sprite m_healthBarBack;
 	static Sprite m_dashBarOutline;
 	static Sprite m_dashBar;
 	static Sprite m_dashBarBack;
 	static Sprite m_reticle;
 	static Sprite m_scoreBack;
-	static Sprite m_digits[10];
 	static Sprite m_ammoBar;
 	static Sprite m_ammoBarBack;
 	
@@ -253,9 +260,10 @@ private:
 	bool m_stepped = false;
 	bool m_invincible = false;
 
-	static const short m_punchDmg = 8;
-	static const short m_swordDmg = 16;
+	static const short m_punchDmg = 10;
+	static const short m_swordDmg = 25;
 
+	short m_walkFrame = 0;
 	short m_meleeDmg = m_punchDmg;
 
 	short m_camPos = -1;
@@ -287,17 +295,20 @@ private:
 	static const GunProperties pistol;
 	static const GunProperties cannon;
 	static const GunProperties rifle;
-	static const GunProperties missileLauncher;
 	static const GunProperties shotgun;
 	static const GunProperties machineGun;
-	//static const float shotgunDistance;
 
-	glm::vec3 m_colour = glm::vec3(0.f);
+	//	store this for sounds
+	glm::vec3 m_bodPos = BLM::GLMzero;
+
+	//additive colour
+	glm::vec3 m_colour = BLM::GLMzero;
 
 	//glm::quat m_startRot = glm::quat(1, 0, 0, 0);
-	glm::vec3 m_spawnPos = glm::vec3(0.f);
-	glm::vec3 m_deathPos = glm::vec3(0.f);
+	glm::vec3 m_spawnPos = BLM::GLMzero;
+	glm::vec3 m_deathPos = BLM::GLMzero;
 	glm::vec2 m_rot = glm::vec2(0.f);
 	glm::vec2 m_deathRot = glm::vec2(0.f);
+	glm::vec2 m_sensitivity = glm::vec2(2.f, 1.5f);
 };
 

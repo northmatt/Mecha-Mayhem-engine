@@ -24,6 +24,7 @@ Scene::Scene(const std::string& name, const glm::vec3& gravity, bool physics)
 
 Scene::~Scene()
 {
+	//destructors will take care of the rest
 	Rendering::hitboxes = nullptr;
 	Rendering::effects = nullptr;
 	Rendering::frameEffects = nullptr;
@@ -52,7 +53,7 @@ void Scene::Init(int windowWidth, int windowHeight)
 		if (!m_colliders.Init(m_world, "maps/map1"))
 			std::cout << "map1 failed to load, no collision boxes loaded\n";
 	}
-	m_frameEffects.Init(windowWidth, windowHeight);
+	m_frameEffects.Init();
 
 	// for multi cam setup, change the m_camCount variable, and also spawn in reverse order (aka player 1 last)
 	auto cameraEnt = ECS::CreateEntity();
@@ -77,7 +78,7 @@ Scene* Scene::Reattach()
 	m_frameEffects.Resize(BackEnd::GetWidth(), BackEnd::GetHeight());
 
 	Rendering::effects = &m_effects;
-	Rendering::frameEffects = &m_frameEffects;
+	Rendering::frameEffects = &m_frameEffects.Reattach();
 
 	return this;
 }
@@ -137,24 +138,16 @@ void Scene::BackEndUpdate()
 
 	Rendering::Update(&m_reg, m_camCount, m_paused);
 
+	//dont update shadows if paused
+	if (m_frameEffects.GetUsingShadows() && !m_paused)
+		Rendering::RenderForShading(&m_reg);
+
 	//once pause buffer works, we can move this or smt
 	m_frameEffects.Draw();
 
 	Sprite::PerformUIDraw(m_camCount);
 
-	if (m_paused)   if (m_pauseSprite.IsValid()) {
-		glViewport(0, 0, BackEnd::GetWidth(), BackEnd::GetHeight());
-
-		static const glm::mat4 pauseMat = glm::mat4(
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, -100, 1
-		);
-
-		m_pauseSprite.DrawSingle(Rendering::orthoVP.GetViewProjection(), pauseMat);
-		//Rendering::DrawPauseScreen(m_pauseSprite);
-	}
+	DrawOverlay();
 }
 
 void Scene::QueueSceneChange(size_t index) {
@@ -178,8 +171,127 @@ void Scene::doSceneChange(GLFWwindow* window) {
 void Scene::UnloadScenes()
 {
 	m_activeScene = nullptr;
-	while (m_scenes.size()) {
-		delete m_scenes[0];
-		m_scenes.erase(m_scenes.begin());
+	for (int i(0); i < m_scenes.size(); ++i) {
+		if (m_scenes[i] != nullptr) {
+			delete m_scenes[i];
+			m_scenes[i] = nullptr;
+		}
 	}
+	m_scenes.clear();
+}
+
+void Scene::ImGuiFunc()
+{
+	/*ImGui::SetWindowSize(ImVec2(150, 50));
+	ImGui::Text("Empty");*/
+
+	if (ImGui::CollapsingHeader("Post Processing Effects"))
+	{
+		ImGui::Text(("Number of effects: " + std::to_string(m_frameEffects.size())).c_str());
+		ImGui::SliderInt("max amt of effects", &maxEffectCount, 0, 5);
+		for (int i(0); i < m_frameEffects.size(); ++i) {
+			std::string name = m_frameEffects[i]->Info();
+			if (ImGui::TreeNode((std::to_string(i + 1) + ": " + name).c_str())) {
+				if (name == "Bloom") {
+					BloomEffect* effect = (BloomEffect*)(m_frameEffects[i]);
+					float threshold = effect->GetTreshold();
+					if (ImGui::SliderFloat("Treshold", &threshold, 0.f, 1.f)) {
+						effect->SetThreshold(threshold);
+					}
+					float radius = effect->GetRadius();
+					if (ImGui::SliderFloat("Radius", &radius, 0.f, 15.f)) {
+						effect->SetRadius(radius);
+					}
+					int blur = effect->GetBlurCount();
+					if (ImGui::SliderInt("Blur Passes", &blur, 1, 15)) {
+						effect->SetBlurCount(blur);
+					}
+				}
+				else if (name == "Greyscale") {
+					GreyscaleEffect* effect = (GreyscaleEffect*)(m_frameEffects[i]);
+					float intensity = effect->GetIntensity();
+					if (ImGui::SliderFloat("Intensity", &intensity, 0.f, 1.f)) {
+						effect->SetIntensity(intensity);
+					}
+				}
+				else if (name == "Sepia") {
+					SepiaEffect* effect = (SepiaEffect*)(m_frameEffects[i]);
+					float intensity = effect->GetIntensity();
+					if (ImGui::SliderFloat("Intensity", &intensity, 0.f, 1.f)) {
+						effect->SetIntensity(intensity);
+					}
+				}
+				else if (name == "Pixel") {
+					ImGui::Text("Pixels done by drawing to a smaller buffer, which means no new shader!");
+					PixelEffect* effect = (PixelEffect*)(m_frameEffects[i]);
+					int pixels = effect->GetPixelCount();
+					if (ImGui::SliderInt("PixelCount", &pixels, 4, BackEnd::GetHeight())) {
+						effect->SetPixelCount(pixels);
+					}
+				}
+				else if (name == "DepthOfField") {
+					ImGui::Text("We got the depth buffer somehow");
+					DepthOfFieldEffect* effect = (DepthOfFieldEffect*)(m_frameEffects[i]);
+					float depthLimit = effect->GetDepthLimit();
+					if (ImGui::SliderFloat("Depth Limit", &depthLimit, 0.f, 1.f)) {
+						effect->SetDepthLimit(depthLimit);
+					}
+					int blur = effect->GetBlurPasses();
+					if (ImGui::SliderInt("Blur Passes", &blur, 1, 15)) {
+						effect->SetBlurPasses(blur);
+					}
+				}
+				if (name != "N/A")
+					if (ImGui::Button("Remove")) {
+						m_frameEffects.RemoveEffect(i);
+					}
+				ImGui::TreePop();
+			}
+		}
+		if (m_frameEffects.size() < maxEffectCount) {
+			if (ImGui::Button("Greyscale")) {
+				GreyscaleEffect* effect = new GreyscaleEffect();
+				effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+				effect->SetInfo("Greyscale");
+				m_frameEffects.AddEffect(effect);
+				effect = nullptr;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Sepia")) {
+				SepiaEffect* effect = new SepiaEffect();
+				effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+				effect->SetInfo("Sepia");
+				m_frameEffects.AddEffect(effect);
+				effect = nullptr;
+			}
+			if (ImGui::Button("Bloom")) {
+				BloomEffect* effect = new BloomEffect();
+				effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+				effect->SetInfo("Bloom");
+				m_frameEffects.AddEffect(effect);
+				effect = nullptr;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Pixelataion")) {
+				PixelEffect* effect = new PixelEffect();
+				effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+				effect->SetInfo("Pixel");
+				m_frameEffects.AddEffect(effect);
+				effect = nullptr;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Depth Of Field")) {
+				DepthOfFieldEffect* effect = new DepthOfFieldEffect();
+				effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+				effect->SetInfo("DepthOfField");
+				m_frameEffects.AddEffect(effect);
+				effect->SetDrawBuffer(m_frameEffects.GetDrawBuffer());
+				effect = nullptr;
+			}
+		}
+		else {
+			ImGui::Text("Max effects added");
+		}
+	}
+
 }

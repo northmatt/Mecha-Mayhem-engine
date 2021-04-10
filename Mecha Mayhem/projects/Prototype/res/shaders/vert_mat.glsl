@@ -11,7 +11,6 @@ layout(location = 0) out vec3 outPosition;
 layout(location = 1) out vec3 outNormal;
 layout(location = 2) out vec3 outColour;
 layout(location = 3) out vec3 outSpecStrength;
-layout(location = 4) out vec2 outUV;
 
 void main() {
 	// vertex position in clip space
@@ -21,7 +20,6 @@ void main() {
 	outNormal = mat3(transform) * inNormal;
 	outColour = inColour;
 	outSpecStrength = inSpecStrength;
-	outUV = vec2(0,0);
 }
 
 

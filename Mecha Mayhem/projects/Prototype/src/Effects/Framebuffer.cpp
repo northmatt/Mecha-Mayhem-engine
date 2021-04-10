@@ -26,7 +26,9 @@ ColorTarget::~ColorTarget()
 
 void ColorTarget::Unload()
 {
-	glDeleteTextures(_numAttachments, &_textures[0].GetHandle());
+	for (int i(0); i < _numAttachments; ++i) {
+		glDeleteTextures(1, &_textures[i].GetHandle());
+	}
 }
 
 Framebuffer::Framebuffer()
@@ -40,10 +42,12 @@ Framebuffer::~Framebuffer()
 
 void Framebuffer::Unload()
 {
-	//Deletes the framebuffer
-	glDeleteFramebuffers(1, &_FBO);
-	//Sets init to false
-	_isInit = false;
+	if (_isInit) {
+		//Deletes the framebuffer
+		glDeleteFramebuffers(1, &_FBO);
+		//Sets init to false
+		_isInit = false;
+	}
 }
 
 void Framebuffer::Init(unsigned width, unsigned height)
@@ -54,6 +58,8 @@ void Framebuffer::Init(unsigned width, unsigned height)
 	//Inits framebuffer
 	Init();
 }
+
+const glm::vec4 white(1.f, 1.f, 1.f, 1.f);
 
 void Framebuffer::Init()
 {
@@ -75,7 +81,7 @@ void Framebuffer::Init()
 		glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT24, _width, _height);
 
 		if (_isDepthBuffer) {
-			glTextureParameterfv(_depth._texture.GetHandle(), GL_TEXTURE_BORDER_COLOR, &glm::vec4(1.f, 1.f, 1.f, 1.f)[0]);
+			glTextureParameterfv(_depth._texture.GetHandle(), GL_TEXTURE_BORDER_COLOR, &white[0]);
 			_wrap = GL_CLAMP_TO_BORDER;
 		}
 

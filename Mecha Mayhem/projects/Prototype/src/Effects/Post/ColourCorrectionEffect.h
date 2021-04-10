@@ -16,9 +16,15 @@ public:
 
 	void Unload() override;
 
-	void SetCube(LUT3D &cube);
+	//Getters
+	float GetIntensity() const;
 	LUT3D GetCube() const;
+
+	//Setters
+	void SetIntensity(float intensity);
+	void SetCube(LUT3D &cube);
 
 private:
 	LUT3D *_cube;
+	float _intensity = 1.f;
 };

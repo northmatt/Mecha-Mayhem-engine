@@ -39,8 +39,11 @@ Transform& Transform::ChildTo(entt::entity index)
 
 Transform& Transform::UnChild(bool conservePosition)
 {
+	if (m_parent == entt::null)	return *this;
+
 	if (conservePosition) {
 		m_position = GetGlobalPosition();
+		m_scale = GetGlobalScale();
 		m_rotation = GetGlobalRotation();
 	}
 	
@@ -66,6 +69,7 @@ Transform& Transform::UseAsParent(Transform other)
 
 	m_dirty = false;
 	m_position = GetGlobalPosition();
+	m_scale = GetGlobalScale();
 	m_rotation = GetGlobalRotation();
 	ComputeGlobal();
 
@@ -80,6 +84,7 @@ Transform& Transform::UseAsParent(const glm::mat4& model)
 
 	m_dirty = false;
 	m_position = GetGlobalPosition();
+	m_scale = GetGlobalScale();
 	m_rotation = GetGlobalRotation();
 	ComputeGlobal();
 
@@ -97,7 +102,7 @@ Transform& Transform::ComputeGlobal()
 			else
 				m_global = ECS::GetComponent<Transform>(m_parent).GetScalessModel();
 		}
-		else	UnChild();
+		else	UnChild(false);
 
 	}
 	else	m_global = BLM::GLMMat;
@@ -119,7 +124,7 @@ Transform& Transform::ComputeScalessGlobal()
 		if (ECS::GetRegistry()->valid(m_parent)) {
 			m_global = ECS::GetComponent<Transform>(m_parent).GetScalessModel();
 		}
-		else	UnChild();
+		else	UnChild(false);
 
 	}
 	else	m_global = BLM::GLMMat;
@@ -149,7 +154,7 @@ glm::mat4 Transform::GetScalessModel()
 		if (ECS::GetRegistry()->valid(m_parent)) {
 			temp = ECS::GetComponent<Transform>(m_parent).GetScalessModel();
 		}
-		else	UnChild();
+		else	UnChild(false);
 
 	}
 	
@@ -217,6 +222,11 @@ glm::vec3 Transform::GetScale()
 	return m_scale;
 }
 
+glm::vec3 Transform::GetGlobalScale()
+{
+	return glm::vec3(glm::length(m_global[0]), glm::length(m_global[1]), glm::length(m_global[2]));
+}
+
 Transform& Transform::SetRotation(const glm::mat3& rot)
 {
 	m_rotation = rot;
@@ -251,10 +261,7 @@ glm::quat Transform::GetLocalRotation()
 
 glm::quat Transform::GetGlobalRotation()
 {
-	if (m_parent != entt::null)	m_dirty = true;
-	if (m_dirty)		ComputeGlobal();
-
-	return glm::normalize(glm::quat_cast(glm::mat3(m_global)));
+	return glm::toQuat(GetGlobalRotationM3());
 }
 
 glm::mat3 Transform::GetLocalRotationM3()
@@ -265,9 +272,16 @@ glm::mat3 Transform::GetLocalRotationM3()
 glm::mat3 Transform::GetGlobalRotationM3()
 {
 	if (m_parent != entt::null)	m_dirty = true;
-	if (m_dirty)				ComputeGlobal();
+	if (m_dirty)		ComputeGlobal();
 
-	return glm::toMat3(glm::normalize(glm::quat_cast(glm::mat3(m_global))));
+	glm::vec3 tempScale = GetGlobalScale();
+	glm::mat3 tempRot = glm::mat3(m_global);
+
+	tempRot[0] /= tempScale.x;
+	tempRot[1] /= tempScale.y;
+	tempRot[2] /= tempScale.z;
+
+	return tempRot;
 }
 
 glm::vec3 Transform::GetForwards()
@@ -275,7 +289,9 @@ glm::vec3 Transform::GetForwards()
 	if (m_parent != entt::null)	m_dirty = true;
 	if (m_dirty)				ComputeGlobal();
 
-	return glm::normalize(glm::vec3(m_global[2][0], m_global[2][1], m_global[2][2]));
+	glm::mat3 globalRot = GetGlobalRotationM3();
+
+	return glm::normalize(glm::vec3(globalRot[2][0], globalRot[2][1], globalRot[2][2]));
 }
 
 Transform& Transform::LookAt(const glm::vec3 pos)

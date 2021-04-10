@@ -12,35 +12,28 @@ namespace Gameloop
 		GLFWwindow* window = BackEnd::Init("Mecha Mayhem", width, height);
 		if (!window)	return nullptr;
 
-		AudioEngine& engine = AudioEngine::Instance();
-		engine.Init();
-		engine.LoadBankWithString("Master");
-		engine.LoadBus("Music", "bus:/Music");
-		engine.LoadBus("SFX", "bus:/SFX");
-		engine.CreateSoundEvent("MainMenu", "event:/Main Menu");
-		engine.CreateSoundEvent("hit", "event:/punch");
-		engine.CreateSoundEvent("reload", "event:/reload");
-		engine.CreateSoundEvent("step", "event:/steps");
-		engine.CreateSoundEvent("shoot", "event:/Pew");
-		engine.CreateSoundEvent("pickup", "event:/pickup");
-
-		engine.GetListener().SetPosition(glm::vec3(0, 0, 0));
+		SoundEventManager::Init();
 
 		if (usingImGui)	BackEnd::InitImGui();
 
 		//all static inits
+
+		//shaders
 		ObjLoader::Init();
 		ObjMorphLoader::Init();
 		Sprite::Init();
+		FrameEffects::Init(width, height);
 
+		//rendering stuff
+		Rendering::Init(width, height);
+		Framebuffer::InitFullscreenQuad();
+
+		//others
 		Input::Init(window);
 		HitboxGen::Init();
 		Effects::Init();
 		Player::Init(width, height);
 
-		Rendering::Init(width, height);
-		Framebuffer::InitFullscreenQuad();
-		FrameEffects::Init();
 
 		return window;
 	}
@@ -86,7 +79,7 @@ namespace Gameloop
 		//Controller Checks n stuff
 		ControllerInput::ControllerUpdate();
 		//this
-		AudioEngine::Instance().Update();
+		SoundEventManager::Update();
 		//updated in Scene.cpp
 		//Player::Update();
 		//update the static dt
@@ -105,14 +98,14 @@ namespace Gameloop
 		ObjMorphLoader::Unload();
 		Sprite::Unload();
 		Effects::Unload();
-		FrameEffects::Unload();
 
 		Scene::UnloadScenes();
 
+		FrameEffects::Unload();
 		if (usingImGui)	BackEnd::CloseImGui();
 		BackEnd::Unload();
 
-		AudioEngine::Instance().Shutdown();
+		SoundEventManager::Stop();
 
 		// Clean up the toolkit logger so we don't leak memory
 		Logger::Uninitialize();

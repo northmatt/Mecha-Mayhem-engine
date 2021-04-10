@@ -37,6 +37,7 @@ public:
 	Transform& SetScale(const glm::vec3& scale);
 	Transform& SetScale(float scale);
 	glm::vec3 GetScale();
+	glm::vec3 GetGlobalScale();
 
 	Transform& SetRotation(const glm::mat3& rot);
 	Transform& SetRotation(const glm::quat& rot);

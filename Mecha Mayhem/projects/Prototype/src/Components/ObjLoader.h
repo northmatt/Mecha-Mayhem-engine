@@ -20,19 +20,30 @@ public:
 
 	static void BeginTempDraw();
 
-	void Draw(const glm::mat4& model, const glm::vec3& colour = glm::vec3(0.f));
-	void DrawTemp(const glm::mat4& model, const glm::vec3& colour = glm::vec3(0.f));
+	void Draw(const glm::mat4& model, const glm::vec3& colour = BLM::GLMzero);
+	void DrawTemp(const glm::mat4& model, const glm::vec3& colour = BLM::GLMzero);
 
-	static void PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour, const std::array<glm::vec3, MAX_LIGHTS>& lightPos, const std::array<glm::vec3, MAX_LIGHTS>& lightColour, const int& lightCount,
+	/*static void PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour, const std::array<glm::vec3, MAX_LIGHTS>& lightPos, const std::array<glm::vec3, MAX_LIGHTS>& lightColour, const int& lightCount,
 		float specularStrength = 1.f, float shininess = 4,
 		float ambientLightStrength = 0.05f, const glm::vec3& ambientColour = glm::vec3(0.f), float ambientStrength = 0.f
-	);
+	);*/
+	static void PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour, float emissiveness = 0, float shininess = 4);
+
 	static void PerformDrawShadow(const glm::mat4& lightVPMatrix);
 
 	void Enable() { m_enabled = true; }
 	void Disable() { m_enabled = false; }
 	bool GetEnabled() { return m_enabled; }
 
+	glm::vec3 GetAdditiveColour() { return m_colour; }
+	void SetAdditiveColour(const glm::vec3& colour) { m_colour = colour; }
+
+	ObjLoader& SetReceiveShadows(bool choice) { m_receiveShadows = choice; return *this; }
+	bool GetReceiveShadows() { return m_receiveShadows; }
+	ObjLoader& SetCastShadows(bool choice) { m_castShadows = choice; return *this; }
+	bool GetCastShadows() { return m_castShadows; }
+	ObjLoader& SetRimLighting(bool choice) { m_rimLighting = choice; return *this; }
+	bool GetRimLighting() { return m_rimLighting; }
 private:
 
 	struct Models
@@ -46,9 +57,11 @@ private:
 
 	struct DrawData
 	{
-		size_t modelIndex;
+		int modelIndex;
 		glm::mat4 model;
 		glm::vec3 colour;
+		int shaded;
+		int rimLit;
 	};
 
 	static std::vector<DrawData> m_matQueue;
@@ -60,7 +73,6 @@ private:
 	static std::vector<Models> m_models;
 	static Shader::sptr m_shader;
 	static Shader::sptr m_matShader;
-	static Shader::sptr gBufferShader;
 	static Shader::sptr m_texShader;
 	static Shader::sptr m_shadowShader;
 
@@ -70,6 +82,10 @@ private:
 	static const std::vector<BufferAttribute> m_specAttrib;
 	static const std::vector<BufferAttribute> m_uvAttrib;
 
+	bool m_castShadows = true;
+	bool m_receiveShadows = true;
+	bool m_rimLighting = false;
 	bool m_enabled = false;
-	size_t m_index = INT_MAX;
+	int m_index = -1;
+	glm::vec3 m_colour = BLM::GLMzero;
 };

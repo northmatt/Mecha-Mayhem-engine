@@ -1,6 +1,7 @@
 #include "ObjMorphLoader.h"
 #include "Utilities/stringTrimming.h"
 
+std::vector<ObjMorphLoader::DrawData> ObjMorphLoader::m_transQueue = {};
 std::vector<ObjMorphLoader::DrawData> ObjMorphLoader::m_texQueue = {};
 std::vector<ObjMorphLoader::DrawData> ObjMorphLoader::m_matQueue = {};
 std::vector<ObjMorphLoader::DrawData> ObjMorphLoader::m_defaultQueue = {};
@@ -165,8 +166,7 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 
 		std::string matLine;
 		size_t matIndex = 0;
-		float tempExponent = 1.f;
-		float tempTrans = 1.f;
+		float tempExponent = 1.f, tempTrans = 1.f, emissive = 0.f;
 		while (std::getline(materialFile, matLine))
 		{
 			stringTrimming::ltrim(matLine);
@@ -175,6 +175,7 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 				matIndex = materials.size();
 				materials.push_back({ matLine.substr(7), glm::vec3(1.f), glm::vec3(1.f) });
 				tempExponent = tempTrans = 1.f;
+				emissive = 0.f;
 			}
 			else if (matLine.substr(0, 6) == "map_Kd")
 			{
@@ -224,19 +225,20 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 				std::istringstream ss = std::istringstream(matLine.substr(5));
 				ss >> tempTrans;
 			}
-			else if (matLine.size() > 1 && matLine[0] == 'K')
+			//else if (matLine.size() > 1 && matLine[0] == 'K')
+			else if (matLine.substr(0, 2) == "Kd")
 			{
 				//only colour data is taken for now, textures later
-				if (matLine[1] == 'd')
-				{
+				//if (matLine[1] == 'd')
+				//{
 					//diffuse Colour, aka object colour
 					std::istringstream ss = std::istringstream(matLine.substr(2));
 					glm::vec3 colour;
 					ss >> colour.x >> colour.y >> colour.z;
 
 					materials[matIndex].colours = colour;
-				}
-				else if (matLine[1] == 's')
+				//}
+				/*else if (matLine[1] == 's')
 				{
 					//specular Colour
 					//diffuse Colour, aka object colour
@@ -249,7 +251,15 @@ ObjMorphLoader& ObjMorphLoader::LoadMeshs(const std::string& baseFileName, bool 
 				else if (matLine[1] == 'a')
 				{
 					//ambient Colour, ignored
-				}
+				}*/
+			}
+			else if (matLine.substr(0, 4) == "emis") {
+				std::istringstream ss = std::istringstream(matLine.substr(4));
+				ss >> emissive;
+			}
+			//send the data at the end
+			else if (matLine.substr(0, 5) == "illum") {
+				materials[matIndex].specStrength = glm::vec3(emissive, tempExponent, tempTrans);
 			}
 			else if (matLine[0] == '#')
 			{
@@ -569,19 +579,19 @@ void ObjMorphLoader::Init()
 {
 	m_matShader = Shader::Create();
 	m_matShader->LoadShaderPartFromFile("shaders/vert_mat_morph.glsl", GL_VERTEX_SHADER);
-	m_matShader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER);
+	m_matShader->LoadShaderPartFromFile("shaders/frag_mat.glsl", GL_FRAGMENT_SHADER);
 	m_matShader->Link();
 
 	m_texShader = Shader::Create();
 	m_texShader->LoadShaderPartFromFile("shaders/vert_tex_morph.glsl", GL_VERTEX_SHADER);
-	m_texShader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER);
+	m_texShader->LoadShaderPartFromFile("shaders/frag_tex.glsl", GL_FRAGMENT_SHADER);
 	m_texShader->Link();
 
 	m_texShader->SetUniform("s_texture", 0);
 
 	m_shader = Shader::Create();
 	m_shader->LoadShaderPartFromFile("shaders/vert_none_morph.glsl", GL_VERTEX_SHADER);
-	m_shader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER);
+	m_shader->LoadShaderPartFromFile("shaders/frag_none.glsl", GL_FRAGMENT_SHADER);
 	m_shader->Link();
 
 	//shadows
@@ -659,14 +669,14 @@ void ObjMorphLoader::Update(float dt)
 
 	if (m_blend) {
 
-		if (m_indexHold != INT_MAX) {
+		if (m_indexHold != -1) {
 			auto& data2 = m_anims[m_indexHold];
 			m_timer += m_speed * dt;
 
 			if (m_reversing) {
 				if (m_timer >= data2.durations[m_p0]) {
 					m_timer -= data2.durations[m_p0];
-					m_indexHold = INT_MAX;
+					m_indexHold = -1;
 					size_t p0 = m_p1;
 					if ((m_p0 = m_p0Hold) > 0)
 						m_p1 = m_p0 - 1;
@@ -690,7 +700,7 @@ void ObjMorphLoader::Update(float dt)
 			else {
 				if (m_timer >= data2.durations[m_p1]) {
 					m_timer -= data2.durations[m_p1];
-					m_indexHold = INT_MAX;
+					m_indexHold = -1;
 					size_t p0 = m_p1;
 					m_p1 = ((m_p0 = m_p0Hold) + 1) % data.frames.size();
 
@@ -709,7 +719,7 @@ void ObjMorphLoader::Update(float dt)
 					m_t = m_timer / data2.durations[m_p1];
 			}
 		}
-		if (m_indexHold == INT_MAX) {
+		if (m_indexHold == -1) {
 
 			m_timer += m_speed * dt;
 
@@ -843,7 +853,7 @@ void ObjMorphLoader::Update(float dt)
 	}
 }
 
-void ObjMorphLoader::BeginDraw(unsigned amt)
+void ObjMorphLoader::BeginDraw(unsigned amt, unsigned transAmt)
 {
 	m_texQueue.resize(0);
 	m_texQueue.reserve(amt);
@@ -851,6 +861,8 @@ void ObjMorphLoader::BeginDraw(unsigned amt)
 	m_matQueue.reserve(amt);
 	m_defaultQueue.resize(0);
 	m_defaultQueue.reserve(amt);
+	m_transQueue.resize(0);
+	m_transQueue.reserve(transAmt);
 }
 
 void ObjMorphLoader::BeginTempDraw()
@@ -860,16 +872,23 @@ void ObjMorphLoader::BeginTempDraw()
 	m_defaultTempQueue.resize(0);
 }
 
+void ObjMorphLoader::DrawTrans(const glm::mat4& model, const glm::vec3& colour)
+{
+	if (!m_enabled)	return;
+
+	m_transQueue.push_back({ m_t, m_vao, model, colour + m_colour });
+}
+
 void ObjMorphLoader::Draw(const glm::mat4& model, const glm::vec3& colour)
 {
 	if (!m_enabled)	return;
 
 	if (m_anims[m_index].text)
-		m_texQueue.push_back({ m_t, m_vao, model, colour, m_anims[m_index].texture });
+		m_texQueue.push_back({ m_t, m_vao, model, colour + m_colour, m_receiveShadows, m_rimLighting, m_anims[m_index].texture });
 	else if (m_anims[m_index].mat)
-		m_matQueue.push_back({ m_t, m_vao, model, colour });
+		m_matQueue.push_back({ m_t, m_vao, model, colour + m_colour, m_receiveShadows, m_rimLighting });
 	else
-		m_defaultQueue.push_back({ m_t, m_vao, model, colour });
+		m_defaultQueue.push_back({ m_t, m_vao, model, colour + m_colour, m_receiveShadows, m_rimLighting });
 }
 
 void ObjMorphLoader::DrawTemp(const glm::mat4& model, const glm::vec3& colour)
@@ -877,32 +896,44 @@ void ObjMorphLoader::DrawTemp(const glm::mat4& model, const glm::vec3& colour)
 	if (!m_enabled)	return;
 
 	if (m_anims[m_index].text)
-		m_texTempQueue.push_back({ m_t, m_vao, model, colour, m_anims[m_index].texture });
+		m_texTempQueue.push_back({ m_t, m_vao, model, colour + m_colour, m_receiveShadows, m_rimLighting, m_anims[m_index].texture });
 	else if (m_anims[m_index].mat)
-		m_matTempQueue.push_back({ m_t, m_vao, model, colour });
+		m_matTempQueue.push_back({ m_t, m_vao, model, colour + m_colour, m_receiveShadows, m_rimLighting });
 	else
-		m_defaultTempQueue.push_back({ m_t, m_vao, model, colour });
+		m_defaultTempQueue.push_back({ m_t, m_vao, model, colour + m_colour, m_receiveShadows, m_rimLighting });
 }
 
-void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour,
+/*void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour,
 	const std::array<glm::vec3, MAX_LIGHTS>& lightPos, const std::array<glm::vec3, MAX_LIGHTS>& lightColour, const int& lightCount, float specularStrength, float shininess,
-	float ambientLightStrength, const glm::vec3& ambientColour, float ambientStrength)
+	float ambientLightStrength, const glm::vec3& ambientColour, float ambientStrength)*/
+void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, const glm::vec3& colour, float emissiveness, float shininess)
 {
 	glm::mat4 VP = camera.GetProjection() * view;
 
 	if (m_defaultQueue.size() || m_defaultTempQueue.size()) {
 		//global stuff
 		m_shader->Bind();
-
 		m_shader->SetUniform("colour", colour);
-		m_shader->SetUniform("specularStrength", specularStrength);
+		m_shader->SetUniform("emissiveness", emissiveness);
 		m_shader->SetUniform("shininess", shininess);
+
+		/*m_shader->SetUniform("camPos", camera.GetPosition());
+
+		m_shader->SetUniform("lightsPos", *lightPos.data(), MAX_LIGHTS);
+		m_shader->SetUniform("lightsColour", *lightColour.data(), MAX_LIGHTS);
+		m_shader->SetUniform("lightCount", lightCount);
+
+		m_shader->SetUniform("ambientLightStrength", ambientLightStrength);
+		m_shader->SetUniform("ambientColour", ambientColour);
+		m_shader->SetUniform("ambientStrength", ambientStrength);*/
 
 		for (int i(0); i < m_defaultTempQueue.size(); ++i) {
 			m_shader->SetUniformMatrix("MVP", VP * m_defaultTempQueue[i].model);
 			m_shader->SetUniformMatrix("transform", m_defaultTempQueue[i].model);
 			m_shader->SetUniform("t", m_defaultTempQueue[i].t);
 			m_shader->SetUniform("addColour", m_defaultTempQueue[i].colour);
+			m_shader->SetUniform("receiveShadows", m_defaultTempQueue[i].shaded);
+			m_shader->SetUniform("rimLighting", m_defaultTempQueue[i].rimLit);
 
 			m_defaultTempQueue[i].vao->Render();
 		}
@@ -912,6 +943,8 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 			m_shader->SetUniformMatrix("transform", m_defaultQueue[i].model);
 			m_shader->SetUniform("t", m_defaultQueue[i].t);
 			m_shader->SetUniform("addColour", m_defaultQueue[i].colour);
+			m_shader->SetUniform("receiveShadows", m_defaultQueue[i].shaded);
+			m_shader->SetUniform("rimLighting", m_defaultQueue[i].rimLit);
 
 			m_defaultQueue[i].vao->Render();
 		}
@@ -922,12 +955,23 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 	if (m_texQueue.size() || m_texTempQueue.size()) {
 		//global stuff
 		m_texShader->Bind();
+		/*m_texShader->SetUniform("camPos", camera.GetPosition());
+
+		m_texShader->SetUniform("lightsPos", *lightPos.data(), MAX_LIGHTS);
+		m_texShader->SetUniform("lightsColour", *lightColour.data(), MAX_LIGHTS);
+		m_texShader->SetUniform("lightCount", lightCount);
+
+		m_texShader->SetUniform("ambientLightStrength", ambientLightStrength);
+		m_texShader->SetUniform("ambientColour", ambientColour);
+		m_texShader->SetUniform("ambientStrength", ambientStrength);*/
 
 		for (int i(0); i < m_texTempQueue.size(); ++i) {
 			m_texShader->SetUniformMatrix("MVP", VP * m_texTempQueue[i].model);
 			m_texShader->SetUniformMatrix("transform", m_texTempQueue[i].model);
 			m_texShader->SetUniform("t", m_texTempQueue[i].t);
 			m_texShader->SetUniform("addColour", m_texTempQueue[i].colour);
+			m_texShader->SetUniform("receiveShadows", m_texTempQueue[i].shaded);
+			m_texShader->SetUniform("rimLighting", m_texTempQueue[i].rimLit);
 
 			Sprite::m_textures[m_texTempQueue[i].texture].texture->Bind(0);
 
@@ -939,6 +983,8 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 			m_texShader->SetUniformMatrix("transform", m_texQueue[i].model);
 			m_texShader->SetUniform("t", m_texQueue[i].t);
 			m_texShader->SetUniform("addColour", m_texQueue[i].colour);
+			m_texShader->SetUniform("receiveShadows", m_texQueue[i].shaded);
+			m_texShader->SetUniform("rimLighting", m_texQueue[i].rimLit);
 
 			Sprite::m_textures[m_texQueue[i].texture].texture->Bind(0);
 
@@ -951,12 +997,23 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 	if (m_matQueue.size() || m_matTempQueue.size()) {
 		//global stuff
 		m_matShader->Bind();
+		/*m_matShader->SetUniform("camPos", camera.GetPosition());
+
+		m_matShader->SetUniform("lightsPos", *lightPos.data(), MAX_LIGHTS);
+		m_matShader->SetUniform("lightsColour", *lightColour.data(), MAX_LIGHTS);
+		m_matShader->SetUniform("lightCount", lightCount);
+
+		m_matShader->SetUniform("ambientLightStrength", ambientLightStrength);
+		m_matShader->SetUniform("ambientColour", ambientColour);
+		m_matShader->SetUniform("ambientStrength", ambientStrength);*/
 
 		for (int i(0); i < m_matTempQueue.size(); ++i) {
 			m_matShader->SetUniformMatrix("MVP", VP * m_matTempQueue[i].model);
 			m_matShader->SetUniformMatrix("transform", m_matTempQueue[i].model);
 			m_matShader->SetUniform("t", m_matTempQueue[i].t);
 			m_matShader->SetUniform("addColour", m_matTempQueue[i].colour);
+			m_matShader->SetUniform("receiveShadows", m_matTempQueue[i].shaded);
+			m_matShader->SetUniform("rimLighting", m_matTempQueue[i].rimLit);
 
 			m_matTempQueue[i].vao->Render();
 		}
@@ -966,8 +1023,30 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 			m_matShader->SetUniformMatrix("transform", m_matQueue[i].model);
 			m_matShader->SetUniform("t", m_matQueue[i].t);
 			m_matShader->SetUniform("addColour", m_matQueue[i].colour);
+			m_matShader->SetUniform("receiveShadows", m_matQueue[i].shaded);
+			m_matShader->SetUniform("rimLighting", m_matQueue[i].rimLit);
 
 			m_matQueue[i].vao->Render();
+		}
+
+		Shader::UnBind();
+	}
+}
+
+void ObjMorphLoader::PerformDrawTrans(const glm::mat4& view, const Camera& camera)
+{
+	if (m_transQueue.size()) {
+		glm::mat4 VP = camera.GetProjection() * view;
+		m_matShader->Bind();
+
+		m_matShader->SetUniform("receiveShadows", 0);
+		for (int i(0); i < m_transQueue.size(); ++i) {
+			m_matShader->SetUniformMatrix("MVP", VP * m_transQueue[i].model);
+			m_matShader->SetUniformMatrix("transform", m_transQueue[i].model);
+			m_matShader->SetUniform("t", m_transQueue[i].t);
+			m_matShader->SetUniform("addColour", m_transQueue[i].colour);
+
+			m_transQueue[i].vao->Render();
 		}
 
 		Shader::UnBind();
@@ -977,25 +1056,42 @@ void ObjMorphLoader::PerformDraw(const glm::mat4& view, const Camera& camera, co
 void ObjMorphLoader::PerformDrawShadow(const glm::mat4& lightVPMatrix)
 {
 	m_shadowShader->Bind();
-	m_shadowShader->SetUniformMatrix("lightVPMatrix", lightVPMatrix);
 
 	for (int i(0); i < m_matQueue.size(); ++i) {
-		m_shadowShader->SetUniformMatrix("model", m_matQueue[i].model);
+		m_shadowShader->SetUniformMatrix("MVP", lightVPMatrix * m_matQueue[i].model);
 		m_shadowShader->SetUniform("t", m_matQueue[i].t);
 
 		m_matQueue[i].vao->Render();
 	}
 	for (int i(0); i < m_texQueue.size(); ++i) {
-		m_shadowShader->SetUniformMatrix("model", m_texQueue[i].model);
+		m_shadowShader->SetUniformMatrix("MVP", lightVPMatrix * m_texQueue[i].model);
 		m_shadowShader->SetUniform("t", m_texQueue[i].t);
 
 		m_texQueue[i].vao->Render();
 	}
 	for (int i(0); i < m_defaultQueue.size(); ++i) {
-		m_shadowShader->SetUniformMatrix("model", m_defaultQueue[i].model);
+		m_shadowShader->SetUniformMatrix("MVP", lightVPMatrix * m_defaultQueue[i].model);
 		m_shadowShader->SetUniform("t", m_defaultQueue[i].t);
 
 		m_defaultQueue[i].vao->Render();
+	}
+	for (int i(0); i < m_matTempQueue.size(); ++i) {
+		m_shadowShader->SetUniformMatrix("MVP", lightVPMatrix * m_matTempQueue[i].model);
+		m_shadowShader->SetUniform("t", m_matTempQueue[i].t);
+
+		m_matTempQueue[i].vao->Render();
+	}
+	for (int i(0); i < m_texTempQueue.size(); ++i) {
+		m_shadowShader->SetUniformMatrix("MVP", lightVPMatrix * m_texTempQueue[i].model);
+		m_shadowShader->SetUniform("t", m_texTempQueue[i].t);
+
+		m_texTempQueue[i].vao->Render();
+	}
+	for (int i(0); i < m_defaultTempQueue.size(); ++i) {
+		m_shadowShader->SetUniformMatrix("MVP", lightVPMatrix * m_defaultTempQueue[i].model);
+		m_shadowShader->SetUniform("t", m_defaultTempQueue[i].t);
+
+		m_defaultTempQueue[i].vao->Render();
 	}
 
 	Shader::UnBind();

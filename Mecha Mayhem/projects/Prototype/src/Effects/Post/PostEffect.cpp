@@ -102,6 +102,15 @@ void PostEffect::Unload()
 		}
 	}
 	_buffers.clear();
+	/*while(_buffers.size())
+	{
+		if (_buffers[0] != nullptr)
+		{
+			_buffers[0]->Unload();
+			delete _buffers[0];
+			_buffers.erase(_buffers.begin());
+		}
+	}*/
 
 	//_shaders.clear();
 }
