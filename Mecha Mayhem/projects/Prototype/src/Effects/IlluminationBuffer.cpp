@@ -107,8 +107,12 @@ void IlluminationBuffer::ApplyEffect(GBuffer* gBuffer)
 	_sunBuffer.Unbind(0);
 
 	_shaders[Lights::AMBIENT]->UnBind();
+
+	//draw the volumes here if we get them working lol
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 }
-/*
+
 void IlluminationBuffer::DrawIllumBuffer()
 {
 	_shaders[0]->Bind();
@@ -121,7 +125,7 @@ void IlluminationBuffer::DrawIllumBuffer()
 
 	_shaders[0]->UnBind();
 }
-*/
+
 
 void IlluminationBuffer::SetLightSpaceViewProj(glm::mat4 lightSpaceViewProj)
 {

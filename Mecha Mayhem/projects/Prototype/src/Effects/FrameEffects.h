@@ -52,6 +52,8 @@ public:
 	//Get amount of effects
 	size_t size() { return layersOfEffects.size(); }
 
+	int drawBuffers = -1;
+
 	//get the effect at the index, and nullptr if invalid
 	PostEffect* operator[](size_t index) {
 		if (layersOfEffects.size() <= index)	return nullptr;
