@@ -4,6 +4,7 @@
 GBuffer* FrameEffects::baseEffect = nullptr;
 IlluminationBuffer FrameEffects::illumBuffer;
 TransparencyLayer FrameEffects::transparencyLayer;
+LightMeshLayer FrameEffects::lightLayer;
 Framebuffer* FrameEffects::shadowMap = nullptr;
 
 FrameEffects::FrameEffects() { }
@@ -47,6 +48,7 @@ void FrameEffects::Init(unsigned width, unsigned height)
 	baseEffect->Init(width, height);
 	illumBuffer.Init(width, height);
 	transparencyLayer.Init(width, height);
+	lightLayer.Init(width, height);
 }
 
 void FrameEffects::Unload()
@@ -156,6 +158,16 @@ void FrameEffects::UnBindTransparency()
 	glDisable(GL_BLEND);
 }
 
+void FrameEffects::BindMeshLights()
+{
+	lightLayer.BindBuffer(1);
+}
+
+void FrameEffects::UnBindMeshLights()
+{
+	lightLayer.UnbindBuffer();
+}
+
 void FrameEffects::Draw(/*bool paused*/)
 {
 	if (m_usingShadows)		shadowMap->BindDepthAsTexture(30);
@@ -165,6 +177,7 @@ void FrameEffects::Draw(/*bool paused*/)
 
 	Texture2D::Unbind(30);
 
+	//lightLayer.ApplyEffect(&illumBuffer, baseEffect);
 	transparencyLayer.ApplyEffect(&illumBuffer, baseEffect);
 
 	PostEffect* prev = &transparencyLayer;

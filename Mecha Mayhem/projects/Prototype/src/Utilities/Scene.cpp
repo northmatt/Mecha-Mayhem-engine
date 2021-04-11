@@ -20,6 +20,11 @@ Scene::Scene(const std::string& name, const glm::vec3& gravity, bool physics)
 
 		m_world->setGravity(BLM::GLMtoBT(gravity));
 	}
+
+	m_shader = Shader::Create();
+	m_shader->LoadShaderPartFromFile("shaders/vert_none.glsl", GL_VERTEX_SHADER);
+	m_shader->LoadShaderPartFromFile("shaders/frag_none.glsl", GL_FRAGMENT_SHADER);
+	m_shader->Link();
 }
 
 Scene::~Scene()
@@ -136,9 +141,9 @@ void Scene::BackEndUpdate()
 
 	Sprite::BeginUIDraw(10, m_camCount);
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	Rendering::Update(&m_reg, m_camCount, m_paused);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	//dont update shadows if paused
 	if (m_frameEffects.GetUsingShadows() && !m_paused)
@@ -146,6 +151,8 @@ void Scene::BackEndUpdate()
 
 	//once pause buffer works, we can move this or smt
 	m_frameEffects.Draw();
+
+
 
 	Sprite::PerformUIDraw(m_camCount);
 

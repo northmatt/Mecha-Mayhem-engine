@@ -1,6 +1,7 @@
 #pragma once
 #include <GLM/gtc/matrix_transform.hpp>
 #include "Post/TransparencyLayer.h"
+#include "Post/LightMeshLayer.h"
 #include "Utilities/BLM.h"
 
 //aka the PP wrapper
@@ -41,6 +42,10 @@ public:
 	//binds transparency buffer
 	static void BindTransparency();
 	static void UnBindTransparency();
+
+	//binds meshLightLayer buffer
+	static void BindMeshLights();
+	static void UnBindMeshLights();
 
 	//for drawing purposes
 	void Clear(bool paused);
@@ -97,6 +102,7 @@ private:
 	static GBuffer* baseEffect;
 	static IlluminationBuffer illumBuffer;
 	static TransparencyLayer transparencyLayer;
+	static LightMeshLayer lightLayer;
 	static Framebuffer* shadowMap;
 
 	std::vector<PostEffect*> layersOfEffects = {};

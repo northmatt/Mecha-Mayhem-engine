@@ -80,4 +80,6 @@ protected:
 	btCollisionConfiguration* _collisionConfiguration = nullptr;
 	btCollisionDispatcher* _dispatcher = nullptr;
 	btSequentialImpulseConstraintSolver* _solver = nullptr;
+
+	static Shader::sptr m_shader;
 };
