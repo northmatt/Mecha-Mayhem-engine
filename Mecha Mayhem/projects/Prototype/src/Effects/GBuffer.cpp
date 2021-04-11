@@ -79,7 +79,9 @@ void GBuffer::DrawBuffersToScreen(int test)
 {
 	_passThrough->Bind();
 	//draw individual
-	if (test >= 0 && test <= 4) {
+	if (test >= 0 && test <= 4) 
+	{
+		glViewport(0, 0, _windowWidth, _windowHeight);
 		_gBuffer.BindColorAsTexture(test, 0);
 		_gBuffer.DrawFullscreenQuad();
 		_gBuffer.UnbindTexture(0);

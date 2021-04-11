@@ -23,6 +23,8 @@ public:
 	//Can only apply effect using GBuffer object
 	void ApplyEffect(GBuffer* gBuffer);
 
+	void DrawIllumBuffer();
+
 	//basically useless in our version
 	//void DrawIllumBuffer();
 

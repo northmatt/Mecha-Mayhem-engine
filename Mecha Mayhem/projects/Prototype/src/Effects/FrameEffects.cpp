@@ -170,6 +170,25 @@ void FrameEffects::UnBindMeshLights()
 
 void FrameEffects::Draw(/*bool paused*/)
 {
+	if (drawBuffers >= 0)
+	{
+		if (drawBuffers == 420) //420 is the number I chose because things around here are lit
+		{
+			//copypasta of shadows
+			if (m_usingShadows)		shadowMap->BindDepthAsTexture(30);
+			else		Sprite::m_textures[0].texture->Bind(30);
+
+			illumBuffer.ApplyEffect(baseEffect);
+
+			Texture2D::Unbind(30);
+
+			illumBuffer.DrawIllumBuffer();
+			return;
+
+		}
+		baseEffect->DrawBuffersToScreen(drawBuffers);
+		return;
+	}
 	if (m_usingShadows)		shadowMap->BindDepthAsTexture(30);
 	else		Sprite::m_textures[0].texture->Bind(30);
 

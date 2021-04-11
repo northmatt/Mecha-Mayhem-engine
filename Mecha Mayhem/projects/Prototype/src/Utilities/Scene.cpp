@@ -194,113 +194,149 @@ void Scene::ImGuiFunc()
 	/*ImGui::SetWindowSize(ImVec2(150, 50));
 	ImGui::Text("Empty");*/
 
-	if (ImGui::CollapsingHeader("Post Processing Effects"))
+	//if (ImGui::CollapsingHeader("Post Processing Effects"))
+	//{
+	//	ImGui::Text(("Number of effects: " + std::to_string(m_frameEffects.size())).c_str());
+	//	ImGui::SliderInt("max amt of effects", &maxEffectCount, 0, 5);
+	//	for (int i(0); i < m_frameEffects.size(); ++i) {
+	//		std::string name = m_frameEffects[i]->Info();
+	//		if (ImGui::TreeNode((std::to_string(i + 1) + ": " + name).c_str())) {
+	//			if (name == "Bloom") {
+	//				BloomEffect* effect = (BloomEffect*)(m_frameEffects[i]);
+	//				float threshold = effect->GetTreshold();
+	//				if (ImGui::SliderFloat("Treshold", &threshold, 0.f, 1.f)) {
+	//					effect->SetThreshold(threshold);
+	//				}
+	//				float radius = effect->GetRadius();
+	//				if (ImGui::SliderFloat("Radius", &radius, 0.f, 15.f)) {
+	//					effect->SetRadius(radius);
+	//				}
+	//				int blur = effect->GetBlurCount();
+	//				if (ImGui::SliderInt("Blur Passes", &blur, 1, 15)) {
+	//					effect->SetBlurCount(blur);
+	//				}
+	//			}
+	//			else if (name == "Greyscale") {
+	//				GreyscaleEffect* effect = (GreyscaleEffect*)(m_frameEffects[i]);
+	//				float intensity = effect->GetIntensity();
+	//				if (ImGui::SliderFloat("Intensity", &intensity, 0.f, 1.f)) {
+	//					effect->SetIntensity(intensity);
+	//				}
+	//			}
+	//			else if (name == "Sepia") {
+	//				SepiaEffect* effect = (SepiaEffect*)(m_frameEffects[i]);
+	//				float intensity = effect->GetIntensity();
+	//				if (ImGui::SliderFloat("Intensity", &intensity, 0.f, 1.f)) {
+	//					effect->SetIntensity(intensity);
+	//				}
+	//			}
+	//			else if (name == "Pixel") {
+	//				ImGui::Text("Pixels done by drawing to a smaller buffer, which means no new shader!");
+	//				PixelEffect* effect = (PixelEffect*)(m_frameEffects[i]);
+	//				int pixels = effect->GetPixelCount();
+	//				if (ImGui::SliderInt("PixelCount", &pixels, 4, BackEnd::GetHeight())) {
+	//					effect->SetPixelCount(pixels);
+	//				}
+	//			}
+	//			else if (name == "DepthOfField") {
+	//				ImGui::Text("We got the depth buffer somehow");
+	//				DepthOfFieldEffect* effect = (DepthOfFieldEffect*)(m_frameEffects[i]);
+	//				float depthLimit = effect->GetDepthLimit();
+	//				if (ImGui::SliderFloat("Depth Limit", &depthLimit, 0.f, 1.f)) {
+	//					effect->SetDepthLimit(depthLimit);
+	//				}
+	//				int blur = effect->GetBlurPasses();
+	//				if (ImGui::SliderInt("Blur Passes", &blur, 1, 15)) {
+	//					effect->SetBlurPasses(blur);
+	//				}
+	//			}
+	//			if (name != "N/A")
+	//				if (ImGui::Button("Remove")) {
+	//					m_frameEffects.RemoveEffect(i);
+	//				}
+	//			ImGui::TreePop();
+	//		}
+	//	}
+	//	if (m_frameEffects.size() < maxEffectCount) {
+	//		if (ImGui::Button("Greyscale")) {
+	//			GreyscaleEffect* effect = new GreyscaleEffect();
+	//			effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+	//			effect->SetInfo("Greyscale");
+	//			m_frameEffects.AddEffect(effect);
+	//			effect = nullptr;
+	//		}
+	//		ImGui::SameLine();
+	//		if (ImGui::Button("Sepia")) {
+	//			SepiaEffect* effect = new SepiaEffect();
+	//			effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+	//			effect->SetInfo("Sepia");
+	//			m_frameEffects.AddEffect(effect);
+	//			effect = nullptr;
+	//		}
+	//		if (ImGui::Button("Bloom")) {
+	//			BloomEffect* effect = new BloomEffect();
+	//			effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+	//			effect->SetInfo("Bloom");
+	//			m_frameEffects.AddEffect(effect);
+	//			effect = nullptr;
+	//		}
+	//		ImGui::SameLine();
+	//		if (ImGui::Button("Pixelataion")) {
+	//			PixelEffect* effect = new PixelEffect();
+	//			effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+	//			effect->SetInfo("Pixel");
+	//			m_frameEffects.AddEffect(effect);
+	//			effect = nullptr;
+	//		}
+	//		ImGui::SameLine();
+	//		if (ImGui::Button("Depth Of Field")) {
+	//			DepthOfFieldEffect* effect = new DepthOfFieldEffect();
+	//			effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
+	//			effect->SetInfo("DepthOfField");
+	//			m_frameEffects.AddEffect(effect);
+	//			effect->SetDrawBuffer(m_frameEffects.GetDrawBuffer());
+	//			effect = nullptr;
+	//		}
+	//	}
+	//	else {
+	//		ImGui::Text("Max effects added");
+	//	}
+	//}
+	if (ImGui::Button("One differed light source")) 
 	{
-		ImGui::Text(("Number of effects: " + std::to_string(m_frameEffects.size())).c_str());
-		ImGui::SliderInt("max amt of effects", &maxEffectCount, 0, 5);
-		for (int i(0); i < m_frameEffects.size(); ++i) {
-			std::string name = m_frameEffects[i]->Info();
-			if (ImGui::TreeNode((std::to_string(i + 1) + ": " + name).c_str())) {
-				if (name == "Bloom") {
-					BloomEffect* effect = (BloomEffect*)(m_frameEffects[i]);
-					float threshold = effect->GetTreshold();
-					if (ImGui::SliderFloat("Treshold", &threshold, 0.f, 1.f)) {
-						effect->SetThreshold(threshold);
-					}
-					float radius = effect->GetRadius();
-					if (ImGui::SliderFloat("Radius", &radius, 0.f, 15.f)) {
-						effect->SetRadius(radius);
-					}
-					int blur = effect->GetBlurCount();
-					if (ImGui::SliderInt("Blur Passes", &blur, 1, 15)) {
-						effect->SetBlurCount(blur);
-					}
-				}
-				else if (name == "Greyscale") {
-					GreyscaleEffect* effect = (GreyscaleEffect*)(m_frameEffects[i]);
-					float intensity = effect->GetIntensity();
-					if (ImGui::SliderFloat("Intensity", &intensity, 0.f, 1.f)) {
-						effect->SetIntensity(intensity);
-					}
-				}
-				else if (name == "Sepia") {
-					SepiaEffect* effect = (SepiaEffect*)(m_frameEffects[i]);
-					float intensity = effect->GetIntensity();
-					if (ImGui::SliderFloat("Intensity", &intensity, 0.f, 1.f)) {
-						effect->SetIntensity(intensity);
-					}
-				}
-				else if (name == "Pixel") {
-					ImGui::Text("Pixels done by drawing to a smaller buffer, which means no new shader!");
-					PixelEffect* effect = (PixelEffect*)(m_frameEffects[i]);
-					int pixels = effect->GetPixelCount();
-					if (ImGui::SliderInt("PixelCount", &pixels, 4, BackEnd::GetHeight())) {
-						effect->SetPixelCount(pixels);
-					}
-				}
-				else if (name == "DepthOfField") {
-					ImGui::Text("We got the depth buffer somehow");
-					DepthOfFieldEffect* effect = (DepthOfFieldEffect*)(m_frameEffects[i]);
-					float depthLimit = effect->GetDepthLimit();
-					if (ImGui::SliderFloat("Depth Limit", &depthLimit, 0.f, 1.f)) {
-						effect->SetDepthLimit(depthLimit);
-					}
-					int blur = effect->GetBlurPasses();
-					if (ImGui::SliderInt("Blur Passes", &blur, 1, 15)) {
-						effect->SetBlurPasses(blur);
-					}
-				}
-				if (name != "N/A")
-					if (ImGui::Button("Remove")) {
-						m_frameEffects.RemoveEffect(i);
-					}
-				ImGui::TreePop();
-			}
-		}
-		if (m_frameEffects.size() < maxEffectCount) {
-			if (ImGui::Button("Greyscale")) {
-				GreyscaleEffect* effect = new GreyscaleEffect();
-				effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
-				effect->SetInfo("Greyscale");
-				m_frameEffects.AddEffect(effect);
-				effect = nullptr;
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Sepia")) {
-				SepiaEffect* effect = new SepiaEffect();
-				effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
-				effect->SetInfo("Sepia");
-				m_frameEffects.AddEffect(effect);
-				effect = nullptr;
-			}
-			if (ImGui::Button("Bloom")) {
-				BloomEffect* effect = new BloomEffect();
-				effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
-				effect->SetInfo("Bloom");
-				m_frameEffects.AddEffect(effect);
-				effect = nullptr;
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Pixelataion")) {
-				PixelEffect* effect = new PixelEffect();
-				effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
-				effect->SetInfo("Pixel");
-				m_frameEffects.AddEffect(effect);
-				effect = nullptr;
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Depth Of Field")) {
-				DepthOfFieldEffect* effect = new DepthOfFieldEffect();
-				effect->Init(BackEnd::GetWidth(), BackEnd::GetHeight());
-				effect->SetInfo("DepthOfField");
-				m_frameEffects.AddEffect(effect);
-				effect->SetDrawBuffer(m_frameEffects.GetDrawBuffer());
-				effect = nullptr;
-			}
-		}
-		else {
-			ImGui::Text("Max effects added");
-		}
+		
 	}
+	if (ImGui::Button("Viewing defered light volumes"))
+	{
+
+	}
+	if (ImGui::Button("Draw position/depth only"))
+	{
+		m_frameEffects.drawBuffers = Target::POSITION;
+	}
+	if (ImGui::Button("Draw normal buffer"))
+	{
+		m_frameEffects.drawBuffers = Target::NORMAL;
+	}
+	if (ImGui::Button("Draw Albedo (Colour/Material)"))
+	{
+		m_frameEffects.drawBuffers = Target::ALBEDO;
+	}
+	if (ImGui::Button("Draw Default view"))
+	{
+		m_frameEffects.drawBuffers = -1;
+	}
+	if (ImGui::Button("Show light accum buffer"))
+	{
+		m_frameEffects.drawBuffers = 420; //funny number
+	}
+	if (ImGui::Button("Cycle through different light volume meshes"))
+	{
+
+	}
+
+{
+
+}
 
 }

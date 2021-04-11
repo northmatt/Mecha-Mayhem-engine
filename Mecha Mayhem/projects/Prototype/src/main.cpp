@@ -7,8 +7,8 @@
 
 int main() {
 	int width = 1280, height = 720;
-	bool showImGui = false;
-	const bool usingImGui = false;
+	bool showImGui = true;
+	const bool usingImGui = true;
 	Logger::outputLogger = false;
 	
 	GLFWwindow* window = Gameloop::Start("Mecha Mayhem", width, height, usingImGui);
@@ -23,8 +23,8 @@ int main() {
 
 		// Creating demo scenes
 		Scene::m_scenes.push_back(new MainMenu("Mecha Mayhem"));
-		Scene::m_scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0)));
 		Scene::m_scenes.push_back(new DemoScene("MM Demo", glm::vec3(0, -100, 0)));
+		Scene::m_scenes.push_back(new Tutorial("MM Tutorial", glm::vec3(0, -100, 0)));
 		Scene::m_scenes.push_back(new LeaderBoard("The Winner is..."));
 
 		Scene::m_scenes[0]->Init(width, height);
