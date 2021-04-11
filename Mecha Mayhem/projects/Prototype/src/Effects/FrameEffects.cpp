@@ -28,6 +28,7 @@ void FrameEffects::Init(unsigned width, unsigned height)
 	PostEffect::Init("shaders/Post/dof_horizontal_blur.glsl");
 	PostEffect::Init("shaders/Post/dof_vertical_blur.glsl");
 	PostEffect::Init("shaders/Post/dof_combine.glsl");
+	PostEffect::Init("shaders/Post/unlit.glsl", "shaders/vert_depth.glsl");
 
 	//gbuffer
 	PostEffect::Init("shaders/Post/gBuffer_directional_frag.glsl");

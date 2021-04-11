@@ -7,7 +7,8 @@
 enum Lights
 {
 	DIRECTIONAL = 1,
-	AMBIENT
+	AMBIENT,
+	UNLIT
 };
 
 //This is a post effect to make our job easier

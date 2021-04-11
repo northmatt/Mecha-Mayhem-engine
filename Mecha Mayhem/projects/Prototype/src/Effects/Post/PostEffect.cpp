@@ -7,12 +7,12 @@ PostEffect::~PostEffect()
 	Unload();
 }
 
-void PostEffect::Init(std::string frag)
+void PostEffect::Init(std::string frag, std::string vert)
 {
 	if (GetShader(frag) != nullptr) return;
 	int index = int(shaderCache.size());
 	shaderCache.push_back({ frag, Shader::Create() });
-	shaderCache[index].shaderProgram->LoadShaderPartFromFile("shaders/Post/passthrough_vert.glsl", GL_VERTEX_SHADER);
+	shaderCache[index].shaderProgram->LoadShaderPartFromFile(vert.c_str(), GL_VERTEX_SHADER);
 	shaderCache[index].shaderProgram->LoadShaderPartFromFile(frag.c_str(), GL_FRAGMENT_SHADER);
 	shaderCache[index].shaderProgram->Link();
 }

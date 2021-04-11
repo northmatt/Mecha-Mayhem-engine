@@ -109,8 +109,26 @@ void IlluminationBuffer::ApplyEffect(GBuffer* gBuffer)
 	_shaders[Lights::AMBIENT]->UnBind();
 
 	//draw the volumes here if we get them working lol
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	_shaders[Lights::UNLIT]->Bind();
 
+	/*
+    shaderLightBox.setMat4("projection", projection);
+    shaderLightBox.setMat4("view", view);
+	_shaders[Lights::UNLIT]->SetUniform("", VP);
+    for (unsigned int i = 0; i < lightPositions.size(); i++)
+    {
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, lightPositions[i]);
+        model = glm::scale(model, glm::vec3(0.125f));
+        shaderLightBox.setMat4("model", model);
+        shaderLightBox.setVec3("lightColor", lightColors[i]);
+        renderCube();
+    }
+	*/
+
+	_shaders[Lights::UNLIT]->UnBind();
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void IlluminationBuffer::DrawIllumBuffer()

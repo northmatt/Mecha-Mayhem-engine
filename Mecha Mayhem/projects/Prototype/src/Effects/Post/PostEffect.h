@@ -8,7 +8,7 @@ class PostEffect
 public:
 	~PostEffect();
 
-	static void Init(std::string frag);
+	static void Init(std::string frag, std::string vert = "shaders/Post/passthrough_vert.glsl");
 	static void UnloadShaders();
 
 	static Shader::sptr GetShader(std::string frag);
