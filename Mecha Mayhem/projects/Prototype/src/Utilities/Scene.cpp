@@ -136,7 +136,9 @@ void Scene::BackEndUpdate()
 
 	Sprite::BeginUIDraw(10, m_camCount);
 
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	Rendering::Update(&m_reg, m_camCount, m_paused);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	//dont update shadows if paused
 	if (m_frameEffects.GetUsingShadows() && !m_paused)
