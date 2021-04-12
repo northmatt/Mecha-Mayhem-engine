@@ -85,6 +85,10 @@ public:
 		illumBuffer.ToggleMeshes();
 	}
 
+	static void IncreaseLMesh() {
+		illumBuffer.IncreaseLCount();
+	}
+
 	void SetShadowVP(const glm::mat4& VP);
 	void SetShadowVP(float left, float right, float nearZ, float farZ, const glm::vec3& position);
 

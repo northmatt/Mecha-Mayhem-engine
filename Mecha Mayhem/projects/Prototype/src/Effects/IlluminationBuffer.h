@@ -34,6 +34,11 @@ public:
 	void SetCamPos(glm::vec3 camPos, int camNum);
 	void SetCamVP(glm::mat4 VP);
 	void SetCamCount(int camNum);
+	void IncreaseLCount() {
+		thingNum += 1;
+		if (thingNum > 2)
+			thingNum = 0;
+	}
 	void SendLights(std::array<glm::vec3, MAX_LIGHTS>& lightsPos,
 					std::array<glm::vec3, MAX_LIGHTS>& lightsColour, int LightCount) {
 		lPos = lightsPos;
@@ -63,7 +68,10 @@ private:
 		glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec3(0)
 	};
 	glm::mat4 _camVP = glm::mat4(1);
+	size_t thingNum = 0;
 	ObjLoader sphereThingy;
+	ObjLoader cubeThingy;
+	ObjLoader coneThingy;
 	std::array<glm::vec3, MAX_LIGHTS> lPos;
 	std::array<glm::vec3, MAX_LIGHTS> lCol;
 	int lCnt;

@@ -295,14 +295,6 @@ void Scene::ImGuiFunc()
 	//		ImGui::Text("Max effects added");
 	//	}
 	//}
-	if (ImGui::Button("One differed light source")) 
-	{
-		
-	}
-	if (ImGui::Button("Viewing defered light volumes"))
-	{
-
-	}
 	if (ImGui::Button("Draw position/depth only"))
 	{
 		m_frameEffects.drawBuffers = Target::POSITION;
@@ -323,8 +315,11 @@ void Scene::ImGuiFunc()
 	{
 		m_frameEffects.drawBuffers = 420; //funny number
 	}
-	if (ImGui::Button("show light volume meshes")){
+	if (ImGui::Button("show light volume meshes")) {
 		m_frameEffects.ToggleLightMeshs();
+	}
+	if (ImGui::Button("change light volume meshes")) {
+		m_frameEffects.IncreaseLMesh();
 	}
 
 {

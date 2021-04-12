@@ -3,7 +3,8 @@
 void IlluminationBuffer::Init(unsigned width, unsigned height)
 {
 	sphereThingy = ObjLoader("models/Light_Mesh_Coverage.obj");
-
+	cubeThingy = ObjLoader("models/Light_Mesh_Coverage_C.obj");
+	coneThingy = ObjLoader("models/Light_Mesh_Coverage_Co.obj");
 	//composite buffer
 	int index = int(_buffers.size());
 	if (index == 0) {
@@ -132,7 +133,21 @@ void IlluminationBuffer::ApplyEffect(GBuffer* gBuffer)
         model = glm::scale(model, glm::vec3(radius));
 		_shaders[Lights::UNLIT]->SetUniformMatrix("MVP", _camVP * model);
 		_shaders[Lights::UNLIT]->SetUniform("colour", lCol[i]);
-        sphereThingy.GetVAO()->Render();
+
+		switch (thingNum)
+		{
+		case 0:
+			sphereThingy.GetVAO()->Render();
+			break;
+		case 1:
+			cubeThingy.GetVAO()->Render();
+			break;
+		case 2:
+			coneThingy.GetVAO()->Render();
+			break;
+		default:
+			break;
+		}
     }
 
 	_shaders[Lights::UNLIT]->UnBind();
