@@ -1,5 +1,5 @@
 #version 420
-#define MAX_LIGHTS 10
+#define MAX_LIGHTS 25
 
 layout(location = 0) in vec2 inUV;
 

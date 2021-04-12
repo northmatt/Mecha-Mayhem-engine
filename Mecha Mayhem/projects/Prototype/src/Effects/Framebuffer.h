@@ -94,6 +94,8 @@ public:
 	void SetWrapMode(WrapMode choice) { _wrap = GLenum(choice); }
 	void SetFilter(MinFilter choice) { _filter = GLenum(choice); }
 	void SetFilter(MagFilter choice) { _filter = GLenum(choice); }
+
+	GLuint GetFBO() { return _FBO; }
 protected:
 	//Initial width and height is zero
 	unsigned int _width = 0;

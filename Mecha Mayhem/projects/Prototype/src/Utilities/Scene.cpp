@@ -323,9 +323,8 @@ void Scene::ImGuiFunc()
 	{
 		m_frameEffects.drawBuffers = 420; //funny number
 	}
-	if (ImGui::Button("Cycle through different light volume meshes"))
-	{
-
+	if (ImGui::Button("show light volume meshes")){
+		m_frameEffects.ToggleLightMeshs();
 	}
 
 {

@@ -47,6 +47,10 @@ public:
 	Framebuffer& GetGBuffer() {
 		return _gBuffer;
 	}
+
+	glm::vec2 GetSize() {
+		return glm::vec2(_windowWidth, _windowHeight);
+	}
 private:
 	Framebuffer _gBuffer;
 	Shader::sptr _passThrough = nullptr;

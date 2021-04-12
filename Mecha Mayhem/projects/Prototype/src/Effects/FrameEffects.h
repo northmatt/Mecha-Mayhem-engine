@@ -68,6 +68,10 @@ public:
 		illumBuffer.SetCamPos(pos, camNum);
 	}
 
+	static void SetCamVP(glm::mat4 VP) {
+		illumBuffer.SetCamVP(VP);
+	}
+
 	static void SetCamCount(int camNum) {
 		illumBuffer.SetCamCount(camNum);
 	}
@@ -75,6 +79,10 @@ public:
 	static void SetLights(std::array<glm::vec3, MAX_LIGHTS>& lightsPos,
 						  std::array<glm::vec3, MAX_LIGHTS>& lightsColour, size_t LightCount) {
 		illumBuffer.SendLights(lightsPos, lightsColour, LightCount);
+	}
+
+	static void ToggleLightMeshs() {
+		illumBuffer.ToggleMeshes();
 	}
 
 	void SetShadowVP(const glm::mat4& VP);

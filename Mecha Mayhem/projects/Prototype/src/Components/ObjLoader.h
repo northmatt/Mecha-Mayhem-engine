@@ -44,6 +44,8 @@ public:
 	bool GetCastShadows() { return m_castShadows; }
 	ObjLoader& SetRimLighting(bool choice) { m_rimLighting = choice; return *this; }
 	bool GetRimLighting() { return m_rimLighting; }
+	VertexArrayObject::sptr GetVAO() { return m_models[m_index].vao; }
+
 private:
 
 	struct Models

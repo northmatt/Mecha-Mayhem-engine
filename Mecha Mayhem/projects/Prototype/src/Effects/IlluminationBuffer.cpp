@@ -2,6 +2,8 @@
 
 void IlluminationBuffer::Init(unsigned width, unsigned height)
 {
+	sphereThingy = ObjLoader("models/Light_Mesh_Coverage.obj");
+
 	//composite buffer
 	int index = int(_buffers.size());
 	if (index == 0) {
@@ -32,6 +34,7 @@ void IlluminationBuffer::Init(unsigned width, unsigned height)
 		_shaders.push_back(GetShader("shaders/Post/passthrough_frag.glsl"));
 		_shaders.push_back(GetShader("shaders/Post/gBuffer_directional_frag.glsl"));
 		_shaders.push_back(GetShader("shaders/Post/gBuffer_ambient_frag.glsl"));
+		_shaders.push_back(GetShader("shaders/Post/unlit.glsl"));
 	}
 }
 
@@ -108,27 +111,35 @@ void IlluminationBuffer::ApplyEffect(GBuffer* gBuffer)
 
 	_shaders[Lights::AMBIENT]->UnBind();
 
+	if (!_drawMeshes)
+		return;
+
 	//draw the volumes here if we get them working lol
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer->GetGBuffer().GetFBO());
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _buffers[0]->GetFBO());
+	glBlitFramebuffer(0, 0, gBuffer->GetSize().x, gBuffer->GetSize().y, 0, 0, gBuffer->GetSize().x, gBuffer->GetSize().y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	_buffers[0]->Bind();
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glDisable(GL_CULL_FACE);
 	_shaders[Lights::UNLIT]->Bind();
 
-	/*
-    shaderLightBox.setMat4("projection", projection);
-    shaderLightBox.setMat4("view", view);
-	_shaders[Lights::UNLIT]->SetUniform("", VP);
-    for (unsigned int i = 0; i < lightPositions.size(); i++)
-    {
+	glm::mat4 model = glm::mat4(1.0f);
+    for (size_t i = 0; i < lCnt; ++i) {
         model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPositions[i]);
-        model = glm::scale(model, glm::vec3(0.125f));
-        shaderLightBox.setMat4("model", model);
-        shaderLightBox.setVec3("lightColor", lightColors[i]);
-        renderCube();
+        model = glm::translate(model, lPos[i]);
+		float radius = (std::sqrtf(-4 * (-(256.0 / 5.0) * glm::length(lCol[i])))) / 2;
+        model = glm::scale(model, glm::vec3(radius));
+		_shaders[Lights::UNLIT]->SetUniformMatrix("MVP", _camVP * model);
+		_shaders[Lights::UNLIT]->SetUniform("colour", lCol[i]);
+        sphereThingy.GetVAO()->Render();
     }
-	*/
 
 	_shaders[Lights::UNLIT]->UnBind();
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glEnable(GL_CULL_FACE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	_buffers[0]->Unbind();
 }
 
 void IlluminationBuffer::DrawIllumBuffer()
@@ -155,6 +166,10 @@ void IlluminationBuffer::SetCamPos(glm::vec3 camPos, int camNum)
 	if (camNum > 3 || camNum < 0)	return;
 
 	_camPos[camNum] = camPos;
+}
+
+void IlluminationBuffer::SetCamVP(glm::mat4 VP) {
+	_camVP = VP;
 }
 
 void IlluminationBuffer::SetCamCount(int camNum)

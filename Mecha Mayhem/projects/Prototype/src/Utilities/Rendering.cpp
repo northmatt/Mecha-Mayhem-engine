@@ -91,6 +91,7 @@ namespace Rendering {
 			
 			//sprites use VP in the draw function
 			glm::mat4 VP = camCam.GetProjection() * view;
+			frameEffects->SetCamVP(VP);
 			spriteView.each(
 				[&](Sprite& spr, Transform& trans) {
 					spr.Draw(VP, trans.GetModel());
